@@ -1,9 +1,0 @@
-#!/bin/sh
-
-export CLASSPATH=/app/edp/DDP_NRT/lib/commons-email-1.4.jar:/app/edp/DDP_NRT/lib/connect-api-0.9.0.1-cp1-modified.jar:/app/edp/DDP_NRT/lib/connect-runtime-0.9.0.1-cp1-modified.jar:/app/edp/DDP_NRT/lib/mail-1.4.7.jar:/app/edp/DDP_NRT/lib/kafka-connect-jdbc-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/kafka-connect-hdfs-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/kafka-schema-registry-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/kafka-schema-registry-client-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/kafka-json-serializer-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/kafka-connect-avro-converter-2.0.1-modified.jar:/app/edp/DDP_NRT/lib/connect-json-0.9.0.1-cp1-modified.jar
-
-export KAFKA_OPTS=-Djava.security.auth.login.config=/app/edp/DDP_NRT/security/kafka_zookeeper_client.jaas
-
-nohup connect-distributed $1 >> $2 2>&1 < /dev/null &
-
-echo "Kafka connect worker process having id $! started"

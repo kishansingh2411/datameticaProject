@@ -1,2 +1,0 @@
-##Hold HDFS path of file containing schema details
-security.schema.location=/edp/conf/cvsecurity
