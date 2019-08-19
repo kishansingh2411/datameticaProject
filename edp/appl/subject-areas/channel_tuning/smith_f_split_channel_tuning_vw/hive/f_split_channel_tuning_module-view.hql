@@ -1,0 +1,125 @@
+CREATE VIEW IF NOT EXISTS 
+ smith_channel_tuning.f_split_channel_tuning
+ AS 
+ SELECT 
+  a.household_device_id, 
+  a.quarter_hour_of_day_offset, 
+  a.stb_collection_task_id,
+  a.channel_name_id, 
+  a.tms_network_id, 
+  a.tms_program_id, 
+  a.segment_start_time, 
+  a.segment_end_time, 
+  a.dtm_program_start, 
+  a.dtm_program_end,   
+  a.segmented_duration,  
+  a.channel_tune_duration, 
+  a.stb_file_control_id, 
+  a.load_date, 
+  a.dtm_created, 
+  a.dtm_channel_tuning_created, 
+  a.dtm_last_updated,   
+  a.household_id, 
+  a.channel_nbr, 
+  a.sample_id, 
+  a.segment_date, 
+  a.dtm_tuned_to_started, 
+  a.dtm_tuned_to_ended, 
+  a.tuning_source_id, a.tuning_type_id,   
+  a.playback_day, 
+  a.qtr_sum_dev_duration, 
+  a.qtr_sum_dev_chn_dur, 
+  a.qtr_sum_dev_chn_prog_dur, 
+  a.broadcast_week_id, 
+  a.broadcast_month_id, 
+  a.calendar_week_id,   
+  a.calendar_month_id, 
+  a.day_of_week_id, 
+  a.chn_prog_consec_dur
+ FROM 
+  gold_channel_tuning.gold_nz_t_f_split_channel_tuning_6mth a
+ WHERE 
+  a.channel_tune_duration <= 18000
+ UNION ALL
+ SELECT 
+  b.household_device_id, 
+  b.quarter_hour_of_day_offset, 
+  b.stb_collection_task_id,
+  b.channel_name_id, 
+  b.tms_network_id, 
+  b.tms_program_id, 
+  b.segment_start_time, 
+  b.segment_end_time, 
+  b.dtm_program_start, 
+  b.dtm_program_end,   
+  b.segmented_duration,  
+  b.channel_tune_duration, 
+  b.stb_file_control_id, 
+  b.load_date, 
+  b.dtm_created, 
+  b.dtm_channel_tuning_created, 
+  b.dtm_last_updated,   
+  b.household_id, 
+  b.channel_nbr, 
+  b.sample_id, 
+  b.segment_date, 
+  b.dtm_tuned_to_started, 
+  b.dtm_tuned_to_ended, 
+  b.tuning_source_id, 
+  b.tuning_type_id,   
+  b.playback_day, 
+  b.qtr_sum_dev_duration, 
+  b.qtr_sum_dev_chn_dur, 
+  b.qtr_sum_dev_chn_prog_dur, 
+  b.broadcast_week_id, 
+  b.broadcast_month_id, 
+  b.calendar_week_id,   
+  b.calendar_month_id, 
+  b.day_of_week_id, 
+  b.chn_prog_consec_dur
+ FROM 
+  gold_channel_tuning.gold_nz_t_f_split_channel_tuning_curr b
+ WHERE 
+  b.channel_tune_duration <= 18000
+ UNION ALL
+ SELECT 
+  c.household_device_id, 
+  c.quarter_hour_of_day_offset, 
+  c.stb_collection_task_id,
+  c.channel_name_id, 
+  c.tms_network_id, 
+  c.tms_program_id, 
+  c.segment_start_time, 
+  c.segment_end_time, 
+  c.dtm_program_start, 
+  c.dtm_program_end,   
+  c.segmented_duration,  
+  c.channel_tune_duration, 
+  c.stb_file_control_id, 
+  c.load_date, 
+  c.dtm_created, 
+  c.dtm_channel_tuning_created, 
+  c.dtm_last_updated,   
+  c.household_id, 
+  c.channel_nbr, 
+  c.sample_id, 
+  c.segment_date, 
+  c.dtm_tuned_to_started, 
+  c.dtm_tuned_to_ended, 
+  c.tuning_source_id, 
+  c.tuning_type_id,   
+  c.playback_day, 
+  c.qtr_sum_dev_duration, 
+  c.qtr_sum_dev_chn_dur, 
+  c.qtr_sum_dev_chn_prog_dur, 
+  c.broadcast_week_id, 
+  c.broadcast_month_id, 
+  c.calendar_week_id,   
+  c.calendar_month_id, 
+  c.day_of_week_id, 
+  '' as chn_prog_consec_dur
+ FROM 
+  gold_channel_tuning.gold_nz_t_f_split_channel_tuning_rst c
+ WHERE 
+  c.channel_tune_duration <= 18000
+;

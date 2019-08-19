@@ -1,0 +1,52 @@
+<assembly>
+  <id>packager</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+	    <excludes>
+      	<exclude>**/.classpath</exclude>
+        <exclude>**/.log</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/${project.build.directory}/**</exclude>
+		<exclude>**/packager/**</exclude>
+		<exclude>**/extensions/**</exclude>
+		<exclude>**/subject-areas/bering_media/**</exclude>
+		<!--  <exclude>**/subject-areas/ods/**</exclude> -->
+		<exclude>**/subject-areas/hulu/**</exclude>
+		<exclude>**/subject-areas/ddp/**</exclude>
+		<exclude>**/subject-areas/mrdvr/**</exclude>
+		<exclude>**/subject-areas/channel_tuning/**</exclude>
+		<!--<exclude>**/subject-areas/omniture/gold_opt_*_tbl/**</exclude> -->
+		<exclude>**/subject-areas/omniture/gold_vow_*_tbl/**</exclude>
+		<exclude>**/subject-areas/omniture/smith_onet_*_tbl/**</exclude>
+		<exclude>**/subject-areas/omniture/smith_vow_*_tbl/**</exclude>
+		<exclude>**/subject-areas/hive/**</exclude>
+		<exclude>**/subject-areas/optimum_app/**</exclude>
+		<exclude>**/subject-areas/ods/**</exclude>
+		
+		</excludes>
+	  
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets>
+  
+  <files>
+  	<file>
+  		<source>../subject-areas/omniture/extensions/pig-udf-bank/target/pig-udf-bank-${version}.jar</source>
+  		<outputDirectory>edp/subject-areas/omniture//extensions/pig-udf-bank/lib</outputDirectory>
+  	</file>
+  	<file>
+		<source>../modules/target/utils-${version}.jar</source>
+		<outputDirectory>edp/modules/lib</outputDirectory>
+  	</file>
+  </files>
+  
+</assembly>

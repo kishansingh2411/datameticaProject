@@ -1,0 +1,470 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.cablevision</groupId>
+    <artifactId>edh</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>packager</artifactId>
+  <packaging>pom</packaging>
+  
+<profiles>
+<profile>
+  <id>bering_media</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_bering_media.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+<profile>
+  <id>omniture</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_omniture.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>optimum_app</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_optimum_app.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>hulu</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_hulu.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>channel_tuning</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_channel_tuning.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+
+	<profile>
+  <id>channel_tuning_am_edp</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_channel_tuning_am_edp.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>channel_tuning_am_aws</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_channel_tuning_am_aws.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>ddp</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_ddp.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+
+	<profile>
+  <id>mrdvr</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_mrdvr.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+  </build>
+	</profile>
+<profile>
+  <id>omniture_channel900</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_omniture_channel900.xml</descriptorRef>
+				  </descriptors>
+				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	<profile>
+  <id>ods</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_channel900_ods.xml</descriptorRef>
+				  </descriptors>				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	<profile>
+  <id>omniture_onet_prod</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_omniture_onet_prod.xml</descriptorRef>
+				  </descriptors>				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>false</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+	<profile>
+  <id>ovcdr</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_ovcdr.xml</descriptorRef>
+				  </descriptors>				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>true</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+		<profile>
+  <id>ods_ovcdr</id>
+  <build>
+	<plugins>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.6</version>
+			<inherited>false</inherited>
+			<configuration>
+				  <descriptors>
+				    <descriptorRef>src/assembly/packager_ods_ovcdr.xml</descriptorRef>
+				  </descriptors>				  
+			</configuration>
+			<executions>
+			  <execution>
+			    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+			    <phase>package</phase> <!-- bind to the packaging phase -->
+			    <configuration>
+			    	<appendAssemblyId>true</appendAssemblyId>
+			    </configuration>
+			    <goals>
+			      <goal>single</goal>
+			    </goals>
+			  </execution>
+        		</executions>
+		</plugin>
+	</plugins>
+</build>
+	</profile>
+	
+ <profile>
+    <id>ovcdr_enhancement</id>
+    <build>
+	   <plugins>
+	      <plugin>
+	         <artifactId>maven-assembly-plugin</artifactId>
+	         <version>2.6</version>
+	         <inherited>false</inherited>
+	         <configuration>
+	            <descriptors>
+	               <descriptorRef>src/assembly/packager_ovcdr_enhancement.xml</descriptorRef>
+	            </descriptors>				  
+	         </configuration>
+	         <executions>
+	            <execution>
+	               <id>make-assembly</id> <!-- this is used for inheritance merges -->
+		           <phase>package</phase> <!-- bind to the packaging phase -->
+                   <configuration>
+                      <appendAssemblyId>true</appendAssemblyId>
+                   </configuration>
+                   <goals>
+                      <goal>single</goal>
+                   </goals>
+                </execution>
+             </executions>
+          </plugin>
+       </plugins>
+    </build>
+ </profile>
+	
+ </profiles> 
+</project>

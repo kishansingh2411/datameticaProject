@@ -1,0 +1,34 @@
+<assembly>
+  <id>ods_ovcdr</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      
+      <includes>
+	     <include>/bin/functions.sh</include>
+	     <include>/etc/default.env.properties</include>
+	     <include>/subject-areas/ods/bin/generate_batch_id.sh</include>
+	     <include>/subject-areas/ods/bin/ods_functions.sh</include>
+	     <include>/subject-areas/ods/bin/**ovcdr**</include>
+	     <include>/subject-areas/ods/etc/**</include>
+	     <include>/subject-areas/ods/incoming_customer_account_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_ip_sip_did_phone_nbr_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_ip_sip_pilot_phone_nbr_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_ov_telephone_number_tbl/**</include>
+	     <include>/subject-areas/ods/work_customer_account_tbl/**</include>
+	     <include>/subject-areas/ods/work_ov_telephone_number_tbl/**</include>
+	   </includes>
+
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets>
+ 
+</assembly>
+

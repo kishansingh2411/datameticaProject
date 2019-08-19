@@ -1,0 +1,148 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: omniture.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 12/28/2015
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          12/28/2015       Initial version
+#
+#
+#####################################################################################################################
+
+##Gold Hive Table names
+GOLD_OPT_HIT_DATA_ESP_TBL=gold_opt_hit_data_esp
+GOLD_OPT_HIT_DATA_TBL=gold_opt_hit_data
+GOLD_VOW_HIT_DATA_ESP_TBL=gold_vow_hit_data_esp
+GOLD_VOW_HIT_DATA_TBL=gold_vow_hit_data
+GOLD_H_OPTIMUM_USER_TBL=gold_h_optimum_user
+GOLD_DAILY_VISITS_COUNT_AGGREGATE_TBL=gold_visit_counts_aggregate_daily
+GOLD_DAILY_PAGEVIEWS_COUNT_AGGREGATE_TBL=gold_pageview_counts_aggregate_daily
+GOLD_AGGREGATE_UNIQUE_VISITOR_COUNT_TBL=gold_aggregate_unique_visitor_count
+GOLD_AGGREGATE_PAGEVIEW_COUNTS_TBL=gold_aggregate_pageview_counts
+GOLD_AGGREGATE_VISIT_COUNTS_TBL=gold_aggregate_visit_counts
+GOLD_UNIFIED_HIT_DATA_TBL=gold_unified_hit_data
+GOLD_STOCK36_HIT_DATA_TBL=gold_stock36_hit_data
+GOLD_CUST_SERVICES_LAST_REC_TBL=gold_cust_services_last_rec
+GOLD_H_OPTIMUM_USER_TBL=gold_h_optimum_user
+
+
+##Incoming Hive Table names
+INCOMING_DERIVED_LOOKUP_TBL=incoming_derived_lookup
+INCOMING_ERROR_HIT_DATA_TBL=incoming_error_hit_data
+INCOMING_OPTIMUM_ERROR_MESSAGE_TBL=incoming_optimum_error_message
+INCOMING_OPTIMUM_ISP_TBL=incoming_optimum_isp
+INCOMING_OPTIMUM_PAGENAMES_TBL=incoming_optimum_pagenames
+INCOMING_OPTIMUM_SITE_SECTIONS_TBL=incoming_optimum_site_sections
+INCOMING_BROWSER_TBL=incoming_browser
+INCOMING_CONNECTION_TYPE_TBL=incoming_connection_type
+INCOMING_COUNTRY_TBL=incoming_country
+INCOMING_HIT_DATA_TBL=incoming_hit_data
+INCOMING_HIT_DATA_STOCK36_TBL=incoming_hit_data_stock36
+INCOMING_HIT_DATA_STOCK36_RAW_TBL=incoming_hit_data_stock36_raw
+INCOMING_JAVASCRIPT_VERSION_TBL=incoming_javascript_version
+INCOMING_LANGUAGES_TBL=incoming_languages
+INCOMING_OPERATING_SYSTEMS_TBL=incoming_operating_systems
+INCOMING_OPT_TAB_COLS_TBL=incoming_opt_tab_cols
+INCOMING_OPTIMUM_EVENT_LIST_TBL=incoming_optimum_event_list
+INCOMING_OPTIMUM_LINK_TBL=incoming_optimum_link
+INCOMING_OPTIMUM_SUITE_TBL=incoming_optimum_suite
+INCOMING_PLUGINS_TBL=incoming_plugins
+INCOMING_REFERRER_TYPE_TBL=incoming_referrer_type
+INCOMING_SEARCH_ENGINES_TBL=incoming_search_engines
+INCOMING_PERIOD_TBL=incoming_period
+INCOMING_ECR9_SHOPPING_CART_TBL=incoming_ecr9_shopping_cart
+INCOMING_H_OPTIMUM_USER_TBL=incoming_h_optimum_user
+
+##Work Hive Table names
+WORK_BROWSER_TBL=work_browser
+WORK_CONNECTION_TYPE_TBL=work_connection_type
+WORK_COUNTRY_TBL=work_country
+WORK_JAVASCRIPT_VERSION_TBL=work_javascript_version
+WORK_LANGUAGES_TBL=work_languages
+WORK_OPERATING_SYSTEMS_TBL=work_operating_systems
+WORK_PLUGINS_TBL=work_plugins
+WORK_REFERRER_TYPE_TBL=work_referrer_type
+WORK_SEARCH_ENGINES_TBL=work_search_engines
+
+##Smith Hive Table names
+SMITH_DERIVED_LOOKUP_TBL=smith_derived_lookup
+SMITH_OPTIMUM_ISP_TBL=smith_optimum_isp
+SMITH_OPTIMUM_PAGENAMES_TBL=smith_optimum_pagenames
+SMITH_OPTIMUM_SITE_SECTIONS_TBL=smith_optimum_site_sections
+SMITH_OPTIMUM_ERROR_MESSAGE_TBL=smith_optimum_err_message
+SMITH_KOM_ONET_PROD_ESP_OPTIMUM_USAGE_TBL=smith_kom_onet_prod_esp_optimum_usage
+SMITH_KOM_ONET_PROD_OPTIMUM_USAGE_TBL=smith_kom_onet_prod_optimum_usage
+SMITH_KOM_VOW_OPTIMUM_USAGE_TBL=smith_kom_vow_optimum_usage
+SMITH_KOM_VOW_ESP_OPTIMUM_USAGE_TBL=smith_kom_vow_esp_optimum_usage
+SMITH_KOM_UNIFIED_OPTIMUM_USAGE_TBL=smith_kom_unified_optimum_usage
+SMITH_KOM_STOCK36_OPTIMUM_USAGE_TBL=smith_kom_stock36_optimum_usage
+SMITH_MKTG_ONET_PROD_ESP_OPTIMUM_USAGE_TBL=smith_mktg_onet_prod_esp_optimum_usage
+SMITH_MKTG_ONET_PROD_OPTIMUM_USAGE_TBL=smith_mktg_onet_prod_optimum_usage
+SMITH_MKTG_VOW_OPTIMUM_USAGE_TBL=smith_mktg_vow_optimum_usage
+SMITH_MKTG_VOW_ESP_OPTIMUM_USAGE_TBL=smith_mktg_vow_esp_optimum_usage
+SMITH_MKTG_UNIFIED_OPTIMUM_USAGE_TBL=smith_mktg_unified_optimum_usage
+SMITH_VOW_OPTIMUM_USAGE_TBL=smith_vow_optimum_usage
+SMITH_VOW_ESP_OPTIMUM_USAGE_TBL=smith_vow_esp_optimum_usage
+SMITH_ONET_PROD_ESP_OPTIMUM_USAGE_TBL=smith_onet_prod_esp_optimum_usage
+SMITH_ONET_PROD_OPTIMUM_USAGE_TBL=smith_onet_prod_optimum_usage
+SMITH_UNIFIED_OPTIMUM_USAGE_TBL=smith_unified_optimum_usage
+SMITH_OPTIMUM_USAGE_TBL=smith_optimum_usage
+SMITH_OPT_TAB_COLS_TBL=smith_opt_tab_cols
+SMITH_OPTIMUM_EVENT_LIST_TBL=smith_optimum_event_list
+SMITH_OPTIMUM_LINK_TBL=smith_optimum_link
+SMITH_OPTIMUM_SUITE_TBL=smith_optimum_suite
+SMITH_PERIOD_TBL=smith_period
+SMITH_BROWSER_TBL=smith_browser
+SMITH_CONNECTION_TYPE_TBL=smith_connection_type
+SMITH_COUNTRY_TBL=smith_country
+SMITH_JAVASCRIPT_VERSION_TBL=smith_javascript_version
+SMITH_LANGUAGES_TBL=smith_languages
+SMITH_OPERATING_SYSTEMS_TBL=smith_operating_systems
+SMITH_PLUGINS_TBL=smith_plugins
+SMITH_REFERRER_TYPE_TBL=smith_referrer_type
+SMITH_SEARCH_ENGINES_TBL=smith_search_engines
+SMITH_AGGREGATE_UNIQUE_VISITOR_COUNT_TBL=smith_aggregate_unique_visitor_count
+SMITH_AGGREGATE_PAGEVIEW_COUNTS_TBL=smith_aggregate_pageview_counts
+SMITH_AGGREGATE_VISIT_COUNTS_TBL=smith_aggregate_visit_counts
+
+#relative path of the daily visits aggregate pig script 
+LOOKUP_MACROS_RELATIVE_PATH=common/incoming_lookup_macros.pig
+
+##Pig UDF jars path
+PIG_UDF_JAR_PATH=${HOME}/subject-areas/omniture/extensions/pig-udf-bank/lib
+
+#Aggregate Measure
+MEASURE_UNIQUE_VISITOR=UNIQUE_VISITOR
+MEASURE_PAGE_VIEW=PAGE_VIEW
+MEASURE_VISIT_COUNTS=VISIT_COUNTS
+CUTOFF_DATE=2016-05-05
+
+## Oracle source table
+SOURCE_TABLE=H_OPTIMUM_USER
+
+###
+# Suite Name
+CHANNEL900=channel900
+ONET_PROD=onet_prod
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

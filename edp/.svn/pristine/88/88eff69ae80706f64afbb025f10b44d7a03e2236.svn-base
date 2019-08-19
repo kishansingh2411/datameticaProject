@@ -1,0 +1,190 @@
+#!/bin/sh
+
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: load_incoming_modules.sh 
+#   Program type: Unix Bash Shell script
+#   Purpose:    : This will load data in all Incoming tables.                           
+#                 Input Arguments for this script is: key_Param_id.               
+#   Author(s)   : DataMetica Team
+#   Usage       : sh load_incoming_modules.sh  key_Param_id
+#   Date        : 09/12/2016
+#   Log File    : .../log/ovcdr/${job_name}.log
+#   SQL File    :                                 
+#   Error File  : .../log/ovcdr/${job_name}.log
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          09/12/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                          Module Environment Setup                           #
+###############################################################################
+
+# Find absolute path to this script which is used to define module, project, subject area home directory paths.
+pushd . > /dev/null
+SCRIPT_HOME="${BASH_SOURCE[0]}";
+while([ -h "${SCRIPT_HOME}" ]); do
+    cd "`dirname "${SCRIPT_HOME}"`"
+    SCRIPT_HOME="$(readlink "`basename "${SCRIPT_HOME}"`")";
+done
+cd "`dirname "${SCRIPT_HOME}"`" > /dev/null
+SCRIPT_HOME="`pwd`";
+popd  > /dev/null
+
+# Set module, project, subject area home paths.
+SUBJECT_AREA_HOME=`dirname ${SCRIPT_HOME}`
+SUBJECT_AREAS_HOME=`dirname ${SUBJECT_AREA_HOME}`
+PROJECT_HOME=`dirname ${SUBJECT_AREAS_HOME}`
+
+###                                                                           
+# Load all environment properties files
+source $PROJECT_HOME/etc/namespace.properties
+source $PROJECT_HOME/etc/beeline.properties
+source $PROJECT_HOME/etc/default.env.properties
+source $SUBJECT_AREA_HOME/etc/ovcdr.properties
+source $SUBJECT_AREA_HOME/etc/subject-area.env.properties
+source $PROJECT_HOME/etc/postgres.properties
+source $PROJECT_HOME/bin/functions.sh
+source $SUBJECT_AREA_HOME/bin/ovcdr_functions.sh
+
+###############################################################################
+#                                                                             #
+# Checking number of parameter passed                                         #
+#                                                                             #
+###############################################################################
+
+if [ "$#" -ne 1 ]
+then
+  echo "Illegal number of parameters.  Parameters expected [key_param_id]"
+  exit 
+fi
+
+##############################################################################
+#																			 #
+#   Local Param 				 			     						     #
+#                                    										 #
+##############################################################################
+
+key_param_id="$1"
+
+params="$(fn_get_ovcdr_params ${key_param_id})"
+
+if [ -z "$params" ]
+then
+    echo "Invalid Key-Param Id found : $key_param_id"
+    exit
+fi
+
+source_date=$(echo $params | cut -f 1 -d '~'| cut -f 1 -d ' ')
+source_date_format=`echo "${source_date//-/}"`
+
+dataset_name=$(echo $params | cut -f 3 -d '~')
+dataset_name=$(echo "$dataset_name" | tr '[:upper:]' '[:lower:]')
+
+job_name="$(fn_generate_job_name "$key_param_id" "$dataset_name" "LD_INCOM_MDULS")"
+
+start_time=`date +"%Y-%m-%d %H:%M:%S"`
+
+current_batch_id_path="${BATCH_ID_DIR}/$dataset_name/current"
+batch_id=`cat $current_batch_id_path`
+
+log_file_path="${LOG_DIR_SUBJECT_AREA}/${job_name}.log"
+
+if [[ ${dataset_name} == "dom_nsn_in" ]] || [[ $dataset_name == "dom_nsn_out" ]]
+then
+   table_name="incoming_${dataset_name}_usage"
+else
+   table_name="incoming_${dataset_name}_call_usage"
+fi
+
+##############################################################################
+#																			 #
+# Capture statistics                                                         #
+#																			 #
+##############################################################################
+
+fn_insert_job_statistics "${batch_id}" "${job_name}" "${start_time}" "RUNNING" "${log_file_path}" 
+
+##############################################################################
+#																			 #
+# Checking if both data and control files has been ftped                     #
+#																			 #
+##############################################################################
+
+source_dir=${LOCAL_DATA_DIRECTORY}
+file_prefix=`echo ${dataset_name} | tr '[:lower:]' '[:upper:]'`"_${source_date_format}"
+data_file_name=`ls -lrt ${source_dir}/${file_prefix}*.txt.gz | awk '{print $9}'`
+ctl_file_name=`ls -lrt ${source_dir}/${file_prefix}*.ctl | awk '{print $9}'`
+
+if [ -z "${data_file_name}" ] || [ -z "${ctl_file_name}" ]
+then
+   fn_log_info "One or both files are missing at local path" "${log_file_path}"
+   fn_log_info "Quitting the process for file ${data_file_name}" "${log_file_path}"
+   exit -1
+fi
+
+##############################################################################
+#																			 #
+# Loading table at Incoming layer.                                           #
+#																			 #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/${table_name}_tbl/bin/module.sh "prepare" "${data_file_name}" "${source_date}" "${log_file_path}"
+exit_code=$?   
+    
+if [ ${exit_code} -ne $EXIT_CODE_SUCCESS ]
+then
+   fn_log_error "Failed to load ${table_name} table in incoming layer, Quitting the process." "${log_file_path}"
+   fn_update_job_statistics "${batch_id}" "${job_name}" "${start_time}" "NA" "${exit_code}" \
+   "${source_date}" "${log_file_path}" "${source_file_name}" " "
+fi 
+
+fn_log_info "Successfully loaded ${table_name} table in Incoming layer" "${log_file_path}"    
+
+##############################################################################
+#																			 #
+# Validating the record counts with control file                             #
+#																			 #
+##############################################################################
+
+record_count=`beeline -u ${HIVESERVER2_URL} -n ${HIVE_USENAME} -p ${HIVE_PASSWORD} \
+              --showHeader=false --silent=true --outputformat=tsv2 -e \
+              "SELECT COUNT(*) FROM \
+                 ${HIVE_DATABASE_NAME_INCOMING}.${HIVE_TABLE_PREFIX}${table_name} \
+               WHERE SOURCE_DATE='${source_date}';"`
+
+ctrl_count=`cat ${ctl_file_name} | cut -d'~' -f2`
+
+if [ ! "${record_count}" == "${ctrl_count}" ]
+then
+   fn_log_warn "Hive table count does not matched with count in control file for table ${table_name}" ${log_file_path}
+   fn_update_job_statistics "${batch_id}" "${job_name}" "${start_time}" "${record_count}" "${EXIT_CODE_FAIL}" \
+      "${source_date}" "${log_file_path}" "" "Expected Count - ${ctrl_count}" "PARTIAL_LOADED or FILE CORRUPTED"
+	     
+fi
+
+##############################################################################
+#																			 #
+# Capture statistics                                                         #
+#																			 #
+##############################################################################
+
+fn_update_job_statistics "${batch_id}" "${job_name}" "${start_time}" "${record_count}" "${exit_code}" "${source_date}" "${log_file_path}" "${source_file_name}" " "
+
+##############################################################################
+#                                    End                                     #
+##############################################################################

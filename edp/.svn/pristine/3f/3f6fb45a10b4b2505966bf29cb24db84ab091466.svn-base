@@ -1,0 +1,117 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: ddp.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/02/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/02/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                     Project Environment Base Properties                     #
+###############################################################################
+
+##Incoming Hive Table names
+INCOMING_AUXCUST_TBL=incoming_auxcust
+INCOMING_AUXHOUSE_TBL=incoming_auxhouse
+INCOMING_BOXINVTRY_TBL=incoming_boxinvtry
+INCOMING_CODE36_TBL=incoming_code36
+INCOMING_CODE95_TBL=incoming_code95
+INCOMING_CODE999_TBL=incoming_code999
+INCOMING_CONTROLPARAMS_TBL=incoming_controlparams
+INCOMING_CUSTBILLADDR_TBL=incoming_custbilladdr
+INCOMING_CUSTMASTER_TBL=incoming_custmaster
+INCOMING_CUSTRATES_TBL=incoming_custrates
+INCOMING_HOUSEMASTER_TBL=incoming_housemaster
+INCOMING_RATECODES_TBL=incoming_ratecodes
+INCOMING_RATEPRICEAREA_TBL=incoming_ratepricearea
+INCOMING_RATEPRICELEVEL_TBL=incoming_ratepricelevel
+INCOMING_RATERPTCTRS_TBL=incoming_raterptctrs
+INCOMING_RPTCTRS_TBL=incoming_rptctrs
+INCOMING_SLSMN_TBL=incoming_slsmn
+INCOMING_TECHS_TBL=incoming_techs
+INCOMING_WIPCUSTRATE_TBL=incoming_wipcustrate
+INCOMING_WIPMASTER_TBL=incoming_wipmaster
+INCOMING_WIPOUTLET_TBL=incoming_wipoutlet
+INCOMING_ZIPMASTER_TBL=incoming_zipmaster
+
+#Work tables for medium category
+WORK_CODE36_TBL=work_code36
+WORK_AUXCUST_TBL=work_auxcust
+WORK_AUXHOUSE_TBL=work_auxhouse
+WORK_CODE95_TBL=work_code95
+WORK_CODE999_TBL=work_code999
+WORK_CUSTBILLADDR_TBL=work_custbilladdr
+WORK_RATECODES_TBL=work_ratecodes
+WORK_RATEPRICEAREA_TBL=work_ratepricearea
+WORK_RATEPRICELEVEL_TBL=work_ratepricelevel
+WORK_RATERPTCTRS_TBL=work_raterptctrs
+WORK_RPTCTRS_TBL=work_rptctrs
+WORK_SLSMN_TBL=work_slsmn
+WORK_TECHS_TBL=work_techs
+WORK_ZIPMASTER_TBL=work_zipmaster
+
+
+##Source Oracle Table names
+EDP_AUXCUST_TBL=EDP_AUXCUST
+EDP_AUXHOUSE_TBL=EDP_AUXHOUSE
+EDP_BOXINVTRY_TBL=EDP_BOXINVTRY
+EDP_CODE36_TBL=EDP_CODE36
+EDP_CODE95_TBL=EDP_CODE95
+EDP_CODE999_TBL=EDP_CODE999
+EDP_CONTROLPARAMS_TBL=EDP_CONTROLPARAMS
+EDP_CUSTBILLADDR_TBL=EDP_CUSTBILLADDR
+EDP_CUSTMASTER_TBL=EDP_CUSTMASTER
+EDP_CUSTRATES_TBL=EDP_CUSTRATES
+EDP_HOUSEMASTER_TBL=EDP_HOUSEMASTER
+EDP_RATECODES_TBL=EDP_RATECODES
+EDP_RATEPRICEAREA_TBL=EDP_RATEPRICEAREA
+EDP_RATEPRICELEVEL_TBL=EDP_RATEPRICELEVEL
+EDP_RATERPTCTRS_TBL=EDP_RATERPTCTRS
+EDP_RPTCTRS_TBL=EDP_RPTCTRS
+EDP_SLSMN_TBL=EDP_SLSMN
+EDP_TECHS_TBL=EDP_TECHS
+EDP_WIPCUSTRATE_TBL=EDP_WIPCUSTRATE
+EDP_WIPMASTER_TBL=EDP_WIPMASTER
+EDP_WIPOUTLET_TBL=EDP_WIPOUTLET
+EDP_ZIPMASTER_TBL=EDP_ZIPMASTER
+
+DDP_AUDIT=ddp_audit
+
+LOW_TBL_MAPPERS=1
+MEDIUM_TBL_MAPPERS=1
+LARGE_TBL_MAPPERS=1
+
+###Types of table in terms of data volume
+LOW_TBL=low
+MEDIUM_TBL=medium
+LARGE_TBL=large
+
+
+###
+# Oracle connection url
+ORACLE_CONN_URL="${DRIVER}${HOST}:${PORT}:${SCHEMA}"
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

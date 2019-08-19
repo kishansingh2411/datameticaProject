@@ -1,0 +1,48 @@
+<assembly>
+  <id>packager</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+	    <excludes>
+      	<exclude>**/.classpath</exclude>
+        <exclude>**/.log</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/lib/**</exclude>
+        <exclude>**/modules/**</exclude>
+        <exclude>**/rdbms_schema/redshift_schema.sql</exclude>
+        <exclude>**/rdbms_schema/update_ddp_audit_tbl.sql</exclude>
+        <exclude>**/utils/**</exclude>
+        <exclude>**/${project.build.directory}/**</exclude>
+		<exclude>**/packager/**</exclude>
+		<exclude>**/extensions/**</exclude>
+		<exclude>**/subject-areas/ods/**</exclude>
+		<exclude>**/subject-areas/omniture/**</exclude>
+		<exclude>**/subject-areas/bering_media/**</exclude>
+		<exclude>**/subject-areas/hulu/**</exclude>
+		<exclude>**/subject-areas/ddp/**</exclude>
+		<exclude>**/subject-areas/channel_tuning/**</exclude>
+		<exclude>**/subject-areas/hive/**</exclude>
+		<exclude>**/subject-areas/optimum_app/**</exclude>
+      </excludes>
+	  
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets>
+  
+  <files>
+  <file>
+  		<source>../subject-areas/mrdvr/extensions/pig-udf-bank/target/pig-udf-bank-${version}.jar</source>
+  		<outputDirectory>edp/subject-areas/mrdvr//extensions/pig-udf-bank/lib</outputDirectory>
+  </file>
+  </files>
+ 
+</assembly>
+
