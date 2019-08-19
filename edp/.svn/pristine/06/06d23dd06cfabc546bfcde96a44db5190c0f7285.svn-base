@@ -1,0 +1,42 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: oracle.Properties 
+#   Program type: 
+#   Purpose:    : This file contain properties which are needed to connect to oracle database             
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/02/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/02/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###                                                                           
+# Defines properties needed to connect oracle     
+DRIVER=jdbc:oracle:thin:@
+HOST=cvidovcdr1.cscdev.com
+PORT=1522
+SCHEMA=cvovrd
+USERNAME=ovrmgr
+PASSWORD=ovrmgr_dev
+ORACLE_DATABASE=OVRMGR
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

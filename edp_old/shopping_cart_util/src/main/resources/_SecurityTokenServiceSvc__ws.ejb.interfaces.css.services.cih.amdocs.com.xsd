@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://ws.ejb.interfaces.css.services.cih.amdocs.com" xmlns:intf="http://ws.ejb.interfaces.css.services.cih.amdocs.com" xmlns:tns2="http://datatypes.common.css.services.cih.amdocs.com" xmlns:tns3="http://common.services.amdocs.com" xmlns:tns4="http://awsi.amdocs.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://ws.ejb.interfaces.css.services.cih.amdocs.com">
+   <xsd:import namespace="http://awsi.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__awsi.amdocs.com.xsd"/>
+   <xsd:import namespace="http://common.services.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__common.services.amdocs.com.xsd"/>
+   <xsd:import namespace="http://datatypes.common.css.services.cih.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__datatypes.common.css.services.cih.amdocs.com.xsd"/>
+   <element name="login">
+    <complexType>
+     <sequence>
+      <element maxOccurs="1" minOccurs="0" name="selfServiceContext" nillable="true" type="tns2:SelfServiceContext"/>
+      <element maxOccurs="1" minOccurs="0" name="username" nillable="true" type="xsd:string"/>
+      <element maxOccurs="1" minOccurs="0" name="password" nillable="true" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="loginResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="1" minOccurs="0" name="loginReturn" nillable="true" type="tns2:LoginInfo"/>
+     </sequence>
+    </complexType>
+   </element>
+  </schema>

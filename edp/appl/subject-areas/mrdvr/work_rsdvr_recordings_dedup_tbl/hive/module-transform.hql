@@ -1,0 +1,132 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Build work_rsdvr_recordings_dedup table 
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform.hql
+--#   Date        : 12/28/2015
+--#   Log File    : .../log/mrdvr/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/mrdvr/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          12/28/2015       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.mapred.supports.subdirectories=true;
+
+INSERT OVERWRITE TABLE 
+   ${hivevar:hive_database_name_work}.${hivevar:work_rsdvr_recordings_dedup_tbl}
+SELECT 
+   ASSET_ID_GOLD	             
+   ,ASSET_ID_INCOMING	         
+   ,CALL_SIGN_GOLD             	 
+   ,CALL_SIGN_INCOMING	         
+   ,CALL_SIGN_IND	             
+   ,CREATE_TIME_GOLD          	 
+   ,CREATE_TIME_INCOMING	         
+   ,CREATE_TIME_IND	             
+   ,DS_RECTIME_GOLD       	     
+   ,DS_RECTIME_INCOMING	         
+   ,DS_RECTIME_IND	             
+   ,DS_STARTTIME_GOLD        	 
+   ,DS_STARTTIME_INCOMING	     
+   ,DS_STARTTIME_IND	             
+   ,DTM_SYSDATE	                 
+   ,DURATION_GOLD      	         
+   ,DURATION_INCOMING	         
+   ,DURATION_IND	                 
+   ,ENDTIME_ADJUSTMENT_PREV_GOLD	 
+   ,ENDTIME_ADJUSTMENT_PREV_INCOMING
+   ,ENDTIME_ADJUSTMENT_PREV_IND	 
+   ,ENDTIME_ADJUSTMENT_GOLD	     
+   ,ENDTIME_ADJUSTMENT_INCOMING	 
+   ,ENDTIME_ADJUSTMENT_IND      	 
+   ,HOME_ID_GOLD 	             
+   ,HOME_ID_INCOMING	             
+   ,KEEP_TYPE_CODE_GOLD	         
+   ,KEEP_TYPE_CODE_INCOMING	     
+   ,KEEP_TYPE_CODE_IND	         
+   ,LAST_UPDATED_GOLD	         
+   ,LAST_UPDATED_INCOMING	     
+   ,LAST_UPDATED_IND	             
+   ,LOAD_DATE
+   ,LOADTIME_GOLD	             
+   ,LOADTIME_INCOMING	         
+   ,LOADTIME_IND	                 
+   ,MODIFY_TIME_GOLD	             
+   ,MODIFY_TIME_INCOMING	         
+   ,MODIFY_TIME_IND
+   ,OP_TYPE_GOLD	             
+   ,OP_TYPE_I                  	 
+   ,OP_TYPE_U                  	 
+   ,PAUSE_TIME_GOLD	             
+   ,PAUSE_TIME_INCOMING	         
+   ,PAUSE_TIME_IND	             
+   ,RECORDING_DATE_GOLD	         
+   ,RECORDING_DATE_INCOMING	     
+   ,RECORDING_DATE_IND	         
+   ,RECORDING_ID_GOLD	         
+   ,RECORDING_ID_INCOMING	     
+   ,RECORDING_LOCKED_GOLD	     
+   ,RECORDING_LOCKED_INCOMING	 
+   ,RECORDING_LOCKED_IND	         
+   ,RECORDING_STATUS_GOLD	     
+   ,RECORDING_STATUS_INCOMING	 
+   ,RECORDING_STATUS_IND	         
+   ,RECORDING_TIME_GOLD	         
+   ,RECORDING_TIME_INCOMING	     
+   ,RECORDING_TIME_IND	         
+   ,RSDVR_RECORDINGS_DELTA_SEQ    
+   ,SCHEDULE_ID_GOLD	             
+   ,SCHEDULE_ID_INCOMING	         
+   ,START_DATE_GOLD	             
+   ,START_DATE_INCOMING	         
+   ,START_DATE_IND	             
+   ,START_TIME_GOLD	             
+   ,START_TIME_INCOMING	         
+   ,START_TIME_IND	             
+   ,STARTDATE_STARTTIME_GOLD	     
+   ,STARTDATE_STARTTIME_INCOMING	 
+   ,STARTDATE_STARTTIME_IND	     
+   ,TEMPORARY_ASSET_ID_GOLD	     
+   ,TEMPORARY_ASSET_ID_INCOMING	 
+   ,TEMPORARY_ASSET_ID_IND	     
+   ,Y_IND	                     
+   ,CHANGEDFLAG
+   ,NEWFLAG    
+FROM 
+   (SELECT 
+       seq.*,
+       ROW_NUMBER () OVER (PARTITION BY 
+                           SCHEDULE_ID_INCOMING,
+                           ASSET_ID_INCOMING,
+                           HOME_ID_INCOMING,
+                           RECORDING_ID_INCOMING 
+                        ORDER BY CREATE_TIME_INCOMING DESC ) 
+       AS RECORD_ROW_NUM
+    FROM ${hivevar:hive_database_name_work}.${hivevar:work_rsdvr_recordings_seq_tbl} seq
+    WHERE 
+    CHANGEDFLAG = 'TRUE' OR NEWFLAG = 'TRUE'
+    )dedup
+WHERE 
+ dedup.RECORD_ROW_NUM = 1
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

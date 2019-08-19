@@ -1,0 +1,145 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_customer_service_groups_tbl table from gold.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 01/26/2017
+--#   Log File    : .../log/remedy/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/remedy/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/26/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+INSERT OVERWRITE TABLE ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_service_groups_table}
+ PARTITION(P_YYYYMMDD)
+
+SELECT 
+       b.SITE_ID
+     , b.ACCT_NBR
+     , b.BASIC
+     , b.DIGITAL
+     , b.DIGITAL_EQUIPMENT
+     , b.DVR
+     , b.EQUIPMENT
+     , b.EXPANDED
+     , b.HDTV
+     , b.HOME_SECURITY
+     , b.HSD
+     , b.HSD_COMMERCIAL
+     , b.HSD_BULK_ETHERNET
+     , b.HSD_FIBER_SERVICES
+     , b.PRI
+     , b.PRI_EXTERNAL
+     , b.PRI_INTERNAL
+     , b.TELEPHONE
+     , b.VOD
+     , b.WIFI_HOME
+     , b.WIFI_WORK
+     , b.WIRE_MAINTENANCE
+     , c.REGION_DESCR
+     , c.REGION_PS_ID
+     , c.BUSINESS_UNIT_DESCR
+     , c.BUSINESS_UNIT_PS_ID
+     , c.BUDGET_ENTITY_DESCR
+     , c.BUDGET_ENTITY_PS_ID
+     , c.PLANT_MANAGER_DESCR
+     , c.PLANT_MANAGER_PS_ID
+     , c.HEAD_END_DESCR
+     , c.HEAD_END_STATE_ABBRV
+     , c.HEAD_END_PS_ID
+     , c.FRANCHISE_AUTHORITY_DESCR
+     , c.FRANCHISE_STATE_ABBRV
+     , c.REPORT_FLAG
+     , c.HSD_USAGE_RPT_FLAG
+     , c.node_cd 
+     , '${hivevar:source_date}' P_YYYYMMDD
+FROM  
+       (
+        SELECT cs.site_id     AS site_id
+             , cs.acct_nbr    AS acct_nbr
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 01 THEN 1 ELSE 0 END)  as BASIC
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 17 THEN 1 ELSE 0 END)  AS DIGITAL
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 29 THEN 1 ELSE 0 END)  AS DIGITAL_EQUIPMENT
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 23 THEN 1 ELSE 0 END)  AS DVR
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 08 THEN 1 ELSE 0 END)  AS EQUIPMENT
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 04 THEN 1 ELSE 0 END)  AS EXPANDED
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 10 THEN 1 ELSE 0 END)  AS HDTV
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 02 THEN 1 ELSE 0 END)  AS HOME_SECURITY
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 12 THEN 1 ELSE 0 END)  AS HSD
+             , MAX (0)                                                      AS HSD_COMMERCIAL
+             , MAX (0)                                                      AS HSD_BULK_ETHERNET
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 16 THEN 1 ELSE 0 END)  AS HSD_FIBER_SERVICES
+             , MAX (0)                                                      AS PRI
+             , MAX (0)                                                      AS PRI_EXTERNAL
+             , MAX (0)                                                      AS PRI_INTERNAL
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 20 THEN 1 ELSE 0 END)  AS TELEPHONE
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 07 THEN 1 ELSE 0 END)  AS VOD
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 36 THEN 1 ELSE 0 END)  AS WIFI_HOME
+             , MAX (0)                                                      AS WIFI_WORK
+             , MAX (CASE WHEN SRV.SRV_GROUP_DIM_PK = 06 THEN CS.SERVICE_QTY ELSE 0 END)  AS WIRE_MAINTENANCE
+        FROM  ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_services_table} cs
+        INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_srv_dim_table} srv  ON srv.p_yyyymmdd = cs.p_yyyymmdd AND srv.srv_code = cs.service_cd
+        WHERE 1=1
+	        AND   cs.p_yyyymmdd = '${hivevar:source_date}'
+	        And   CS.SERVICE_STATUS = 'A'
+	        And   SRV.SUB_COUNT_FLAG = 'Y'
+	        And   cs.SITE_ID <> 100
+        GROUP BY cs.SITE_ID, cs.ACCT_NBR
+        UNION ALL
+        SELECT cs.site_id     AS site_id
+             , cs.acct_nbr    AS acct_nbr
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 01 THEN 1 ELSE 0 END)  as BASIC
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 17 THEN 1 ELSE 0 END)  AS DIGITAL
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 29 THEN 1 ELSE 0 END)  AS DIGITAL_EQUIPMENT
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 23 THEN 1 ELSE 0 END)  AS DVR
+             , MAX (0)                                                          AS EQUIPMENT
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 04 THEN 1 ELSE 0 END)  AS EXPANDED
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 10 THEN 1 ELSE 0 END)  AS HDTV
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 02 THEN 1 ELSE 0 END)  AS HOME_SECURITY
+             , MAX (0)                                                          AS HSD
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 42 THEN 1 ELSE 0 END)  AS HSD_COMMERCIAL
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 38 THEN 1 ELSE 0 END)  AS HSD_BULK_ETHERNET
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 44 THEN 1 ELSE 0 END)  AS HSD_FIBER_SERVICES
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 58 THEN 1 ELSE 0 END)  AS PRI
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 66 THEN 1 ELSE 0 END)  AS PRI_EXTERNAL
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 67 THEN 1 ELSE 0 END)  AS PRI_INTERNAL
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 20 THEN 1 ELSE 0 END)  AS TELEPHONE
+             , MAX (0)                                                          AS VOD
+             , MAX (0)                                                          AS WIFI_HOME
+             , MAX (CASE WHEN SRV.SRV_COM_GROUP_DIM_PK = 61 THEN 1 ELSE 0 END)  AS WIFI_WORK
+             , MAX (0)                                                          AS WIRE_MAINTENANCE
+       FROM  ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_services_table} cs
+       INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_srv_dim_table} srv ON srv.p_yyyymmdd = cs.p_yyyymmdd AND srv.srv_code = cs.service_cd
+       WHERE 1=1
+	        AND cs.p_yyyymmdd = '${hivevar:source_date}'
+	        And CS.SERVICE_STATUS = 'A'
+	        And cs.SITE_ID=100
+	        And SRV.COM_SUB_COUNT_FLAG='Y'
+        GROUP BY cs.SITE_ID, cs.ACCT_NBR
+     ) b,
+     ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_table} c
+WHERE 1 = 1
+AND   c.site_id = b.site_id
+AND   c.acct_nbr = b.acct_nbr
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

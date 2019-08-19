@@ -1,0 +1,31 @@
+{
+  "type" : "record",
+  "name" : "KomCustomerAccount",
+  "doc" : "",
+  "fields" : [ {
+    "name" : "encrypted_customer_account_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnname" : "encrypted_customer_account_id",
+    "sqltype" : "-5"
+  }, {
+    "name" : "encrypted_chc_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnname" : "encrypted_chc_id",
+    "sqltype" : "12"
+  }, {
+    "name" : "dtm_last_updated",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnname" : "dtm_last_updated",
+    "sqltype" : "93"
+  }, {
+    "name" : "dtm_created",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnname" : "dtm_created",
+    "sqltype" : "93"
+  } ],
+  "tablename" : ""
+}

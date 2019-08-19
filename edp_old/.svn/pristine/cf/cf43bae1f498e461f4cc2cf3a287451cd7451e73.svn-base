@@ -1,0 +1,68 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Create Incoming table(incoming_rsdvr_recording_archive_tbl)
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 05/05/2016
+--#   Log File    : .../log/mrdvr/MRDVR_DEPLOYMENT.log
+--#   SQL File    : 
+--#   Error File  : .../log/mrdvr/MRDVR_DEPLOYMENT.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          05/05/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+DROP TABLE IF EXISTS ${hivevar:database}.${hivevar:table_prefix}${hivevar:table_name}
+;
+
+CREATE EXTERNAL TABLE ${hivevar:database}.${hivevar:table_prefix}${hivevar:table_name}
+(    
+    RECORDING_ID              BIGINT    COMMENT '', 
+    SCHEDULE_ID               BIGINT    COMMENT '',
+    ASSET_ID                  BIGINT    COMMENT '',
+    CALL_SIGN                 VARCHAR   COMMENT '',
+	START_DATE                TIMESTAMP COMMENT '',
+	START_TIME                INTEGER   COMMENT '',
+	DURATION                  INTEGER   COMMENT '',
+	RECORDING_STATUS          INTEGER   COMMENT '',
+	CREATE_TIME               TIMESTAMP COMMENT '',
+	MODIFY_TIME               TIMESTAMP COMMENT '',
+	RECORDING_LOCKED          INTEGER   COMMENT '',
+	RECORDING_DATE            TIMESTAMP COMMENT '',
+	RECORDING_TIME            INTEGER   COMMENT '',
+	STARTDATE_STARTTIME       TIMESTAMP COMMENT '',
+	TEMPORARY_ASSET_ID        INTEGER   COMMENT '',
+	PAUSE_TIME                INTEGER   COMMENT '',
+	ENDTIME_ADJUSTMENT        INTEGER   COMMENT '',
+	ENDTIME_ADJUSTMENT_PREV   INTEGER   COMMENT '',
+	KEEP_TYPE_CODE            INTEGER   COMMENT '',
+	HOME_ID                   VARCHAR   COMMENT '',
+	STARTDATE_STARTTIME_EST   TIMESTAMP COMMENT '',
+	STARTDATE_EST             TIMESTAMP COMMENT '',
+	LOAD_DATE                 TIMESTAMP COMMENT '',
+	ARCHIVE_TIME              TIMESTAMP COMMENT '',
+	DTM_CREATED               TIMESTAMP COMMENT '',
+	INS_JOB_AUDIT_ID          INTEGER   COMMENT ''
+)
+STORED AS AVRO
+LOCATION '${hivevar:location}'
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

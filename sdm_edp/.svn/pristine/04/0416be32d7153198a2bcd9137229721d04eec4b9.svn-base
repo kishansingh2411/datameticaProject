@@ -1,0 +1,44 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: omniture.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/18/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/18/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Incoming Hive Table name
+incoming_cpe_model_info_tbl=incoming_cpe_model_info
+
+##Gold Hive Table names
+gold_cpe_daily_tbl=gold_cpe_daily
+gold_cpe_ivr_tbl=gold_cpe_ivr
+gold_cpe_tc_tbl=gold_cpe_tc
+
+##Outgoing Hive Table names
+outgoing_cpe_monthly_tbl=outgoing_cpe_monthly
+outgoing_cpe_weekly_tbl=outgoing_cpe_weekly
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

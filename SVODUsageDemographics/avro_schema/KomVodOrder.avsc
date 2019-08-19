@@ -1,0 +1,43 @@
+{
+  "type" : "record",
+  "name" : "KomVodOrder",
+  "doc" : "",
+  "fields" : [ {
+    "name" : "encrypted_customer_account_id",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnname" : "encrypted_customer_account_id",
+    "sqltype" : "-5"
+  }, {
+    "name" : "vod_order_id",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnname" : "vod_order_id",
+    "sqltype" : "12"
+  }, {
+      "name" : "corp",
+      "type" : [ "null", "long" ],
+      "default" : null,
+      "columnname" : "corp",
+      "sqltype" : "12"
+  }, {
+    "name" : "preview_ind",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnname" : "preview_ind",
+    "sqltype" : "12"
+  }, {
+    "name" : "trailer_ind",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnname" : "trailer_ind",
+    "sqltype" : "93"
+  }, {
+    "name" : "dtm_created",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnname" : "dtm_created",
+    "sqltype" : "93"
+  } ],
+  "tablename" : ""
+}

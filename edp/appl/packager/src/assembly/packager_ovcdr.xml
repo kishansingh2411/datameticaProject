@@ -1,0 +1,25 @@
+<assembly>
+  <id>ovcdr</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      
+      <includes>
+	     <include>/bin/functions.sh</include>
+	     <include>/etc/**</include>
+	     <include>/rdbms_schema/postgres_schema.sql</include>
+	     <include>/subject-areas/ovcdr/**</include>
+	   </includes>
+
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets> 
+</assembly>
+

@@ -1,0 +1,58 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Build work_rsdvr_schedule_tmp table 
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform.hql
+--#   Date        : 12/28/2015
+--#   Log File    : .../log/mrdvr/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/mrdvr/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          12/28/2015       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE ${hivevar:hive_database_name_work}.${hivevar:work_rsdvr_schedule_delete_tbl}
+	
+SELECT 
+	WORK_RSDVR_SCHEDULE_TMP.CALLSIGN_INCOMING                    AS CALLSIGN,
+	WORK_RSDVR_SCHEDULE_TMP.STARTDATE_INCOMING                   AS STARTDATE,
+	WORK_RSDVR_SCHEDULE_TMP.STARTTIME_INCOMING                   AS STARTTIME,
+	WORK_RSDVR_SCHEDULE_TMP.DURATION_INCOMING                    AS DURATION,
+	WORK_RSDVR_SCHEDULE_TMP.LOADTIME                             AS LOADTIME,
+	'D'                                                          AS OP_TYPE,
+	CURRENT_TIMESTAMP                                   AS DTM_CREATED,
+	GOLD_RSDVR_SCHEDULE_LAST_REC.RSDVR_SCHEDULE_DELTA_SEQ    AS RSDVR_SCHEDULE_DELTA_SEQ
+FROM 
+	${hivevar:hive_database_name_work}.${hivevar:work_rsdvr_schedule_tmp_tbl} WORK_RSDVR_SCHEDULE_TMP JOIN ${hivevar:hive_database_name_gold}.${hivevar:gold_rsdvr_schedule_last_rec_tbl} GOLD_RSDVR_SCHEDULE_LAST_REC   
+ON
+	( GOLD_RSDVR_SCHEDULE_LAST_REC.CALLSIGN = WORK_RSDVR_SCHEDULE_TMP.CALLSIGN_INCOMING AND
+	GOLD_RSDVR_SCHEDULE_LAST_REC.STARTDATE = WORK_RSDVR_SCHEDULE_TMP.STARTDATE_INCOMING AND
+	GOLD_RSDVR_SCHEDULE_LAST_REC.STARTTIME = WORK_RSDVR_SCHEDULE_TMP.STARTTIME_INCOMING AND
+	GOLD_RSDVR_SCHEDULE_LAST_REC.DURATION = WORK_RSDVR_SCHEDULE_TMP.DURATION_INCOMING )
+WHERE
+	GOLD_RSDVR_SCHEDULE_LAST_REC.OP_TYPE !='D'
+AND 
+	TO_DATE(WORK_RSDVR_SCHEDULE_TMP.LOADTIME) < '${hivevar:DTM_START}';
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

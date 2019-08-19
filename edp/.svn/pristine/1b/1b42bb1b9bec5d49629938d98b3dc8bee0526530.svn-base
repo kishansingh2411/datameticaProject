@@ -1,0 +1,111 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: channel_tuning.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/19/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/19/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                     Project Environment Base Properties                     #
+###############################################################################
+
+##Incoming Hive Table names
+INCOMING_NZ_T_F_SPLIT_CHANNEL_TUNING_RST_TBL=incoming_nz_t_f_split_channel_tuning_rst
+INCOMING_NZ_T_F_SPLIT_CHANNEL_TUNING_6MTH_TBL=incoming_nz_t_f_split_channel_tuning_6mth
+INCOMING_NZ_T_F_SPLIT_CHANNEL_TUNING_CURR_TBL=incoming_nz_t_f_split_channel_tuning_curr
+INCOMING_T_CVB_CHDV_A_HH_SERIES_SUMMARY_TBL=incoming_t_cvb_chdv_a_hh_series_summary
+INCOMING_T_CVB_F_SPLIT_DVR_USAGE_TBL=incoming_t_cvb_f_split_dvr_usage
+INCOMING_T_CVB_F_SPLIT_MRDVR_USAGE_TBL=incoming_t_cvb_f_split_mrdvr_usage
+INCOMING_T_CVB_F_STB_DEVICE_STATE_TBL=incoming_t_cvb_f_stb_device_state
+INCOMING_T_D_CHANNEL_NAME_TBL=incoming_t_d_channel_name
+INCOMING_T_D_HOUSEHOLD_ATTRIBUTE_TBL=incoming_t_d_household_attribute
+INCOMING_T_D_HOUSEHOLD_DEVICE_TBL=incoming_t_d_household_device
+INCOMING_T_D_PERIOD_TBL=incoming_t_d_period
+INCOMING_T_D_RES_DEMOGRAPHIC_TBL=incoming_t_d_res_demographic
+INCOMING_T_D_STB_COLLECTION_TASK_TBL=incoming_t_d_stb_collection_task
+INCOMING_T_D_TMS_PROGRAM_TBL=incoming_t_d_tms_program
+INCOMING_T_F_HOUSEHOLD_DEVICE_TBL=incoming_t_f_household_device
+INCOMING_T_F_SPLIT_IPCHANNEL_TUNING_TBL=incoming_t_f_split_ipchannel_tuning
+
+##Gold Hive Table names
+GOLD_NZ_T_F_SPLIT_CHANNEL_TUNING_RST_TBL=gold_nz_t_f_split_channel_tuning_rst
+GOLD_NZ_T_F_SPLIT_CHANNEL_TUNING_CURR_TBL=gold_nz_t_f_split_channel_tuning_curr
+GOLD_NZ_T_F_SPLIT_CHANNEL_TUNING_6MTH_TBL=gold_nz_t_f_split_channel_tuning_6mth
+GOLD_T_CVB_F_SPLIT_DVR_USAGE_TBL=gold_t_cvb_f_split_dvr_usage
+GOLD_T_CVB_F_SPLIT_MRDVR_USAGE_TBL=gold_t_cvb_f_split_mrdvr_usage
+GOLD_T_D_CHANNEL_NAME_TBL=gold_t_d_channel_name
+GOLD_T_D_HOUSEHOLD_ATTRIBUTE_TBL=gold_t_d_household_attribute
+GOLD_T_D_HOUSEHOLD_DEVICE_TBL=gold_t_d_household_device
+GOLD_T_D_PERIOD_TBL=gold_t_d_period
+GOLD_T_D_RES_DEMOGRAPHIC_TBL=gold_t_d_res_demographic
+GOLD_T_D_STB_COLLECTION_TASK_TBL=gold_t_d_stb_collection_task
+GOLD_T_D_TMS_PROGRAM_TBL=gold_t_d_tms_program
+GOLD_T_F_SPLIT_IPCHANNEL_TUNING_TBL=gold_t_f_split_ipchannel_tuning
+
+## smith Hive Table Names
+
+SMITH_T_D_CHANNEL_NAME_TBL=smith_t_d_channel_name
+SMITH_T_D_HOUSEHOLD_ATTRIBUTE_TBL=smith_t_d_household_attribute
+SMITH_T_D_HOUSEHOLD_DEVICE_TBL=smith_t_d_household_device
+SMITH_T_D_PERIOD_TBL=smith_t_d_period
+SMITH_T_D_RES_DEMOGRAPHIC_TBL=smith_t_d_res_demographic
+SMITH_T_D_STB_COLLECTION_TASK_TBL=smith_t_d_stb_collection_task
+SMITH_T_D_TMS_PROGRAM_TBL=smith_t_d_tms_program
+
+## work Hive Table names
+WORK_T_CVB_CHDV_A_HH_SERIES_SUMMARY_TBL=work_t_cvb_chdv_a_hh_series_summary
+WORK_T_CVB_F_STB_DEVICE_STATE_TBL=work_t_cvb_f_stb_device_state
+WORK_T_CVB_A_STB_DEVICE_STATE_TBL=work_t_cvb_a_stb_device_state
+WORK_T_F_HOUSEHOLD_DEVICE_TBL=work_t_f_household_device
+WORK_NZ_T_F_SPLIT_CHANNEL_TUNING_RST_TBL=work_nz_t_f_split_channel_tuning_rst 
+
+ ###################  column name ###########################################
+T_CVB_CHDV_A_HH_SERIES_SUMMARY_COL=dtm_created
+T_CVB_F_STB_DEVICE_STATE_COL=from_day_tag
+T_CVB_A_STB_DEVICE_STATE_COL=from_day_tag
+T_F_HOUSEHOLD_DEVICE_COL=load_date
+NZ_T_F_SPLIT_CHANNEL_TUNING_RST_COL=Segment_date
+
+##### database and username  #########################3
+T_CVB_CHDV_A_HH_SERIES_SUMMARY_USR=CVCVBP.CVBMGR
+T_CVB_F_STB_DEVICE_STATE_USR=CVAMRP.AMRMGR
+T_CVB_A_STB_DEVICE_STATE_USR=CVAMRP.AMRMGR
+T_F_HOUSEHOLD_DEVICE_USR=CVOAIP.OAIMGR
+NZ_T_F_SPLIT_CHANNEL_TUNING_RST_USR=CVAMHP.ADMIN
+
+## BEELINE PROPERTIES ######################################################
+NUM_MAPPERS=12
+
+## S3 PROPERTIES ######################################################
+ACCESSKEY=AKIAIYYYYYDVGBDFOIGQ
+SECRETKEY=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
+S3_HOST_PATH=cvcbisamdev/edp_offload
+
+## MAIL ID ######################################################
+EMAIL_ERROR_LIST="dmalvi@cablevision.com"
+EMAIL_SUCCESS_LIST="dmalvi@cablevision.com"
+###############################################################################
+#                                     End                                     #
+###############################################################################

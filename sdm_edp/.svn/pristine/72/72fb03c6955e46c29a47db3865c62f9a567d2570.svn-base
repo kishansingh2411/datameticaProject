@@ -1,0 +1,168 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_cpe_daily table from GOLD tables.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 01/23/2017
+--#   Log File    : .../log/cpe/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/cpe/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/23/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE gold.gold_cpe_daily  PARTITION(P_YYYYMMDD)
+SELECT 
+	 CONCAT(substr(p_yyyymmdd,1,4), '-', substr(p_yyyymmdd,5,2), '-', substr(p_yyyymmdd,7,2)) Day_date
+     , a.REGION_PS_ID
+     , a.PLANT_MANAGER_DESCR
+     , a.HEAD_END_DESCR
+     , a.node_cd
+     , a.ITEM_NBR
+     , a.EQMT_TYPE
+     --        
+     , a.cust_count
+     , a.eqmt_count
+     --
+     , a.ivr_tech_video_total   + a.ivr_tech_data_total   + a.ivr_tech_phone_total    ivr_tech_total
+     , a.ivr_tech_video_contain + a.ivr_tech_data_contain + a.ivr_tech_phone_contain  ivr_tech_contain
+     , a.ivr_tech_video_offer   + a.ivr_tech_data_offer   + a.ivr_tech_phone_offer    ivr_tech_offer
+     --
+     , a.ivr_tech_video_total
+     , a.ivr_tech_video_contain
+     , a.ivr_tech_video_offer
+     --
+     , a.ivr_tech_data_total
+     , a.ivr_tech_data_contain
+     , a.ivr_tech_data_offer
+     --
+     , a.ivr_tech_phone_total
+     , a.ivr_tech_phone_contain
+     , a.ivr_tech_phone_offer
+     --
+     , a.wo_tc_video
+     , a.WO_TC_DATA
+     , a.WO_TC_PHONE
+     , a.wo_tc_video + a.WO_TC_DATA + a.WO_TC_PHONE  WO_TC_TOTAL
+     --
+     , UPPER(b.Model)          Model
+     , UPPER(b.Model_Desc)     Model_Desc
+     , UPPER(b.LOB)            LOB
+     , UPPER(b.Category)       Category 
+     , UPPER(b.Make)           Make 
+     , UPPER(b.Active)         Active
+     , UPPER(b.RYG_Status)     RYG_Status
+     , UPPER(b.CPE_Forecast_Category) CPE_Forecast_Category
+     , UPPER(b.M2_or_M4)       M2_or_M4
+     , UPPER(b.Model_Trim)     Model_Trim
+     , UPPER(b.Model_Category) Model_Category
+     , UPPER(b.Docsis)         Docsis
+     --
+     , p_yyyymmdd
+FROM (
+        SELECT z.REGION_PS_ID
+             , z.PLANT_MANAGER_DESCR
+             , z.HEAD_END_DESCR
+             , z.NODE_CD
+             , z.ITEM_NBR
+             , z.EQMT_TYPE
+             --        
+             , count(distinct z.site_id, z.acct_nbr)   cust_count
+             , count(distinct z.site_id, z.serial_nbr) eqmt_count
+             --
+             , SUM(z.ivr_tech_video_total)   ivr_tech_video_total
+             , SUM(z.ivr_tech_video_contain) ivr_tech_video_contain
+             , SUM(z.ivr_tech_video_offer)   ivr_tech_video_offer
+             --
+             , SUM(z.ivr_tech_data_total)    ivr_tech_data_total
+             , SUM(z.ivr_tech_data_contain)  ivr_tech_data_contain
+             , SUM(z.ivr_tech_data_offer)    ivr_tech_data_offer
+             --
+             , SUM(z.ivr_tech_phone_total)   ivr_tech_phone_total
+             , SUM(z.ivr_tech_phone_contain) ivr_tech_phone_contain
+             , SUM(z.ivr_tech_phone_offer)   ivr_tech_phone_offer
+             --
+             , SUM(z.wo_tc_video) wo_tc_video
+             , SUM(z.wo_tc_data)  wo_tc_data
+             , SUM(z.wo_tc_phone) wo_tc_phone
+             --
+             , z.p_yyyymmdd
+        FROM (
+                    SELECT UPPER(eqmt.REGION_PS_ID)         REGION_PS_ID
+                         , UPPER(eqmt.PLANT_MANAGER_DESCR)  PLANT_MANAGER_DESCR
+                         , UPPER(eqmt.HEAD_END_DESCR)       HEAD_END_DESCR
+                         , UPPER(eqmt.NODE_CD)              NODE_CD
+                         , UPPER(eqmt.ITEM_NBR)             ITEM_NBR
+                         , UPPER(eqmt.EQMT_TYPE)            EQMT_TYPE
+                         --        
+                         , eqmt.site_id
+                         , eqmt.acct_nbr
+                         , UPPER(eqmt.serial_nbr)           serial_nbr
+                         --
+                         , SUM(case when eqmt.lob_cable = 1 then nvl(ivr.ivr_tech_video_total,   0) else 0 end) ivr_tech_video_total
+                         , SUM(case when eqmt.lob_cable = 1 then nvl(ivr.ivr_tech_video_contain, 0) else 0 end) ivr_tech_video_contain
+                         , SUM(case when eqmt.lob_cable = 1 then nvl(ivr.ivr_tech_video_offer,   0) else 0 end) ivr_tech_video_offer
+                         --
+                         , SUM(CASE when eqmt.lob_data  = 1 then nvl(ivr.ivr_tech_data_total,    0) else 0 end) ivr_tech_data_total
+                         , SUM(CASE when eqmt.lob_data  = 1 then nvl(ivr.ivr_tech_data_contain,  0) else 0 end) ivr_tech_data_contain
+                         , SUM(CASE when eqmt.lob_data  = 1 then nvl(ivr.ivr_tech_data_offer,    0) else 0 end) ivr_tech_data_offer
+                         --
+                         , SUM(case when eqmt.lob_phone = 1 then nvl(ivr.ivr_tech_phone_total,   0) else 0 end) ivr_tech_phone_total
+                         , SUM(case when eqmt.lob_phone = 1 then nvl(ivr.ivr_tech_phone_contain, 0) else 0 end) ivr_tech_phone_contain
+                         , SUM(case when eqmt.lob_phone = 1 then nvl(ivr.ivr_tech_phone_offer  , 0) else 0 end) ivr_tech_phone_offer
+                         --
+                         , SUM(case when eqmt.lob_cable = 1 then nvl(tc.wo_tc_video, 0) else 0 end) wo_tc_video
+                         , SUM(CASE when eqmt.lob_data  = 1 then nvl(tc.WO_TC_DATA,  0) else 0 end) WO_TC_DATA
+                         , SUM(case when eqmt.lob_phone = 1 then nvl(tc.WO_TC_PHONE, 0) else 0 end) WO_TC_PHONE
+                         --
+                         , eqmt.p_yyyymmdd
+                    FROM gold.gold_equipment eqmt
+                         LEFT OUTER JOIN gold.gold_cpe_ivr ivr  ON (ivr.P_YYYYMMDD  = '${LOAD_YYYYMMDD}' AND ivr.site_id  = eqmt.site_id AND ivr.acct_nbr  = eqmt.acct_nbr)
+                         LEFT OUTER JOIN gold.gold_cpe_tc  TC   ON (TC.P_YYYYMMDD   = '${LOAD_YYYYMMDD}' AND TC.site_id   = eqmt.site_id AND TC.acct_nbr   = eqmt.acct_nbr)
+                    WHERE 1 = 1
+                    AND eqmt.p_yyyymmdd = '${LOAD_YYYYMMDD}'
+                    AND eqmt.cust_group_cd = 'RESI'
+                    AND (eqmt.lob_cable + eqmt.lob_data + eqmt.lob_phone) > 0
+                    GROUP BY UPPER(eqmt.REGION_PS_ID)
+                         , UPPER(eqmt.PLANT_MANAGER_DESCR)
+                         , UPPER(eqmt.HEAD_END_DESCR)
+                         , UPPER(eqmt.NODE_CD)
+                         , UPPER(eqmt.ITEM_NBR)
+                         , UPPER(eqmt.EQMT_TYPE)
+                         --        
+                         , eqmt.site_id
+                         , eqmt.acct_nbr
+                         , UPPER(eqmt.serial_nbr)
+                         --
+                         , eqmt.p_yyyymmdd
+             ) z
+        WHERE 1 = 1
+        GROUP BY z.REGION_PS_ID
+             ,  z.PLANT_MANAGER_DESCR
+             ,  z.HEAD_END_DESCR
+             ,  z.NODE_CD
+             ,  z.ITEM_NBR
+             ,  z.EQMT_TYPE
+             ,  z.p_yyyymmdd
+     ) a
+     LEFT OUTER JOIN incoming.incoming_cpe_model_info b ON (a.ITEM_NBR = b.Model)
+DISTRIBUTE BY P_YYYYMMDD   
+;

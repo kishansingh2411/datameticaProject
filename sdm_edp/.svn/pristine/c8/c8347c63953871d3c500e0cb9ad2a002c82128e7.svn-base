@@ -1,0 +1,78 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Create gold_cpe_monthly_tbl table at Gold layer
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 01/20/2017
+--#   Log File    : .../log/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/20/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS ${hivevar:database}.${hivevar:table_prefix}${hivevar:table_name}
+(
+  BEGIN_DATE              STRING,
+  END_DATE                STRING,
+  REGION_PS_ID            STRING,
+  PLANT_MANAGER_DESCR     STRING,
+  HEAD_END_DESCR          STRING,
+  NODE_CD                 STRING,
+  ITEM_NBR                STRING,
+  EQMT_TYPE               STRING,
+  CUST_COUNT              BIGINT,
+  EQMT_COUNT              BIGINT,
+  IVR_TECH_TOTAL          INT,
+  IVR_TECH_CONTAIN        INT,
+  IVR_TECH_OFFER          INT,
+  IVR_TECH_VIDEO_TOTAL    INT,
+  IVR_TECH_VIDEO_CONTAIN  INT,
+  IVR_TECH_VIDEO_OFFER    INT,
+  IVR_TECH_DATA_TOTAL     INT,
+  IVR_TECH_DATA_CONTAIN   INT,
+  IVR_TECH_DATA_OFFER     INT,
+  IVR_TECH_PHONE_TOTAL    INT,
+  IVR_TECH_PHONE_CONTAIN  INT,
+  IVR_TECH_PHONE_OFFER    INT,
+  WO_TC_VIDEO             INT,
+  WO_TC_DATA              INT,
+  WO_TC_PHONE             INT,
+  WO_TC_TOTAL             INT,
+  MODEL                   STRING,
+  MODEL_DESC              STRING,
+  LOB                     STRING,
+  CATEGORY                STRING,
+  MAKE                    STRING,
+  ACTIVE                  STRING,
+  RYG_STATUS              STRING,
+  CPE_FORECAST_CATEGORY   STRING,
+  M2_OR_M4                STRING,
+  MODEL_TRIM              STRING,
+  MODEL_CATEGORY          STRING,
+  DOCSIS                  STRING
+) 
+PARTITIONED BY (P_YYYYMMDD STRING) 
+STORED AS ORC
+LOCATION '${hivevar:location}'
+;
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

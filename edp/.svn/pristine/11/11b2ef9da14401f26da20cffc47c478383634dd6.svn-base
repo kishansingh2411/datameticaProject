@@ -1,0 +1,66 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: ods.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 12/28/2015
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          12/28/2015       Initial version
+#
+#
+#####################################################################################################################
+
+##Hive Incoming table
+INCOMING_H_OPTIMUM_USER_TBL=incoming_h_optimum_user
+INCOMING_CUST_SERVICES_LAST_REC_TBL=incoming_cust_services_last_rec
+INCOMING_ECR9_SHOPPING_CART_TBL=incoming_ecr9_shopping_cart
+INCOMING_ECR9_SHOPING_CART_SOURCE_TABLE=lkp_cart_corp_dwelling
+INCOMING_OV_TELEPHONE_NUMBER_TBL=incoming_ov_telephone_number
+INCOMING_OV_TELEPHONE_NUMBER_SOURCE_TBL=ov_telephone_number
+INCOMING_CUSTOMER_ACCOUNT_TBL=incoming_customer_account
+INCOMING_CUSTOMER_ACCOUNT_SOURCE_TBL=customer_account
+INCOMING_IP_SIP_DID_PHONE_NBR_TBL=incoming_ip_sip_did_phone_nbr
+IP_SIP_DID_PHONE_NBR_SOURCE_TBL=ip_sip_did_phone_nbr
+INCOMING_IP_SIP_PILOT_PHONE_NBR_TBL=incoming_ip_sip_pilot_phone_nbr
+IP_SIP_PILOT_PHONE_NBR_SOURCE_TBL=ip_sip_pilot_phone_nbr
+
+
+## Hive Gold table
+GOLD_H_OPTIMUM_USER_TBL=gold_h_optimum_user
+GOLD_CUST_SERVICES_LAST_REC_TBL=gold_cust_services_last_rec
+
+## Hive Work table
+WORK_CUST_SERVICES_LAST_REC_TBL=work_cust_services_last_rec
+WORK_CUST_SERVICES_LAST_REC_MERGE_TBL=work_cust_services_last_rec_merge
+WORK_OV_TELEPHONE_NUMBER_TBL=work_ov_telephone_number
+WORK_CUSTOMER_ACCOUNT_TBL=work_customer_account
+
+## Oracle source table
+SOURCE_TABLE=H_OPTIMUM_USER
+
+##Pig UDF jars path
+PIG_UDF_JAR_PATH=${HOME}/subject-areas/ods/extensions/pig-udf-bank/lib
+
+### Audit tables 
+EDP_AUDIT=edp_audit
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

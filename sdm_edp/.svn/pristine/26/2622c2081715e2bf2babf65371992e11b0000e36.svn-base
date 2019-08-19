@@ -1,0 +1,33 @@
+<assembly>
+  <id>packager</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+	    <excludes>
+      	<exclude>**/.classpath</exclude>
+        <exclude>**/.log</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/${project.build.directory}/**</exclude>
+		<exclude>**/packager/**</exclude>
+        <exclude>**/extensions/**</exclude>
+        <exclude>**/pom.xml</exclude>
+        <exclude>**/modules/**</exclude>
+        <exclude>**/subject-areas/cpe/**</exclude>
+		<exclude>**/subject-areas/remedy/**</exclude>
+		<exclude>**/subject-areas/ivr/**</exclude>
+		<exclude>**/subject-areas/sdm/**</exclude>
+		<exclude>**/subject-areas/fourthwall_media/pom.xml</exclude>
+      </excludes>
+	  
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets>
+</assembly>

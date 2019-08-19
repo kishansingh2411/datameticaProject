@@ -1,0 +1,249 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_fwm_house_eqmt_data_tbl table from sdm tables.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 01/30/2017
+--#   Log File    : .../log/fourthwall_media/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/fourthwall_media/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/30/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+INSERT OVERWRITE TABLE ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_fwm_house_eqmt_data_table} PARTITION(P_YYYYMMDD)
+SELECT
+     c.site_id
+     , c.acct_nbr
+     -- HUID FILE COLUMNS --
+     , CONCAT(c.site_id, '-', lpad(c.acct_nbr, 9 , '0') )         AS HOUSEHOLD_ID 
+     , TRIM (REGEXP_REPLACE (c.LAST_NM,  '/[|]', ' '))            AS LAST_NAME
+     , TRIM (REGEXP_REPLACE (c.FIRST_NM, '/[|]', ' '))            AS FIRST_NAME
+     , CONCAT(TRIM(REGEXP_REPLACE(h.ADDR_LOC,       'null|\\|', '')), ' ', 
+              TRIM(REGEXP_REPLACE(h.ADDR_FRACTION,  'null|\\|', '')), ' ',
+              TRIM(REGEXP_REPLACE(h.PRE_DIRECTIONAL,'null|\\|', '')), ' ', 
+              TRIM(REGEXP_REPLACE(h.STREET_NM,      'null|\\|', '')), ' ',
+              TRIM(REGEXP_REPLACE(h.ADDL_POST_DIR,  'null|\\|', '')))
+        AS STREET_ADDRESS
+     ,  TRIM (h.CITY_NM)                  AS CITY
+     ,  TRIM (h.STATE_CD)                 AS STATE
+     ,  LPAD (h.US_ZIP5, 5, '0')          AS ZIP_CODE
+     -- DIEVICE FILE --
+     , e.EQUIPMENT_ADDRESS                                        AS SET_TOP_BOX_ID
+       -- repeated column                                         AS HOUSEHOLD_ID
+     , LPAD (h.US_ZIP5, 5, '0')                                   AS ZIP
+     , (CASE WHEN c.cust_type_cd IN ('V', '4') THEN 0 else 1 END) AS EMPLOYEE_STATUS
+     , (CASE WHEN c.cust_sts_cd = 'A' THEN 1 else 0 END)          AS ACCOUNT_STATUS
+     , e.item_nbr                    AS SET_TOP_BOX_MODEL
+     , ''                            AS ZONE_NAME
+     , TRIM (h.node_cd)              AS NODE_ID   
+     , NVL(e.premium,0)              AS PREMIUM_CHANNELS 
+     , ''                            AS SPORTS_PACKAGES  
+     , ''                            AS LANGUAGE_CHANNELS
+     , NVL(e.dvr,0)                  AS DVR
+     , NVL(e.hdtv,0)                 AS HDTV
+     , ''                            AS CABLE_MODEM_IP_ADDRESS
+     , LPAD(TRIM(h.us_zip4), 4, '0') AS ZIP_PLUS_4
+     , c.franchise_nbr               AS FRANCHISE_NAME
+     , a.head_end_descr              AS HEADEND_ID
+     , c.site_id                     AS HUB_ID
+     , ''                            AS TIER
+     , ''                            AS SEGMENTATION_CODE
+     -- Columns added by Suddenlink (non-standard)
+     , a.region_ps_id                AS REGION
+     , h.prism_cd                    AS PRISM_CODE
+     , a.head_end_descr              AS SYSTEM_NAME
+     , NVL(e.tivo,0)                 AS TIVO
+     , NVL(e.tivo_tsn, '0')            AS TIVO_TSN
+     , NVL(s.hsd,0)                  AS HSD
+     , NVL(s.telephone,0)            AS TELEPHONE
+     , NVL(s.security,0)             AS SECURITY
+     , e.MAC_ADDRESS                 AS MAC_ADDRESS
+     , c.p_yyyymmdd
+FROM (
+        -- Rank the customers base on the house.  Only look
+        -- at the most recent customer in the house (just in case)
+        SELECT p_yyyymmdd
+             , site_id
+             , acct_nbr
+             , house_nbr
+             , first_nm
+             , last_nm
+             , cust_sts_cd
+             , cust_type_cd
+             , company_nbr
+             , division_nbr
+             , franchise_nbr
+             , ROW_NUMBER() OVER (PARTITION BY site_id, house_nbr ORDER BY acct_nbr DESC) AS rank_nbr
+        FROM ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_master_table}
+        WHERE p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+     ) c
+     
+     -- Tie the customer_master record to the house_master
+     INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_house_master_table} h
+           ON (c.p_yyyymmdd = h.p_yyyymmdd AND c.site_id = h.site_id AND c.house_nbr = h.house_nbr)
+     
+     -- Map the customer to a PeopleSoft headend
+     INNER JOIN (
+                    SELECT p_yyyymmdd
+                         , icoms_site
+                         , icoms_company
+                         , icoms_division
+                         , icoms_franchise
+                         , region_ps_id
+                         , head_end_descr
+                    FROM ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_acct_hier_fa_dim_table}
+                    WHERE p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+                    AND   rec_status = 'C'
+                    AND   report_flag = 1
+                    AND   acct_hier_fa_dim_hist_pk >= 1
+                    AND   trim(NVL(region_ps_id,'')) <> ''
+                ) a    
+            ON (c.p_yyyymmdd = a.p_yyyymmdd AND c.site_id = a.ICOMS_SITE AND c.company_nbr = a.icoms_company AND c.division_nbr = a.icoms_division AND c.franchise_nbr = a.icoms_franchise)    
+    
+    -- Using the Equipment Detail record, find all associated active services
+    -- Apply a filter to the Equipment Detail to remove unwanted equipment
+    INNER JOIN ( 
+                SELECT dtl.p_yyyymmdd
+                     , dtl.SITE_ID
+                     , dtl.ACCT_NBR
+                     , dtl.ITEM_NBR
+                     , dtl.EQUIPMENT_ADDRESS
+                     , dtl.MAC_ADDRESS  AS MAC_ADDRESS
+                     , MAX(CASE 
+                                -- WHEN dtl.port_nbr = 2 AND dtl.item_nbr LIKE 'TCD%' THEN dtl.EQUIPMENT_ADDRESS 
+                                WHEN cs.site_id <> 100 AND srv.srv_subgroup_dim_pk     = 225 THEN tivo.tivo_tsn  -- LEGACY_TIVO
+                                WHEN cs.site_id <> 100 AND srv.srv_subgroup_dim_pk     = 339 THEN tivo.tivo_tsn  -- TIVO
+                                WHEN cs.site_id  = 100 AND srv.srv_com_subgroup_dim_pk = 339 THEN tivo.tivo_tsn  -- TIVO
+                                ELSE NULL
+                           END) AS TIVO_TSN
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND srv.srv_group_dim_pk     = 003 THEN 1 -- PREMIUM
+                                WHEN cs.site_id  = 100 AND srv.srv_com_group_dim_pk = 003 THEN 1 -- PREMIUM
+                                ELSE 0
+                           END) AS PREMIUM
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND SRV.SRV_GROUP_DIM_PK     = 010 THEN 1 -- HDTV
+                                WHEN cs.site_id <> 100 AND SRV.SRV_COM_GROUP_DIM_PK = 010 THEN 1 -- HDTV
+                                ELSE 0
+                           END) AS HDTV        
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND srv.srv_group_dim_pk     = 023 THEN 1 -- DVR
+                                WHEN cs.site_id  = 100 AND srv.srv_com_group_dim_pk = 023 THEN 1 -- DVR
+                                ELSE 0
+                           END) AS DVR         
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND srv.srv_subgroup_dim_pk     = 225 THEN 1 -- LEGACY_TIVO
+                                WHEN cs.site_id <> 100 AND srv.srv_subgroup_dim_pk     = 339 THEN 1 -- TIVO
+                                WHEN cs.site_id  = 100 AND srv.srv_com_subgroup_dim_pk = 339 THEN 1 -- TIVO
+                                ELSE 0
+                           END) AS TIVO                    
+                FROM  ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_equipment_dtls_table} dtl
+                INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_services_table} cs
+                            ON (dtl.p_yyyymmdd = cs.p_yyyymmdd AND dtl.site_id = cs.site_id AND dtl.acct_nbr = cs.acct_nbr AND dtl.service_cat_cd = cs.svc_ctgy_cd AND dtl.service_occurrence = cs.service_occurrence) 
+                      INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_srv_dim_table} srv 
+                            ON (cs.p_yyyymmdd = srv.p_yyyymmdd AND cs.service_cd = srv.srv_code)
+                      LEFT OUTER JOIN (
+                                        -- Eventhough the port_type of port 2 of a TIVO is not 
+                                        -- addressable,that is where the TNS is stored (in 
+                                        -- the equipment address field
+                                        SELECT site_id
+                                             , item_nbr
+                                             , serial_nbr
+                                             , equipment_address as TIVO_TSN
+                                        FROM   ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_equipment_dtls_table}
+                                        WHERE  1 = 1
+                                        AND    p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+                                        AND    port_nbr = 2 
+                                        AND    item_nbr LIKE 'TCD%'
+                                      ) tivo
+                            ON (dtl.site_id = tivo.site_id
+                                AND dtl.item_nbr = tivo.item_nbr
+                                AND dtl.serial_nbr = tivo.serial_nbr)
+                WHERE 1=1
+                -- Equipment filters
+                And   dtl.p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+                AND   dtl.port_type IN ('HIDEF', 'ATIVO', 'HDDVR', 'DIG MOT', 'DIG SA', 'CABLE', 'DVR')
+                AND   dtl.item_nbr NOT IN ('5507','5503','TRAP','EUR505D','1612','WTX1111','STNONAD',
+                                           'EUR505P','EUR0186','EUR6812','EUR9285','EUR1628','REMOVE',
+                                           'DMX','DC60XU','ELECT','MODEM','MIDDRZ','MCNONAD','ENNONAD',
+                                           'HAMLIN','EUR9792','ALNONAD','NONADDR','98','97','NONADR',
+                                           '99','MUNONAD')
+                -- customer_service filters
+                And   cs.p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+                And   cs.service_status IN ('A')  -- active service
+                AND   cs.service_occurrence > 0
+                -- service code filters  
+                And   srv.sub_count_flag = 'Y'    -- sevrice to tracked
+                AND   srv.rec_status     = 'C'    -- current record
+                GROUP BY dtl.p_yyyymmdd
+                     , dtl.SITE_ID
+                     , dtl.ACCT_NBR
+                     , dtl.ITEM_NBR
+                     , dtl.EQUIPMENT_ADDRESS
+                     , dtl.MAC_ADDRESS
+                ) e    
+           ON (c.p_yyyymmdd = e.p_yyyymmdd AND c.site_id = e.site_id AND c.acct_nbr = e.acct_nbr)
+               
+    -- customer level services / ignore any ties to the equipment
+    LEFT OUTER JOIN ( 
+                SELECT cs.p_yyyymmdd
+                     , cs.SITE_ID
+                     , cs.ACCT_NBR        
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND SRV.SRV_GROUP_DIM_PK     = 062 THEN 1 -- DISCOUNT_HSD
+                                WHEN cs.site_id <> 100 AND SRV.SRV_GROUP_DIM_PK     = 012 THEN 1 -- HSD
+                                WHEN cs.site_id <> 100 AND SRV.SRV_GROUP_DIM_PK     = 103 THEN 1 -- HSD_BULK_INTERNET
+                                WHEN cs.site_id  = 100 AND SRV.SRV_COM_GROUP_DIM_PK = 062 THEN 1 -- DISCOUNT_HSD
+                                WHEN cs.site_id  = 100 AND SRV.SRV_COM_GROUP_DIM_PK = 038 THEN 1 -- HSD_BULK_INTERNET
+                                WHEN cs.site_id  = 100 AND SRV.SRV_COM_GROUP_DIM_PK = 042 THEN 1 -- HSD_COMMERCIAL_INTERNET
+                                WHEN cs.site_id  = 100 AND SRV.SRV_COM_GROUP_DIM_PK = 043 THEN 1 -- HSD_DIALUP_INTERNET
+                                WHEN cs.site_id  = 100 AND SRV.SRV_COM_GROUP_DIM_PK = 044 THEN 1 -- HSD_FIBER_SERVICES
+                                ELSE 0
+                           END) AS HSD    
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND srv.srv_group_dim_pk     = 020 THEN 1 -- TELEPHONE
+                                WHEN cs.site_id  = 100 AND srv.srv_com_group_dim_pk = 020 THEN 1 -- TELEPHONE
+                                ELSE 0
+                           END) AS TELEPHONE  
+                     , MAX(CASE 
+                                WHEN cs.site_id <> 100 AND srv.srv_group_dim_pk     = 002 THEN 1 -- HOME_SECURITY
+                                WHEN cs.site_id  = 100 AND srv.srv_com_group_dim_pk = 002 THEN 1 -- HOME_SECURITY
+                                ELSE 0
+                           END) AS SECURITY            
+                FROM  ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_services_table} cs
+                INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_srv_dim_table} srv 
+                      ON (cs.p_yyyymmdd = srv.p_yyyymmdd AND cs.service_cd = srv.srv_code)
+                WHERE 1=1
+                -- customer_service filters
+                And   cs.p_yyyymmdd = '${hivevar:source_date}'  -- REPLACE WITH YESTERDAYS DATE IN A YYYYMMDD FORMAT 
+                And   cs.service_status IN ('A')  -- active service
+                -- service code filters  
+                And   srv.sub_count_flag = 'Y'    -- sevrice to tracked
+                AND   srv.rec_status     = 'C'    -- current record
+                GROUP BY cs.p_yyyymmdd, cs.SITE_ID, cs.ACCT_NBR
+                ) s    
+           ON (c.p_yyyymmdd = s.p_yyyymmdd AND c.site_id = s.site_id AND c.acct_nbr = s.acct_nbr)                    
+WHERE c.rank_nbr = 1    -- Only get the last customer in the house
+AND   c.cust_sts_cd = 'A' -- active customer
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

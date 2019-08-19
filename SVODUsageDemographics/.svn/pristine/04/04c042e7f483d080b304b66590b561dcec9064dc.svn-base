@@ -1,0 +1,94 @@
+#   Project Name: VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#   Description: Properties file containing the key,value properties for
+#   oozie workflow and uat_coordinator.xml
+#
+#   Author: Kriti Singh
+#   Date: 05/11/2016
+#
+
+########################################################################################################################
+# OOZIE PROPERTIES
+########################################################################################################################
+
+nameNode=hdfs://cvldhdpds1
+jobTracker=ip-10-177-228-223.ec2.internal:8050
+metaStoreURI=thrift://ip-10-177-228-222.ec2.internal:9083
+oozie.libpath=${nameNode}/user/oozie/share/lib
+oozie.use.system.libpath=true
+oozie.wf.rerun.failnodes=true
+
+vodLocal=/UTIL/app/util/SvodUsageDemographics
+vodHdfs=${nameNode}/appbis/app/SvodUsageDemographics
+
+appPath=${vodHdfs}
+ooziePath=${appPath}/oozie
+#oozie.wf.application.path=${ooziePath}/dev_workflow.xml
+oozie.coord.application.path=${ooziePath}/dev_coordinator.xml
+workflowAppPath=${ooziePath}/dev_workflow.xml
+user.name=ksingh5
+
+
+########################################################################################################################
+# Appworx dependency check
+########################################################################################################################
+dependencyScriptPath=/appbis/app/util/appworx/bin/appworx_status_master_shell.ksh
+sourceAppworxId=FDR_6428_BACKOUT_VOD_ORDER,FDR_8001,FDR_8002
+
+########################################################################################################################
+# DTU Job - Hive to Redshift
+########################################################################################################################
+
+dtuShellScriptPath=/UTIL/app/util/dtu/bin/aws_master_shell.ksh
+#copyTablesToRedshift=${vodLocal}/bin/dtu_hive_redshift.sh
+
+
+########################################################################################################################
+# SSH PROPERTIES
+########################################################################################################################
+
+sshUser=bisusr
+hostName=10.177.228.19
+
+
+########################################################################################################################
+# CONF
+########################################################################################################################
+
+hiveConfig=${vodHdfs}/conf/hive-site.xml
+emailToAddress=ksingh5@cablevision.com
+
+
+########################################################################################################################
+# Time Parameters
+########################################################################################################################
+
+timeZoneDef=UTC
+ConversionTimezone=America/New_York
+current_timestamp=${timestamp( )}
+startTime=2016-08-01T12:00Z
+endTime=2016-08-31T23:00Z
+
+########################################################################################################################
+# Project Specifics
+########################################################################################################################
+
+#year_id=2015
+#month_id=01
+#year_month_id=201501
+
+ojdbcJar=${ooziePath}/lib/ojdbc6.jar
+libJar=${ooziePath}/lib/ojdbc6.jar
+vodHql=${appPath}/db
+vodExe=${vodLocal}/bin
+timeoutSecMs=1500000
+numReduceTasks=100
+
+# Compute max date for the kom_vod_order table
+computeMaxDateScript=${vodExe}/svodusagedemo_compute_max_date.sh
+
+# KomVodOrderEncryptor
+output_KomVodOrderEncryptor_dir=$nameNode/incoming/svodusagedemo/tmp_vod_dir
+
+# KomCustomerAccountBulkEncryptor Arguments
+output_KomCustomerAccountBulkEncryptor_dir=${nameNode}/incoming/svodusagedemo/encrypted_kom_customer_account

@@ -1,0 +1,408 @@
+#!/bin/sh
+
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: executor.sh
+#   Program type: Unix Bash Shell script
+#   Purpose:    : Execute all steps one by one for process 
+#                 Input Arguments for this script are: key_param_id from postgress.                                  	                       
+#   Author(s)   : DataMetica Team
+#   Usage       : sh executor.sh key_Param_id
+#   Date        : 01/18/2017
+#   Log File    : .../log/${job_name}.log
+#   SQL File    :                                 
+#   Error File  : .../log/${job_name}.log
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/18/2017       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                          Module Environment Setup                           #
+###############################################################################
+
+# Find absolute path to this script which is used to define module, project, subject area home directory paths.
+pushd . > /dev/null
+SCRIPT_HOME="${BASH_SOURCE[0]}";
+while([ -h "${SCRIPT_HOME}" ]); do
+    cd "`dirname "${SCRIPT_HOME}"`"
+    SCRIPT_HOME="$(readlink "`basename "${SCRIPT_HOME}"`")";
+done
+cd "`dirname "${SCRIPT_HOME}"`" > /dev/null
+SCRIPT_HOME="`pwd`";
+popd  > /dev/null
+
+SUBJECT_AREA_HOME=`dirname ${SCRIPT_HOME}`
+SUBJECT_AREAS_HOME=`dirname ${SUBJECT_AREA_HOME}`
+HOME=`dirname ${SUBJECT_AREAS_HOME}`
+
+###                                                                           
+# Load all environment properties files
+source $HOME/etc/namespace.properties
+source $HOME/etc/default.env.properties
+source $HOME/etc/postgres.properties
+source $SUBJECT_AREA_HOME/etc/subject-area.env.properties
+source $HOME/bin/functions.sh
+source $SUBJECT_AREA_HOME/bin/sdm_functions.sh
+
+###############################################################################
+#                                                                             #
+# Checking number of parameter passed                                         #
+#                                                                             #
+###############################################################################
+
+if [ "$#" -ne 1 ]
+then
+  echo "Illegal number of parameters.  Parameters expected [key_param_id]"
+  exit 
+fi
+
+##############################################################################
+#																			 #
+# Local Params				 								 	 			 #
+#																			 #
+##############################################################################
+
+##key_param_id is mandatory field
+key_param_id=$1
+fail_on_error=${BOOLEAN_TRUE}
+executor_log_file="${LOG_DIR_SUBJECT_AREA}/EXECUTOR.log"
+
+params="$(fn_get_sdm_params ${key_param_id})"
+
+if [ -z "$params" ]
+then
+    fn_log "Invalid Key-Param Id found : $key_param_id" "$executor_log_file" 
+    exit 
+fi
+
+##############################################################################
+#																			 #
+# Generating batch_id for the process                    					 #
+#																			 #
+##############################################################################
+
+fn_log "Process started at `date +"%Y-%m-%d %H:%M:%S"`" ${executor_log_file}
+
+sh $SUBJECT_AREA_HOME/bin/generate_batch_id.sh $key_param_id
+exit_code=$?
+
+success_message="Successfully generated batch id for SDM ingestion"  
+failure_message="Failed to generate batch id for SDM ingestion, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${fail_on_error}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_acct_hier_fa_dim                              #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id acct_hier_fa_dim
+exit_code=$?
+
+success_message="Successfully loaded table incoming_acct_hier_fa_dim at Incoming layer"  
+failure_message="Failed to load data in table incoming_acct_hier_fa_dim at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_customer_master                               #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id customer_master
+exit_code=$?
+
+success_message="Successfully loaded table incoming_customer_master at Incoming layer"  
+failure_message="Failed to load data in table incoming_customer_master at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_customer_services                             #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id customer_services
+exit_code=$?
+
+success_message="Successfully loaded table incoming_customer_services at Incoming layer"  
+failure_message="Failed to load data in table incoming_customer_services at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_equipment_dtls                                #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id equipment_dtls
+exit_code=$?
+
+success_message="Successfully loaded table incoming_equipment_dtls at Incoming layer"  
+failure_message="Failed to load data in table incoming_equipment_dtls at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_equipment_master                              #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id equipment_master
+exit_code=$?
+
+success_message="Successfully loaded table incoming_equipment_master at Incoming layer"  
+failure_message="Failed to load data in table incoming_equipment_master at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_house_master                                  #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id house_master
+exit_code=$?
+
+success_message="Successfully loaded table incoming_house_master at Incoming layer"  
+failure_message="Failed to load data in table incoming_house_master at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_item_dtl                                      #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id item_dtl
+exit_code=$?
+
+success_message="Successfully loaded table incoming_item_dtl at Incoming layer"  
+failure_message="Failed to load data in table incoming_item_dtl at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_item_master                                   #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id item_master
+exit_code=$?
+
+success_message="Successfully loaded table incoming_item_master at Incoming layer"  
+failure_message="Failed to load data in table incoming_item_master at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_srv_dim                                       #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id srv_dim
+exit_code=$?
+
+success_message="Successfully loaded table incoming_srv_dim at Incoming layer"  
+failure_message="Failed to load data in table incoming_srv_dim at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load incoming table incoming_work_order_master_vw                          #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_incoming_modules.sh $key_param_id work_order_master
+exit_code=$?
+
+success_message="Successfully loaded table incoming_work_order_master_vw at Incoming layer"  
+failure_message="Failed to load data in table incoming_work_order_master_vw at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_acct_hier_fa_dim                                      #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id acct_hier_fa_dim
+exit_code=$?
+
+success_message="Successfully loaded table gold_acct_hier_fa_dim at Gold layer"  
+failure_message="Failed to load data in table gold_acct_hier_fa_dim at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_customer_master                                       #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id customer_master
+exit_code=$?
+
+success_message="Successfully loaded table gold_customer_master at Gold layer"  
+failure_message="Failed to load data in table gold_customer_master at Incoming layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_customer_services                                     #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id customer_services
+exit_code=$?
+
+success_message="Successfully loaded table gold_customer_services at Gold layer"  
+failure_message="Failed to load data in table gold_customer_services at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_equipment_dtls                                        #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id equipment_dtls
+exit_code=$?
+
+success_message="Successfully loaded table gold_equipment_dtls at Gold layer"  
+failure_message="Failed to load data in table gold_equipment_dtls at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_equipment_master                                      #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id equipment_master
+exit_code=$?
+
+success_message="Successfully loaded table gold_equipment_master at Gold layer"  
+failure_message="Failed to load data in table gold_equipment_master at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_house_master                                          #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id house_master
+exit_code=$?
+
+success_message="Successfully loaded table gold_house_master at Gold layer"  
+failure_message="Failed to load data in table gold_house_master at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_item_dtl                                              #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id item_dtl
+exit_code=$?
+
+success_message="Successfully loaded table gold_item_dtl at Gold layer"  
+failure_message="Failed to load data in table gold_item_dtl at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_item_master                                           #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id item_master
+exit_code=$?
+
+success_message="Successfully loaded table gold_item_master at Gold layer"  
+failure_message="Failed to load data in table gold_item_master at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_srv_dim                                               #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id srv_dim
+exit_code=$?
+
+success_message="Successfully loaded table gold_srv_dim at Gold layer"  
+failure_message="Failed to load data in table gold_srv_dim at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_customer                                              #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id customer
+exit_code=$?
+
+success_message="Successfully loaded table gold_customer at Gold layer"  
+failure_message="Failed to load data in table gold_customer at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load work table work_acct_srv_occur_lob                                    #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_work_modules.sh $key_param_id acct_srv_occur_lob
+exit_code=$?
+
+success_message="Successfully loaded table work_acct_srv_occur_lob at Work layer"  
+failure_message="Failed to load data in table work_acct_srv_occur_lob at Work layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_equipment                                             #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id equipment
+exit_code=$?
+
+success_message="Successfully loaded table gold_equipment at Gold layer"  
+failure_message="Failed to load data in table gold_equipment at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Update key-params table                                                    #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/update_key_params.sh $key_param_id
+exit_code=$?
+
+success_message="Successfully updated key-params table"  
+failure_message="Failed while updating key-params table, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                    End                                     #
+##############################################################################

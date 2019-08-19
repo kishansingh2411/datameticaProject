@@ -1,0 +1,116 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Build Work table from GOLD table
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform.hql
+--#   Date        : 12/28/2016
+--#   Log File    : .../log/ovcdr/{job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/ovcdr/{job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          12/28/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.exec.dynamic.partition.mode=nonstrict
+;
+
+FROM(
+ SELECT
+		unall.usage_date,
+		unall.telephone_number,
+		unall.call_type,
+		unall.seconds_of_use,
+		unall.number_of_calls,
+		unall.batch_nbr,
+		unall.attempt_count,
+		unall.corp,
+		unall.house,
+		unall.cust,
+		unall.dtm_created,
+		unall.dtm_last_modified,
+		unall.file_name 
+ FROM 
+(
+		SELECT
+			gold.usage_date,
+			gold.telephone_number,
+			gold.call_type,
+			gold.seconds_of_use,
+			gold.number_of_calls,
+			gold.batch_nbr,
+			gold.attempt_count,
+			work.corp,
+			work.house,
+			work.cust,
+			gold.dtm_created,
+			current_timestamp() as dtm_last_modified,
+			'${hivevar:file_name}' as file_name 
+		FROM 
+			${hivevar:gold_database}.${hivevar:gold_table} gold
+		LEFT OUTER JOIN 
+		    ${hivevar:work_database}.${hivevar:work_chc_table} work 
+		ON 
+		    (gold.usage_date=work.usage_date and gold.telephone_number = work.telephone_number)
+		WHERE 
+		    to_date(gold.dtm_created) >= to_date(date_sub('${hivevar:source_date}',60)) and gold.corp = '-1'
+ UNION ALL
+		SELECT  
+			gold.usage_date,
+			gold.telephone_number,
+			gold.call_type,
+			gold.seconds_of_use,
+			gold.number_of_calls,
+			gold.batch_nbr,
+			gold.attempt_count,
+			gold.corp,
+			gold.house,
+			gold.cust,
+			gold.dtm_created,
+			gold.dtm_last_modified,
+		    '${hivevar:file_name}' as file_name
+		FROM 
+			${hivevar:gold_database}.${hivevar:gold_table} gold
+		WHERE 
+		   to_date(gold.dtm_created) >= to_date(date_sub('${hivevar:source_date}',60)) and gold.corp !='-1'
+ ) unall
+ 
+ ) insertwork
+ 
+INSERT INTO TABLE 
+   ${hivevar:work_database}.${hivevar:work_table}
+   SELECT 
+        insertwork.usage_date,
+        insertwork.telephone_number,
+		insertwork.call_type,
+		insertwork.seconds_of_use,
+		insertwork.number_of_calls,
+		insertwork.batch_nbr,
+		insertwork.attempt_count,
+		insertwork.corp,
+		insertwork.house,
+		insertwork.cust,
+		insertwork.dtm_created,
+		insertwork.dtm_last_modified,
+		insertwork.file_name 	
+;
+
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

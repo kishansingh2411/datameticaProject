@@ -1,0 +1,49 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: ddp.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/02/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/02/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                     Project Environment Base Properties                     #
+###############################################################################
+
+#HIVE_SERVER=cvldhdpmn1.cscdev.com
+HIVE_PORT=10000
+HIVE_USENAME=`whoami`
+HIVE_PASSWORD=welcome1
+ZOOKEEPER_QUORUM=cvldhdpmn3.cscdev.com:2181,cvldhdpmn4.cscdev.com:2181,cvldhdpdn5.cscdev.com:2181
+
+
+#HIVE_SERVER=cvldhdpmn1.cscdev.com
+#HIVE_PORT=10000
+#HIVE_USENAME=`whoami`
+#HIVE_PASSWORD=welcome1
+#ZOOKEEPER_QUORUM=cvldhdpdn1.cscdev.com:2181,cvldhdpmn1.cscdev.com:2181,cvldhdpmn2.cscdev.com:2181
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

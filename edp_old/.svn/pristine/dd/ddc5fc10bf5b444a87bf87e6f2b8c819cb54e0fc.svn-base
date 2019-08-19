@@ -1,0 +1,67 @@
+#Date range to be executed
+
+auxcust_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'04-Feb-16\',\'10-Feb-16\',\'10-May-16\',\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\')
+#auxcust_date=(\'01-Jul-11\')
+
+auxhouse_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'04-Feb-16\',\'10-Feb-16\',\'10-May-16\',\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\')
+
+#Dates as reported by Regis
+boxinvtry_date=(\'28-Oct-14\',\'27-Mar-15\',\'26-May-15\',\'25-Jul-15\',\'21-Jun-16\',\'25-Jun-16\',\'29-Jun-16\',\'30-Jun-16\',\'09-Jul-16\',\'14-Jul-16\',\'26-Jul-16\')
+#Dates present in UAT
+#boxinvtry_date=(\'01-Jul-16\',\'01-Jan-16\',\'10-Feb-16\',\'10-May-16\',\'02-Jul-16\',\'03-Jul-16\')
+
+code36_date=(\'01-Jul-16\')
+
+code95_date=(\'01-Jul-16\')
+
+code999_date=(\'01-Jul-16\')
+
+custbilladdr_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'10-Feb-16\',\'10-May-16\',\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\')
+
+#Dates as reported by Regis
+custmaster_date=(\'28-Sep-14\',\'27-Dec-14\',\'26-Jan-15\',\'25-Feb-15\',\'25-Jul-15\',\'23-Sep-15\',\'21-Jan-16\',\'20-May-16\',\'10-Jun-16\',\'16-Jun-16\',\'17-Jun-16\',\'18-Jun-16\',\'23-Jun-16\',\'24-Jun-16\',\'25-Jun-16\')
+#UAT load_dates
+#custmaster_date=(\'03-Jul-16\',\'01-Jul-16\',\'02-Jul-16\',\'10-Feb-16\',\'10-May-16\')
+
+#Dates as reported by Regis
+housemaster_date=(\'27-Nov-14\',\'25-Feb-15\',\'27-Mar-15\',\'26-Apr-15\',\'26-May-15\',\'21-Jun-15\',\'25-Jun-15\',\'22-Dec-15\',\'29-May-16\',\'15-Jun-16\',\'16-Jun-16\',\'17-Jun-16\',\'18-Jun-16\',\'22-Jun-16\',\'28-Jun-16\',\'06-Jul-16\',\'19-Jul-16\',\'20-Jul-16\',\'21-Jul-16\',\'23-Jul-16\',\'28-Jul-16\',\'31-Jul-16\')
+#Dates present in UAT
+#housemaster_date=(\'10-Feb-16\',\'10-May-16\',\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\')
+
+#Dates as reported by Regis
+custrates_date=(\'28-Sep-14\',\'28-Oct-14\',\'27-Nov-14\',\'26-May-15\',\'25-Jul-15\',\'23-Sep-15\',\'23-Oct-15\',\'30-May-16\',\'10-Jun-16\',\'15-Jun-16\',\'18-Jun-16\',\'21-Jun-16\',\'25-Jun-16\',\'29-Jun-16\',\'30-Jun-16\',\'01-Jul-16\',\'02-Jul-16\',\'09-Jul-16\',\'10-Jul-16\',\'14-Jul-16\',\'15-Jul-16\',\'20-Jul-16\',\'21-Jul-16\',\'26-Jul-16\',\'27-Jul-16\',\'29-Jul-16\')
+#Dates present in UAT
+#custrates_date=(\'02-Jul-16\',\'03-Jul-16\',\'01-Jul-16\',\'02-Feb-16\',\'10-May-16\')
+
+ratecodes_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'10-Feb-16\',\'01-Jul-16\')
+
+ratepricearea_date=(\'01-Jul-16\')
+
+ratepricelevel_date=(\'01-Jul-16\')
+
+raterptctrs_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'10-Feb-16\',\'01-Jul-16\')
+
+rptctrs_date=(\'01-Jul-16\')
+
+slsmn_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'10-Feb-16\',\'01-Jul-16\',\'02-Jul-16\')
+
+techs_date=(\'01-Feb-16\',\'02-Feb-16\',\'03-Feb-16\',\'10-Feb-16\',\'10-May-16\',\'01-Jul-16\')
+
+#Dates as reported by Regis
+wipcustrate_date=(\'26-May-15\',\'21-Jan-16\',\'15-Jul-16\')
+#Dates present in UAT
+#wipcustrate_date=(\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\',\'10-May-16\')
+
+#Dates as reported by Regis
+wipmaster_date=(\'27-Nov-14\',\'25-Feb-15\',\'27-Mar-15\',\'26-Apr-15\',\'26-May-15\',\'17-Jun-16\',\'25-Jun-16\',\'06-Jul-16\',\'21-Jul-16\',\'23-Jul-16\',\'31-Jul-16\')
+#Dates present in UAT
+#wipmaster_date=(\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\',\'10-May-16\')
+
+#Dates as reported by Regis
+wipoutlet_date=(\'27-Nov-14\',\'26-Apr-15\',\'17-Jun-16\',\'06-Jul-16\',\'15-Jul-16\')
+#Dates present in UAT
+#wipoutlet_date=(\'01-Jul-16\',\'02-Jul-16\',\'03-Jul-16\',\'10-May-16\',\'10-Feb-16\',\'16-Jun-16\',\'17-Jun-16\',\'18-Jun-16\')
+
+zipmaster_date=(\'10-Feb-16\')
+
+database=incoming_ddp

@@ -1,0 +1,79 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_acct_hier_fa_dim_tbl table from incoming.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform.hql
+--#   Date        : 01/22/2017
+--#   Log File    : .../log/sdm/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/sdm/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#    1.0     DataMetica Team          01/22/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+
+INSERT OVERWRITE TABLE ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_table}
+ PARTITION(P_YYYYMMDD)
+
+SELECT 
+   ACCT_HIER_FA_DIM_PK,
+   ICOMS_SITE,
+   ICOMS_COMPANY,
+   ICOMS_DIVISION,
+   ICOMS_FRANCHISE,
+   NVL(FRANCHISE_PS_ID,'null'),
+   NVL(MSO_DESCR,'null'), 
+   NVL(REGION_DESCR,'null'), 
+   NVL(REGION_PS_ID,'null') ,
+   ACCT_HIER_REGION_DIM_PK,
+   NVL(BUSINESS_UNIT_DESCR,'null'), 
+   NVL(BUSINESS_UNIT_PS_ID,'null'),
+   ACCT_HIER_BU_DIM_PK,
+   NVL(BUDGET_ENTITY_DESCR,'null'), 
+   NVL(BUDGET_ENTITY_PS_ID,'null'),
+   ACCT_HIER_BE_DIM_PK,
+   NVL(PLANT_MANAGER_DESCR,'null'),
+   NVL(PLANT_MANAGER_PS_ID,'null'), 
+   ACCT_HIER_PM_DIM_PK,
+   NVL(HEAD_END_DESCR,'null'),
+   NVL(HEAD_END_STATE_ABBRV,'null'), 
+   NVL(HEAD_END_PS_ID,'null'),
+   ACCT_HIER_HE_DIM_PK,
+   FRANCHISE_AUTHORITY_DESCR, 
+   FRANCHISE_STATE_ABBRV, 
+   ACCT_HIER_PSFA_DIM_PK,
+   EFFECTIVE_FROM_BUSINESS_DATE, 
+   EFFECTIVE_TO_BUSINESS_DATE, 
+   CREATE_TSP, 
+   NVL(CREATE_USER,'null'), 
+   LAST_UPD_TSP,
+   NVL(LAST_UPD_USER,'null'),
+   NVL(REC_STATUS,'null'),
+   REPORT_FLAG,
+   HSD_USAGE_RPT_FLAG,
+   P_YYYYMMDD
+FROM 
+	${hivevar:incoming_database}.${hivevar:table_prefix}${hivevar:incoming_table}
+WHERE 
+	REC_STATUS = 'C'
+    AND P_YYYYMMDD='${hivevar:source_date}'		
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

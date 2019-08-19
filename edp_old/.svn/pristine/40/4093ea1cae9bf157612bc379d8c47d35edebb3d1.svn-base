@@ -1,0 +1,39 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: hulu.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 03/30/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          03/30/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                     Project Environment Base Properties                     #
+###############################################################################
+
+##Incoming Hive Table names
+INCOMING_HULU_AVN_TBL=incoming_hulu_avn
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

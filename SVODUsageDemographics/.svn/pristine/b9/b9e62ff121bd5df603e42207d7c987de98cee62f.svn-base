@@ -1,0 +1,130 @@
+#   Project Name: VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#   Description: Properties file containing the key,value properties for
+#   oozie workflow and uat_coordinator.xml
+#
+#   Author: 
+#   Date: 03/28/2017
+#
+
+########################################################################################################################
+# OOZIE PROPERTIES
+########################################################################################################################
+
+nameNode=hdfs://cvlphdpd1
+jobTracker=cvlphdpmn1.cablevision.com:8050
+metaStoreURI=thrift://cvlphdpmn2.cablevision.com:9083,thrift://cvlphdpmn3.cablevision.com:9083
+oozie.libpath=${nameNode}/user/oozie/share/lib
+oozie.use.system.libpath=true
+oozie.wf.rerun.failnodes=true
+
+vodLocal=/app/edp/edp_batch/svodusagedemographics
+vodHdfs=${nameNode}/edp_app/edp_batch/svodusagedemographics
+dtuShellScriptlocalPath=/UTIL/app/util/dtu
+#vodHdfs=${nameNode}/svod/SvodUsageDemographics
+
+appPath=${vodHdfs}
+ooziePath=${appPath}/oozie
+#oozie.wf.application.path=${ooziePath}/workflow.xml
+oozie.coord.application.path=${ooziePath}/coordinator.xml
+workflowAppPath=${ooziePath}/workflow.xml
+user.name=etlmgr
+key_param_id=600041
+
+
+
+########################################################################################################################
+# Appworx dependency check
+########################################################################################################################
+#dependencyScriptPath={dtuShellScriptlocalPath}/bin/appworx_status_master_shell.ksh
+sourceAppworxId=FDR_6428_BACKOUT_VOD_ORDER,FDR_8001,FDR_8002
+
+########################################################################################################################
+# DTU Job - Hive to Redshift
+########################################################################################################################
+
+dtuShellScriptPath=${dtuShellScriptlocalPath}/bin/aws_master_shell.ksh
+#copyTablesToRedshift=${vodLocal}/bin/dtu_hive_redshift.sh
+
+########################################################################################################################
+# SSH PROPERTIES
+########################################################################################################################
+
+sshUser=etlmgr
+hostName=cvlphdpen1.cablevision.com
+bach1SshUser=bisusr
+bach1HostName=cvlpawsbishdpdn1
+########################################################################################################################
+# CONF
+########################################################################################################################
+
+#hiveConfig=${vodHdfs}/conf/hive-site.xml
+emailToAddress=srawool@cablevision.com,ksingh6@cablevision.com
+
+########################################################################################################################
+# Time Parameters
+########################################################################################################################
+
+timeZoneDef=UTC
+ConversionTimezone=America/New_York
+current_timestamp=${timestamp( )}
+startTime=2017-03-27T02:30Z
+endTime=2017-03-28T23:00Z
+
+########################################################################################################################
+# Project Specifics
+########################################################################################################################
+
+#year_id=2017
+#month_id=03
+#year_month_id=201703
+
+#ojdbcJar=${ooziePath}/lib/ojdbc6.jar
+#libJar=${ooziePath}/lib/ojdbc6.jar
+vodHql=${appPath}/db
+vodExe=${vodLocal}/bin
+timeoutSecMs=1500000
+numReduceTasks=50
+
+## Table names
+d_vod_studio=d_vod_studio
+d_vod_title=d_vod_title
+d_vod_genre=d_vod_genre
+d_vod_subscription_name=d_vod_subscription_name
+encrypted_d_ecohort_chc=encrypted_d_ecohort_chc
+encrypted_d_ethnic_chc=encrypted_d_ethnic_chc
+stg_d_geog_corp=stg_d_geog_corp
+stg1_vod_orders_mth_corp=stg1_vod_orders_mth_corp
+stg2_vod_orders_mth_corp=stg2_vod_orders_mth_corp
+stg3_vod_orders_mth_corp=stg3_vod_orders_mth_corp
+f_vod_orders_mth_corp=f_vod_orders_mth_corp
+
+# Compute max date for the kom_vod_order table
+Generate_batch_id_script=${vodExe}/generate_batch_id.sh
+KomVodOrderEncryptor_script=${vodExe}/load_komvodorderencryptor.sh
+KomCustomerAccountBulkEncryptor_script=${vodExe}/load_komcustomeraccountbulkencryptor.sh
+load_gold_script=${vodExe}/load_gold_modules.sh
+load_incoming_script=${vodExe}/load_incoming_modules.sh
+update_key_param_script=${vodExe}/update_key_params.sh
+
+
+# Print the final numbers for this workflow
+printFinalNumbersScript=${vodExe}/svodusagedemo_print_final_numbers.sh
+
+# KomVodOrderEncryptor
+output_KomVodOrderEncryptor_dir=${nameNode}/edp/incoming/svodusagedemo/tmp_vod_dir
+
+# KomCustomerAccountBulkEncryptor Arguments
+output_KomCustomerAccountBulkEncryptor_dir=${nameNode}/edp/incoming/svodusagedemo/encrypted_kom_customer_account
+
+
+########################################################################################################################
+# DataSet Locations
+########################################################################################################################
+
+triggerKomDGenreDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_GENRE
+triggerKomDPeriodDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_PERIOD
+triggerKomDProductMasterDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_PRODUCT_MASTER
+triggerKomDSubscriptionGroupDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_SUBSCRIPTION_GROUP
+triggerKomFVodOrderDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_F_VOD_ORDER
+triggerKomDGeogCorpDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_D_GEOG_CORP

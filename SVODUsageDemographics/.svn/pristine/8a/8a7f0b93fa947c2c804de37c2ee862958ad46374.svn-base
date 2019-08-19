@@ -1,0 +1,103 @@
+#   Project Name: VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#   Description: Properties file containing the key,value properties for
+#   oozie workflow and uat_coordinator.xml
+#
+#   Author: Kriti Singh
+#   Date: 05/11/2016
+#
+
+########################################################################################################################
+# OOZIE PROPERTIES
+########################################################################################################################
+
+nameNode=hdfs://cvlphdpd1
+jobTracker=cvlphdpmn1.cablevision.com:8050
+metaStoreURI=thrift://cvlphdpmn2.cscdev.com:9083,thrift://cvlphdpmn3.cscdev.com:9083
+oozie.libpath=${nameNode}/user/oozie/share/lib
+oozie.use.system.libpath=true
+oozie.wf.rerun.failnodes=true
+
+vodLocal=/UTIL/app/util/SvodUsageDemographics
+vodHdfs=${nameNode}/app/util/SvodUsageDemographics
+
+appPath=${vodHdfs}
+ooziePath=${appPath}/oozie
+#oozie.wf.application.path=${ooziePath}/prod_workflow.xml
+oozie.coord.application.path=${ooziePath}/prod_coordinator.xml
+workflowAppPath=${ooziePath}/prod_workflow.xml
+user.name=etlmgr
+
+
+########################################################################################################################
+# Appworx dependency check
+########################################################################################################################
+dependencyScriptPath=/UTIL/app/util/appworx/bin/appworx_status_master_shell.ksh
+sourceAppworxId=FDR_6428_BACKOUT_VOD_ORDER,FDR_8001,FDR_8002
+
+########################################################################################################################
+# DTU Job - Hive to Redshift
+########################################################################################################################
+
+#copyTablesToRedshift=/UTIL/app/util/vod/bin/dtu_hive_redshift.sh
+#dtuShellScriptPath=/UTIL/app/util/dtu/bin/aws_master_shell.ksh
+dtuShellScriptPath=/appbis/app/util/dtu/bin/aws_master_shell.ksh
+
+########################################################################################################################
+# SSH PROPERTIES
+########################################################################################################################
+
+sshUser=etlmgr
+hostName=cvlphdpen1.cablevision.com
+bach1SshUser=bisusr
+bach1HostName=cvlpawsbishdpdn1
+
+
+########################################################################################################################
+# CONF
+########################################################################################################################
+
+hiveConfig=${vodHdfs}/conf/hive-site.xml
+emailToAddress=ksingh5@cablevision.com,pdarji@cablevision.com,
+
+
+########################################################################################################################
+# Time Parameters
+########################################################################################################################
+
+timeZoneDef=UTC
+ConversionTimezone=America/New_York
+current_timestamp=${timestamp( )}
+startTime=2015-01-01T12:00Z
+endTime=2016-07-31T23:00Z
+
+########################################################################################################################
+# Project Specifics
+########################################################################################################################
+
+#libJar=${ooziePath}/lib/ojdbc6.jar:${ooziePath}/lib/DataEncryption-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+#libJar=${ooziePath}/lib/ojdbc6.jar:${ooziePath}/lib/CVSecurityApplication.jar
+vodHql=${appPath}/db
+vodExe=${vodLocal}/bin
+timeoutSecMs=1500000
+numReduceTasks=100
+
+# Compute max date for the kom_vod_order table
+computeMaxDateScript=${vodExe}/svodusagedemo_compute_max_date.sh
+
+# KomVodOrderEncryptor
+output_KomVodOrderEncryptor_dir=${nameNode}/incoming/svodusagedemo/tmp_vod_dir
+
+# KomCustomerAccountBulkEncryptor Arguments
+output_KomCustomerAccountBulkEncryptor_dir=${nameNode}/incoming/svodusagedemo/encrypted_kom_customer_account
+
+########################################################################################################################
+# DataSet Locations
+########################################################################################################################
+
+triggerKomDGenreDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_GENRE
+triggerKomDPeriodDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_PERIOD
+triggerKomDProductMasterDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_PRODUCT_MASTER
+triggerKomDSubscriptionGroupDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_D_SUBSCRIPTION_GROUP
+triggerKomFVodOrderDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_KOM_F_VOD_ORDER
+triggerKomDGeogCorpDataset=${nameNode}/incoming/koms/dbora/cvc_koms_dbora_dd_D_GEOG_CORP

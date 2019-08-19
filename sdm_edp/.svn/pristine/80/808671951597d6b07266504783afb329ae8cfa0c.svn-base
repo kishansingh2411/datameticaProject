@@ -1,0 +1,48 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: omniture.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/18/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/18/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Incoming Hive Table name
+INCOMING_CPE_MODEL_INFO_TBL=incoming_cpe_model_info
+INCOMING_WORK_ORDER_MASTER_TBL=incoming_work_order_master
+
+##Gold Hive Table names
+GOLD_CPE_DAILY_TBL=gold_cpe_daily
+GOLD_CPE_IVR_TBL=gold_cpe_ivr
+GOLD_CPE_TC_TBL=gold_cpe_tc
+GOLD_CPE_MONTHLY_TBL=gold_cpe_monthly
+GOLD_CPE_WEEKLY_TBL=gold_cpe_weekly
+GOLD_EQUIPMENT_TBL=gold_equipment
+GOLD_CDR_RESI_TBL=gold_cdr_resi
+
+##Outgoing table 
+OUTGOING_CPE_MONTHLY_TBL=outgoing_cpe_monthly
+OUTGOING_CPE_WEEKLY_TBL=outgoing_cpe_weekly
+###############################################################################
+#                                     End                                     #
+###############################################################################

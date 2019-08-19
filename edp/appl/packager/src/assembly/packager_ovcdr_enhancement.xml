@@ -1,0 +1,39 @@
+<assembly>
+  <id>ovcdr_enhancement</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <outputDirectory>edp</outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      <includes>
+	     <include>/subject-areas/ods/bin/deployment_ovcdr_enhancement.sh</include>
+	     <include>/subject-areas/ods/bin/compute_statistics.sh</include>
+	     <include>/subject-areas/ods/bin/deployment_ovcdr_enhancement.sh</include>
+	     <include>/subject-areas/ods/bin/update_key_params.sh</include>
+	     <include>/subject-areas/ods/bin/executor_ovcdr.sh</include>
+	     <include>/subject-areas/ods/bin/ods_functions.sh</include>
+	     <include>/subject-areas/ods/bin/load_incoming_bhv_modules.sh</include>
+	     <include>/subject-areas/ods/bin/load_work_bhv_modules.sh</include>
+	     <include>/subject-areas/ods/bin/load_gold_bhv_modules.sh</include>
+	     <include>/subject-areas/ods/incoming_account_info_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_account_tns_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_cust_telephone_nbr_tbl/**</include>
+	     <include>/subject-areas/ods/incoming_customer_telephone_tbl/**</include>
+	     <include>/subject-areas/ods/gold_bhv_acct_phone_nbr_opt_sdl_tbl/**</include>
+	     <include>/subject-areas/ods/gold_bhv_acct_phone_nbr_opt_tbl/**</include>
+	     <include>/subject-areas/ods/gold_bhv_acct_phone_nbr_sdl_tbl/**</include>
+	     <include>/subject-areas/ods/work_bhv_acct_phone_nbr_opt_tbl/**</include>
+	     <include>/subject-areas/ods/work_bhv_acct_phone_nbr_opt_tmp_tbl/**</include>
+	     <include>/subject-areas/ods/work_bhv_acct_phone_nbr_sdl_tbl/**</include>
+	     <include>/subject-areas/ods/work_bhv_acct_phone_nbr_sdl_tmp_tbl/**</include>
+	   </includes>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+  </fileSets> 
+    
+</assembly>

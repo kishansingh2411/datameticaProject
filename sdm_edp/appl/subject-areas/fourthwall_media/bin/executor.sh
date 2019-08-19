@@ -1,0 +1,187 @@
+#!/bin/sh
+
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: executor.sh
+#   Program type: Unix Bash Shell script
+#   Purpose:    : Execute all steps one by one for process 
+#                 Input Arguments for this script are: key_param_id from postgress.                                  	                       
+#   Author(s)   : DataMetica Team
+#   Usage       : sh executor.sh key_Param_id
+#   Date        : 01/30/2017
+#   Log File    : .../log/${job_name}.log
+#   SQL File    :                                 
+#   Error File  : .../log/${job_name}.log
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/30/2017       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                          Module Environment Setup                           #
+###############################################################################
+
+# Find absolute path to this script which is used to define module, project, subject area home directory paths.
+pushd . > /dev/null
+SCRIPT_HOME="${BASH_SOURCE[0]}";
+while([ -h "${SCRIPT_HOME}" ]); do
+    cd "`dirname "${SCRIPT_HOME}"`"
+    SCRIPT_HOME="$(readlink "`basename "${SCRIPT_HOME}"`")";
+done
+cd "`dirname "${SCRIPT_HOME}"`" > /dev/null
+SCRIPT_HOME="`pwd`";
+popd  > /dev/null
+
+SUBJECT_AREA_HOME=`dirname ${SCRIPT_HOME}`
+SUBJECT_AREAS_HOME=`dirname ${SUBJECT_AREA_HOME}`
+HOME=`dirname ${SUBJECT_AREAS_HOME}`
+
+###                                                                           
+# Load all environment properties files
+source $HOME/etc/namespace.properties
+source $HOME/etc/default.env.properties
+source $HOME/etc/postgres.properties
+source $SUBJECT_AREA_HOME/etc/subject-area.env.properties
+source $HOME/bin/functions.sh
+source $SUBJECT_AREA_HOME/bin/fourthwall_media_functions.sh
+
+###############################################################################
+#                                                                             #
+# Checking number of parameter passed                                         #
+#                                                                             #
+###############################################################################
+
+if [ "$#" -ne 1 ]
+then
+  echo "Illegal number of parameters.  Parameters expected [key_param_id]"
+  exit 
+fi
+
+##############################################################################
+#																			 #
+# Local Params				 								 	 			 #
+#																			 #
+##############################################################################
+
+##key_param_id is mandatory field
+key_param_id=$1
+fail_on_error=${BOOLEAN_TRUE}
+executor_log_file="${LOG_DIR_SUBJECT_AREA}/EXECUTOR.log"
+
+params="$(fn_get_fourthwall_media_params ${key_param_id})"
+
+if [ -z "$params" ]
+then
+    fn_log "Invalid Key-Param Id found : $key_param_id" "$executor_log_file" 
+    exit 
+fi
+
+##############################################################################
+#																			 #
+# Generating batch_id for the process                    					 #
+#																			 #
+##############################################################################
+
+fn_log "Process started at `date +"%Y-%m-%d %H:%M:%S"`" ${executor_log_file}
+
+sh $SUBJECT_AREA_HOME/bin/generate_batch_id.sh $key_param_id
+exit_code=$?
+
+success_message="Successfully generated batch id for fourthwall_media ingestion"  
+failure_message="Failed to generate batch id for fourthwall_media ingestion, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${fail_on_error}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load gold table gold_fwm_house_eqmt_data                                   #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_gold_modules.sh $key_param_id fwm_house_eqmt_data
+exit_code=$?
+
+success_message="Successfully loaded table gold_fwm_house_eqmt_data at Gold layer"  
+failure_message="Failed to load data in table gold_fwm_house_eqmt_data at Gold layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load outgoing table outgoing_fwm_device_data                               #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_outgoing_modules.sh $key_param_id fwm_device_data device
+exit_code=$?
+
+success_message="Successfully loaded household data outgoing_fwm_device_data at Outgoing layer"  
+failure_message="Failed to load household data in outgoing_fwm_device_data at Outgoing layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Load outgoing table outgoing_fwm_household_data                            #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/load_outgoing_modules.sh $key_param_id fwm_household_data household
+exit_code=$?
+
+success_message="Successfully loaded device data outgoing_fwm_household_data at Outgoing layer"  
+failure_message="Failed to load device data in outgoing_fwm_household_data at Outgoing layer, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Copy Household file to local                                               #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/copy_to_local.sh $key_param_id fwm_device_data device
+exit_code=$?
+
+success_message="Successfully copied Household data to local directory"  
+failure_message="Failed to copy Household data to local directory, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Copy Device file to local                                                  #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/copy_to_local.sh $key_param_id fwm_household_data household
+exit_code=$?
+
+success_message="Successfully copied Device data to local directory"  
+failure_message="Failed to copy Device data to local directory, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                                                            #
+# Update key-params table                                                    #
+#                                                                            #
+##############################################################################
+
+sh $SUBJECT_AREA_HOME/bin/update_key_params.sh $key_param_id
+exit_code=$?
+
+success_message="Successfully updated key-params table"  
+failure_message="Failed while updating key-params table, Quitting the process." 
+fn_handle_exit_code "${exit_code}" "${success_message}" "${failure_message}" "${BOOLEAN_TRUE}" "${executor_log_file}"
+
+##############################################################################
+#                                    End                                     #
+##############################################################################

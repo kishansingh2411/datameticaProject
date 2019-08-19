@@ -1,0 +1,7 @@
+DRIVER_CLASS=oracle.jdbc.driver.OracleDriver
+DB_URL=jdbc:oracle:thin:@cdrdbp.cablevision.com:1549:CVCDRP
+USER_NAME=bisusr
+PASSWORD=BI_pr0d_0414
+USER=etlmgr
+#DEVICE=VOD001
+#KOM_VOD_ORDER_PROD_HDFS_LOC=/incoming/svodusagedemo/encrypted_kom_vod_order

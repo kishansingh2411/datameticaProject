@@ -1,0 +1,609 @@
+#!/bin/sh
+
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: Purge_utility.sh    
+#   Program type: Unix Bash Shell script
+#   Purpose:    : This will Purge the historical data of given date and given suite    
+#                 name and specific date.
+#	              It will accept the params in following sequence:   						 
+#                  1. suite name     														 
+#                  2. start date   														 
+#                  3. End date															 						
+#                  4. directory name(multiple directory name should be comma separated)                                                                       
+#   Author(s)   : DataMetica Team
+#   Usage       : sh purge_utility.sh  "${suite_name}" "2015-12-28" "2015-12-28" "gold,incoming,smith"
+#   Date        : 12/28/2015
+#   Log File    : .../log/${suite_name}/${job_name}.log
+#   SQL File    :                                 
+#   Error File  : .../log/${suite_name}/${job_name}.log
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          12/28/2015       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                          Module Environment Setup                           #
+###############################################################################
+
+# Find absolute path to this script which is used to define module, project, subject area home directory paths.
+pushd . > /dev/null
+SCRIPT_HOME="${BASH_SOURCE[0]}";
+while([ -h "${SCRIPT_HOME}" ]); do
+    cd "`dirname "${SCRIPT_HOME}"`"
+    SCRIPT_HOME="$(readlink "`basename "${SCRIPT_HOME}"`")";
+done
+cd "`dirname "${SCRIPT_HOME}"`" > /dev/null
+SCRIPT_HOME="`pwd`";
+popd  > /dev/null
+
+SUBJECT_AREA_HOME=`dirname ${SCRIPT_HOME}`
+SUBJECT_AREAS_HOME=`dirname ${SUBJECT_AREA_HOME}`
+PROJECT_HOME=`dirname ${SUBJECT_AREAS_HOME}`
+
+###############################################################################
+#                                                                             #
+#   Sourcing reference files  		                                          #
+#                                                                             #
+###############################################################################   
+
+source $PROJECT_HOME/etc/namespace.properties
+source $PROJECT_HOME/etc/beeline.properties
+source $PROJECT_HOME/etc/default.env.properties
+source $PROJECT_HOME/etc/postgres.properties
+source $SUBJECT_AREA_HOME/etc/subject-area.env.properties
+source $PROJECT_HOME/bin/functions.sh
+source $SUBJECT_AREA_HOME/etc/omniture.properties
+
+##############################################################################
+#                                                                            #
+# Checking number of parameter passed                                        #
+#                                                                            #
+##############################################################################
+
+if [ "$#" -ne 4 ] 
+then
+  echo "Illegal number of parameters.Parameters expected [Suite_name Start_date End_date directory_name ]"
+  exit 
+fi
+
+##############################################################################
+#																			 #
+# Local Params				 								 	 			 #
+#																			 #
+##############################################################################
+
+current_date=`date +"%Y-%m-%d"`
+suite_name=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+start_date=$2
+end_date=$3
+dir_list=`echo "$4" | awk '{gsub (","," ",$0);print}'`
+suite_data_file_path=$SUBJECT_AREA_HOME/metadata/Optimum_Suite.txt
+start_time=`date +"%Y-%m-%d %H:%M:%S"`
+log_file_dir="${LOG_DIR_SUBJECT_AREA}/${suite_name}"
+log_file_path="${log_file_dir}/${job_name}.log"
+
+if [ $suite_name == "cablevis-uow-com" ]
+then
+	job_name="UOW_600002_PURGE_UTIL"
+
+elif [ $suite_name == "$ONET_PROD" ]
+then
+	job_name="ONET_600009_PURGE_UTIL"
+else
+	echo "Invalid suite_name provided"
+	exit   
+fi
+
+##############################################################################
+#																			 #
+# Checking mandatory Params                                                  #
+#																			 #
+##############################################################################
+
+fn_check_mandatory_params "suite_name,$suite_name"
+fn_check_mandatory_params "start_date,$start_date"
+fn_check_mandatory_params "dir_list,$dir_list"
+
+##############################################################################
+#																			 #
+# Creating Local Log directory                                               #
+#																			 #
+##############################################################################
+
+fn_local_create_directory_if_not_exists "${log_file_dir}" "${BOOLEAN_TRUE}" "${log_file_path}"
+
+##############################################################################
+#																			 #
+# Initialization                                                             #
+#																			 #
+##############################################################################
+
+export PGHOST=$POSTGRES_HOST;
+export PGPORT=$POSTGRES_PORT;
+export PGPASSWORD=$POSTGRES_PASSWORD;
+batch_id=`psql -X -U $POSTGRES_USERNAME -P t -P format=unaligned $POSTGRES_DATABASE_NAME \
+          -c "select nextval('generate_seq_id')"`
+
+if [ -z "$batch_id" ]
+then
+   fn_log_error "Failed while creating new BatchId!!!" "${log_file_path}"
+   exit -1
+else
+   fn_log_info "Successfully created new BatchId [$batch_id]" "${log_file_path}"
+fi
+
+
+##############################################################################
+#																			 #
+# Capture statistics                                                         #
+#																			 #
+##############################################################################
+
+fn_insert_job_statistics "${batch_id}" "${job_name}" "${start_time}" "RUNNING" "${log_file_path}"
+
+#####################################################################################
+#										   											#
+#  check date for start and end date 			   									#
+#										   											#
+#####################################################################################
+
+fromdate=$(date -I -d "$start_date") || exit -1
+
+todate=$(date -I -d "$end_date")     || exit -1
+
+args="SUITE_NAME=$suite_name | START_DATE=$fromdate | END_DATE=$todate | STAGE=$dir_list "
+
+delete_date="$fromdate"
+
+while [ "$(date -d "$delete_date" +%Y%m%d)" -le "$(date -d "$todate" +%Y%m%d)" ]
+do
+   for dir_name in $dir_list
+   do
+      dir_name=$(echo $dir_name | tr '[:upper:]' '[:lower:]')
+      if [ $dir_name == incoming ] 
+	  then
+         tables=${INCOMING_HIT_DATA_TBL}
+         table_name=`basename ${tables}`
+         target_dir_path=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_DATA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+         fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${BOOLEAN_FALSE}" "${log_file_path}"
+         exit_code=$?
+         
+         if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		 then 	
+                      
+             fn_alter_table_drop_two_partitions \
+                "${HIVE_DATABASE_NAME_INCOMING}" \
+         		"${INCOMING_HIT_DATA_TBL}" \
+         		"suite_name='${suite_name}'" \
+                "source_date='${delete_date}'" \
+         		"${BOOLEAN_FALSE}" \
+         		"${HIVESERVER2_URL}" \
+         		"${HIVE_USENAME}" \
+         		"${HIVE_PASSWORD}" \
+         		"${log_file_path}"
+         	 exit_code=$?
+     	 
+     	 fi
+     		        
+      elif [ $dir_name == gold ] 
+	  then      
+         if [[ $suite_name == "vow" ]]
+         then
+            table_name=${GOLD_VOW_HIT_DATA_TBL}
+            target_dir_path=${DATA_LAYER_DIR_GOLD_SUBJECT_AREA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+                   
+                fn_alter_table_drop_two_partitions \
+                   "${HIVE_DATABASE_NAME_GOLD}" \
+         		   "${table_name}" \
+         		   "suite_name='${suite_name}'" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+         		   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?	
+     		
+     		fi
+                   
+         elif [[ $suite_name == "vow-esp" ]]
+         then
+            table_name=${GOLD_VOW_HIT_DATA_ESP_TBL}
+            target_dir_path=${DATA_LAYER_DIR_GOLD_SUBJECT_AREA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+                  
+                fn_alter_table_drop_two_partitions \
+                   "${HIVE_DATABASE_NAME_GOLD}" \
+         		   "${table_name}" \
+         		   "suite_name='${suite_name}'" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+         		   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?	
+           
+            fi
+           
+         elif [[ $suite_name == "onet_prod" ]]
+         then
+            table_name=${GOLD_OPT_HIT_DATA_TBL}
+            target_dir_path=${DATA_LAYER_DIR_GOLD_SUBJECT_AREA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+                   
+                fn_alter_table_drop_two_partitions \
+                   "${HIVE_DATABASE_NAME_GOLD}" \
+         		   "${table_name}" \
+         		   "suite_name='${suite_name}'" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+         		   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?	
+     		
+     		fi
+     		         
+         elif [[ $suite_name == "onet_prod_esp" ]]
+         then
+            table_name=${GOLD_OPT_HIT_DATA_ESP_TBL}
+            target_dir_path=${DATA_LAYER_DIR_GOLD_SUBJECT_AREA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+		           
+                fn_alter_table_drop_two_partitions \
+                   "${HIVE_DATABASE_NAME_GOLD}" \
+         		   "${table_name}" \
+         		   "suite_name='${suite_name}'" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+         		   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?	
+     		
+     		fi
+     		         
+         elif [[ $suite_name == "cablevis-uow-com" ]]
+         then
+            table_name=${GOLD_UNIFIED_HIT_DATA_TBL}
+            target_dir_path=${DATA_LAYER_DIR_GOLD_SUBJECT_AREA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+
+    			fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_GOLD}" \
+         		   "${table_name}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?        
+            
+            fi
+                   
+         else
+	        fn_log_info "Invalid suite_name $suite_name provided!!!"  ${log_file_path}
+	        exit -1
+         fi      		      
+      elif [ $dir_name == work ] 
+	  then
+         tables=${WORK_HIT_DATA_TBL}
+         table_name=`basename ${tables}`
+         target_dir_path=${DATA_LAYER_DIR_WORK_SUBJECT_AREA_DATA}/${table_name}/suite_name=${suite_name}/source_date=${delete_date}
+         fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+         exit_code=$?
+         
+         if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		 then
+		 		                 
+             fn_alter_table_drop_two_partitions \
+                "${HIVE_DATABASE_NAME_WORK}" \
+         		"${table_name}" \
+         		"suite_name='${suite_name}'" \
+                "source_date='${delete_date}'" \
+         		"${BOOLEAN_TRUE}" \
+         		"${HIVESERVER2_URL}" \
+         		"${HIVE_USENAME}" \
+                "${HIVE_PASSWORD}" \
+         		"${log_file_path}"
+             exit_code=$?
+         
+         fi
+      elif [ $dir_name == smith ] 
+	  then 	         
+         if [[ $suite_name == "vow" ]]
+         then
+            table_name=${SMITH_VOW_OPTIMUM_USAGE_TBL}
+            target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_FACT}/${SMITH_VOW_OPTIMUM_USAGE_TBL}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+                    
+                fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_SMITH}" \
+         		   "${SMITH_KOM_VOW_OPTIMUM_USAGE_TBL}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?
+     		
+         		if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+    			then 	
+                
+                    fn_alter_drop_table_with_one_partitions \
+                       "${HIVE_DATABASE_NAME_SMITH}" \
+             		   "${SMITH_MKTG_VOW_OPTIMUM_USAGE_TBL}" \
+                       "source_date='${delete_date}'" \
+             		   "${BOOLEAN_TRUE}" \
+             		   "${HIVESERVER2_URL}" \
+             		   "${HIVE_USENAME}" \
+                       "${HIVE_PASSWORD}" \
+             		   "${log_file_path}"
+             		exit_code=$?
+     		    fi
+            fi          
+         elif [[ $suite_name == "vow-esp" ]]
+         then
+            table_name=${SMITH_VOW_ESP_OPTIMUM_USAGE_TBL}
+            target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_FACT}/${SMITH_VOW_ESP_OPTIMUM_USAGE_TBL}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+		           
+                fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_SMITH}" \
+         		   "${SMITH_KOM_VOW_ESP_OPTIMUM_USAGE_TBL}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+                exit_code=$?
+      
+           		if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+    			then 
+         		 
+             		fn_alter_drop_table_with_one_partitions \
+                       "${HIVE_DATABASE_NAME_SMITH}" \
+             		   "${SMITH_MKTG_VOW_ESP_OPTIMUM_USAGE_TBL}" \
+                       "source_date='${delete_date}'" \
+             		   "${BOOLEAN_TRUE}" \
+             		   "${HIVESERVER2_URL}" \
+             		   "${HIVE_USENAME}" \
+                       "${HIVE_PASSWORD}" \
+             		   "${log_file_path}"
+             		exit_code=$?
+     		    fi
+            fi  
+         elif [[ $suite_name == "onet_prod" ]]
+         then
+            table_name=${SMITH_ONET_PROD_OPTIMUM_USAGE_TBL}
+            target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_FACT}/${SMITH_ONET_PROD_OPTIMUM_USAGE_TBL}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+		            
+                fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_SMITH}" \
+         		   "${SMITH_KOM_ONET_PROD_OPTIMUM_USAGE_TBL}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?
+         		
+         		if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+    			then 
+         		   
+             		fn_alter_drop_table_with_one_partitions \
+                       "${HIVE_DATABASE_NAME_SMITH}" \
+             		   "${SMITH_MKTG_ONET_PROD_OPTIMUM_USAGE_TBL}" \
+                       "source_date='${delete_date}'" \
+             		   "${BOOLEAN_TRUE}" \
+             		   "${HIVESERVER2_URL}" \
+             		   "${HIVE_USENAME}" \
+                       "${HIVE_PASSWORD}" \
+             		   "${log_file_path}"
+             		 exit_code=$?
+     		    fi
+     	    fi	         
+         elif [[ $suite_name == "onet_prod_esp" ]]
+         then
+            table_name=${SMITH_ONET_PROD_ESP_OPTIMUM_USAGE_TBL}
+            target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_FACT}/${SMITH_ONET_PROD_ESP_OPTIMUM_USAGE_TBL}/source_date=${delete_date}
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+            exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+		              
+                fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_SMITH}" \
+         		   "${SMITH_KOM_ONET_PROD_ESP_OPTIMUM_USAGE_TBL}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+         		exit_code=$?
+         		
+         		if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+    			then  
+         		   
+             		fn_alter_drop_table_with_one_partitions \
+                       "${HIVE_DATABASE_NAME_SMITH}" \
+             		   "${SMITH_MKTG_ONET_PROD_ESP_OPTIMUM_USAGE_TBL}" \
+                       "source_date='${delete_date}'" \
+             		   "${BOOLEAN_TRUE}" \
+             		   "${HIVESERVER2_URL}" \
+             		   "${HIVE_USENAME}" \
+                       "${HIVE_PASSWORD}" \
+             		   "${log_file_path}"
+             		exit_code=$?
+     		    fi   	
+     	    fi	         
+         elif [[ $suite_name == "cablevis-uow-com" ]]
+         then
+            table_name=${SMITH_KOM_UNIFIED_OPTIMUM_USAGE_TBL}                                        
+            target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_KOM_FACT}/${SMITH_KOM_UNIFIED_OPTIMUM_USAGE_TBL}/source_date=${delete_date}            
+            fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+     		exit_code=$?
+         
+            if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+		    then
+		    
+         		fn_alter_drop_table_with_one_partitions \
+                   "${HIVE_DATABASE_NAME_SMITH}" \
+         		   "${SMITH_KOM_UNIFIED_OPTIMUM_USAGE_TBL}" \
+                   "source_date='${delete_date}'" \
+         		   "${BOOLEAN_TRUE}" \
+         		   "${HIVESERVER2_URL}" \
+         		   "${HIVE_USENAME}" \
+                   "${HIVE_PASSWORD}" \
+         		   "${log_file_path}"
+            	exit_code=$?
+         		 
+         	    if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+    			then  
+         		
+             		table_name=${SMITH_MKTG_UNIFIED_OPTIMUM_USAGE_TBL}      		                                 
+                    target_dir_path=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_MKT_FACT}/${SMITH_MKTG_UNIFIED_OPTIMUM_USAGE_TBL}/source_date=${delete_date}            
+                    fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+                    exit_code=$?
+                    
+                    if [ ${exit_code} -eq $EXIT_CODE_SUCCESS ]
+        			then
+                       
+                 		fn_alter_drop_table_with_one_partitions \
+                           "${HIVE_DATABASE_NAME_SMITH}" \
+                 		   "${SMITH_MKTG_UNIFIED_OPTIMUM_USAGE_TBL}" \
+                           "source_date='${delete_date}'" \
+                 		   "${BOOLEAN_TRUE}" \
+                 		   "${HIVESERVER2_URL}" \
+                 		   "${HIVE_USENAME}" \
+                           "${HIVE_PASSWORD}" \
+                 		   "${log_file_path}"
+                 		exit_code=$?
+     		        fi
+     	        fi      		     		
+     	    fi
+     	   
+     	  else
+	         fn_log_info "Invalid suite_name $suite_name provided!!!"  ${log_file_path}
+	         exit -1
+          fi
+          
+       elif [ $dir_name == archive ] 
+       then 	         
+         if [[ $suite_name == "onet_prod" ]]
+          then 	   
+          file_name="cablevis-onet-prod_"${delete_date}.tar.gz
+          target_dir_path=${DATA_LAYER_DIR_ARCHIVE_SUBJECT_AREA}/${suite_name}/${file_name}
+          fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+          exit_code=$?   
+    
+         if [ ${exit_code} -ne $EXIT_CODE_SUCCESS ]
+	       then
+	         fn_log_error "For suite $suite_name, failed to delete file ${file_name} from archive layer, Quitting the process." "${log_file_path}"
+	         fn_log_info "unable to delete archive file ${file_name} for date ${delete_date}"  ${log_file_path}
+	         exit -1
+	      else 
+	         fn_log_info "successfully deleted archive file ${file_name} for date ${delete_date}"  ${log_file_path}
+	     fi
+	     
+         elif [[ $suite_name == "cablevis-uow-com" ]]
+          then	   
+           file_name="cablevis-uow-com_"${delete_date}.tar.gz
+           target_dir_path=${DATA_LAYER_DIR_ARCHIVE_SUBJECT_AREA}/${file_name}
+           fn_hadoop_delete_directory_if_exists "${target_dir_path}" "${fail_on_error}" "${log_file_path}"
+           exit_code=$?   
+    
+         if [ ${exit_code} -ne $EXIT_CODE_SUCCESS ]
+	       then
+	         fn_log_error "For suite $suite_name, failed to delete file ${file_name} from archive layer, Quitting the process." "${log_file_path}"
+	         fn_log_info "unable to delete archive file ${file_name} for date ${delete_date}"  ${log_file_path}
+	         exit -1
+	      else 
+	         fn_log_info "successfully deleted archive file for date ${delete_date}"  ${log_file_path}
+	     fi
+       fi
+      fi     	 	           		     		      		          		        		          
+   done
+   
+   delete_date=$(date -I -d "$delete_date + 1 day")
+done
+
+if [ ${exit_code} -ne $EXIT_CODE_SUCCESS ]
+then
+   fn_log_error "Failed for source table "${table_name}" at data layer ${dir_name} for date ${delete_date}" "${log_file_path}"
+	fn_update_job_statistics "${batch_id}" "${job_name}" "${start_time}" "NA" "${exit_code}" \
+	   "${current_date}" "${log_file_path}" "NA" "$args"
+fi   
+
+fn_log_info "Successfully deleted for source table "${table_name}" at data layer ${dir_name} for date ${delete_date}" "${log_file_path}"
+    
+##############################################################################
+#																			 #
+# Capture statistics                                                         #
+#																			 #
+##############################################################################
+
+fn_update_job_statistics "${batch_id}" "${job_name}" "${start_time}" "NA" "${exit_code}" \
+   "${current_date}" "${log_file_path}" "NA" "$args"
+
+##############################################################################
+#                                    End                                     #
+##############################################################################

@@ -1,0 +1,279 @@
+package com.alticeusa.ds.svodusagedemographics.encryptor;
+
+import com.alticeusa.ds.svodusagedemographics.avro.KomVodOrder;
+import com.alticeusa.ds.svodusagedemographics.writables.KomVodOrderDBInputWritable;
+import com.cv.bis.security.controller.CVDataController;
+import com.cv.bis.security.exception.CVApplicationException;
+import com.cv.bis.security.exception.CVSecurityException;
+import com.alticeusa.ds.svodusagedemographics.utils.Util;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.mapred.AvroKey;
+import org.apache.avro.mapreduce.AvroKeyOutputFormat;
+import org.apache.avro.mapreduce.AvroMultipleOutputs;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
+import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+/**
+ * Map Reduce job creates a connection with cvcdrp.cdrusr.kom_vod_order table
+ * and encrypts the customer_account_id.
+ *
+ * Encryption is done using the CVApplicationSecurity encryption framework developed by
+ * Subbu Karuppiah.
+ *
+ * These columns are highly sensitive so must always be encrypted before landing into
+ * HDFS or Hive.
+ *
+ * NOTE: Set number of mappers = equal to the number of connections to be made to the
+ * oracle CVCDRP database. LIMIT to <= 5
+ *
+ * All the database configurations will be stored in a properties file.
+ *
+ * @author Kriti Singh
+ * Created by ksingh on 5/26/16.
+ */
+public class KomVodOrderEncryptor extends Configured implements Tool{
+  //private static final String KOM_VOD_ORDER_PROD_HDFS_LOC = "hdfs://cvlphdpd1/incoming/svodusagedemo/encrypted_kom_vod_order";
+  //private static final String DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
+  //private static final String DB_URL = "jdbc:oracle:thin:@cdrdbp.cablevision.com:1549:CVCDRP";
+  //private static final String USER_NAME = "bisusr";
+  //private static final String PASS = "BI_pr0d_0414";
+  //private static final String UAT_USER = "etlmgr";
+  //private static final String DEVICE = "VOD001";
+  private static String KOM_VOD_ORDER_PROD_HDFS_LOC;
+  private static String DRIVER_CLASS;
+  private static String DB_URL;
+  private static String USER_NAME;
+  private static String PASSWORD;
+  private static String USER;
+  private static String DEVICE;
+  private static final String OUTPUT_SCHEMA="output_schema";
+  private static final String MOPS_FILE_NAME = "mops_file_name";
+  private static final SimpleDateFormat monthFormat = new SimpleDateFormat("yyyyMM");
+  private static final SimpleDateFormat dayFormat = new SimpleDateFormat("yyyyMMdd");
+  private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  private enum JOB_COUNTERS {
+    KOM_VOD_ORDER_RECORDS
+  }
+
+  public static class MyMapper extends Mapper<LongWritable,KomVodOrderDBInputWritable,Text,NullWritable>{
+    @Override
+    public void map( LongWritable key, KomVodOrderDBInputWritable value, Context context) throws IOException, InterruptedException{
+      Long customerAccountId = value.getCustomerAccountId( );
+      Long vodOrderId = value.getVodOrderId( );
+      Long corp = value.getCorp( );
+      String previewInd = value.getPreviewInd( );
+      String trailerInd = value.getTrailerInd( );
+      Timestamp dtmCreated = value.getdtmCreated( );
+      String oKey = customerAccountId + "\t" + vodOrderId + "\t" + corp + "\t" + previewInd + "\t" + trailerInd + "\t" + dtmCreated;
+      context.getCounter( JOB_COUNTERS.KOM_VOD_ORDER_RECORDS).increment( 1);
+      context.write( new Text( oKey), NullWritable.get( ));
+    }
+  }
+
+  public static class MyReducer extends Reducer<Text,NullWritable,NullWritable,NullWritable>{
+    private CVDataController cvc;
+    private Schema outputSchema;
+    private AvroMultipleOutputs amops;
+    private String mopsFileName;
+
+    @Override
+    protected void setup( Context context)  throws IOException, InterruptedException{
+      Configuration conf = context.getConfiguration( );
+      mopsFileName = conf.get( MOPS_FILE_NAME);
+      amops = new AvroMultipleOutputs( context);
+      outputSchema = new Schema.Parser( ).parse( conf.get( OUTPUT_SCHEMA));
+
+      try { 
+        cvc = new CVDataController(DEVICE, USER);
+      } catch( CVApplicationException e){
+        throw new RuntimeException (e);
+      }
+    }
+
+    @Override
+    public void reduce( Text key, Iterable<NullWritable> values, Context context) throws IOException, InterruptedException {
+      String[] fields = key.toString( ).split( "\\t");
+      String customerAccountId = fields[0];
+      Long vodOrderId = (fields[1] != null) ? Long.parseLong( fields[1]) : null;
+      Long corp = (fields[2] != null) ? Long.parseLong( fields[2]) : null;
+      String previewInd = fields[3];
+      String trailerInd = fields[4];
+      java.util.Date dtmCreated = null;
+
+      String encryptedCustomerAccountId = "";
+
+      try{
+        dtmCreated = (fields[5] != null) ? timeFormat.parse( fields[5]) : null;
+        encryptedCustomerAccountId = cvc.encryptField("device", customerAccountId);
+      } catch( CVApplicationException e) {
+        throw new RuntimeException( e);
+      } catch( ParseException e1) {
+        System.out.println( "Date Parsing Exception on = " + fields[5]);
+      }
+
+      GenericRecord record = new GenericData.Record( outputSchema);
+      record.put( "encrypted_customer_account_id", encryptedCustomerAccountId);
+      record.put( "vod_order_id", vodOrderId);
+      record.put( "corp", corp);
+      record.put( "preview_ind", previewInd);
+      record.put( "trailer_ind", trailerInd);
+      record.put( "dtm_created", (dtmCreated != null) ? dtmCreated.getTime( ) : null);
+      amops.write( mopsFileName, new AvroKey<GenericRecord>( record), NullWritable.get( ));
+    }
+
+    @Override
+    public void cleanup( Context context) throws IOException, InterruptedException {
+      amops.close();
+    }
+  }
+
+  public int run(String[] args) throws Exception {
+    if (args.length != 3) {
+      System.err.println( "Usage: KomVodOrderEncryptor -libjars ojdbc.jar -Dmapred.reduce.tasks=100 "
+          + "-Dmapreduce.task.timeout=1500000 <start_date yyyy-MM-dd> <end_date yyyy-MM-dd> <output_dir>");
+      System.err.println( "NOTE: This job should only be used to import data for 1 month at a time, as it "
+          + "copies the data to the table partition which is monthId");
+      System.err.println( "<start_date yyyy-MM-dd>: start date of import");
+      System.err.println( "<end_date yyyy-MM_dd>: end date of import");
+      System.err.println( "<output_dir>: dir to store output");
+      return -1;
+    }
+
+    String startDateStr = args[0];
+    System.out.println( "DEBUG: start date input = " + startDateStr);
+    String endDateStr = args[1];
+    System.out.println( "DEBUG: end date input = " + endDateStr);
+
+    Date startDate = null;
+    Date endDate = null;
+
+    try {
+      startDate = startDateStr != null ? dateFormat.parse( startDateStr) : null;
+      endDate = endDateStr != null ? dateFormat.parse( endDateStr) : null;
+    }catch( ParseException e) {
+      System.out.println( "Date Parsing Exception on startDate = " + startDateStr + " endDate = " + endDateStr);
+    }
+
+    String mopsFileName = dayFormat.format( startDate) + "To" + dayFormat.format( endDate);
+    String monthId = monthFormat.format( startDate);
+    System.out.println( "DEBUG: monthId = " + monthId);
+    System.out.println( "DEBUG: mops file name = " + mopsFileName);
+
+    // Add + 1 to the date to get the records from today's date (records are created around 2pm and the below puts a timestamp of midnight with the dates).
+    String SELECT_QUERY = "SELECT customer_account_id, vod_order_id, corp, preview_ind, trailer_ind, "
+        + "dtm_created FROM cdrusr.kom_vod_order "
+        + "WHERE dtm_created >= TO_DATE('" + startDateStr + "','yyyy-MM-dd') "
+        + "AND dtm_created <= TO_DATE( '" + endDateStr + "','yyyy-MM-dd') + 1 and rownum<=10";
+
+
+    String COUNT_QUERY = "SELECT COUNT(customer_account_id) FROM cdrusr.kom_vod_order "
+        + "WHERE dtm_created >= TO_DATE('" + startDateStr + "','yyyy-MM-dd') "
+        + "AND dtm_created <= TO_DATE( '" + endDateStr + "','yyyy-MM-dd') + 1 and rownum<=10";
+
+    System.out.println( "DEBUG: SELECT QUERY = " + SELECT_QUERY);
+    System.out.println( "DEBUG: COUNT QUERY = " + COUNT_QUERY);
+
+    Schema outputSchema = KomVodOrder.getClassSchema( );
+    Configuration conf = getConf( );
+    conf.set( "mapred.map.tasks", "5");
+    conf.set( "mapreduce.map.output.compress", "true");
+    conf.set( "mapreduce.map.output.compress.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    conf.set( "mapreduce.output.fileoutputformat.compress", "true");
+    conf.set( "mapreduce.output.fileoutputformat.compress.type", "block");
+    conf.set( "mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    conf.set( OUTPUT_SCHEMA, outputSchema.toString());
+    conf.set( MOPS_FILE_NAME, mopsFileName);
+    
+    Map<String, String> map = Util.getSchema();
+    DRIVER_CLASS = map.get("DRIVER_CLASS");
+    DB_URL = map.get("DB_URL");
+    USER_NAME = map.get("USER_NAME");
+    PASSWORD = map.get("PASSWORD");
+    USER = map.get("USER");
+    DEVICE = map.get("DEVICE");
+    KOM_VOD_ORDER_PROD_HDFS_LOC = map.get("KOM_VOD_ORDER_PROD_HDFS_LOC");
+    
+    System.out.println( "DEBUG: DRIVER_CLASS = " + DRIVER_CLASS);
+    System.out.println( "DEBUG: DB_URL = " + DB_URL);
+    System.out.println( "DEBUG: USER_NAME = " + USER_NAME);
+    System.out.println( "DEBUG: PASSWORD = " + PASSWORD);
+    System.out.println( "DEBUG: USER = " + USER);
+    System.out.println( "DEBUG: DEVICE = " + DEVICE);
+    System.out.println( "DEBUG: KOM_VOD_ORDER_PROD_HDFS_LOC = " + KOM_VOD_ORDER_PROD_HDFS_LOC);
+    
+    
+    DBConfiguration.configureDB( conf, DRIVER_CLASS, DB_URL, USER_NAME, PASSWORD);
+    String configurationFile = System.getProperty("oozie.action.conf.xml");
+
+    if (configurationFile != null){
+      conf.addResource(new Path("file:///", configurationFile));
+    }
+
+    Job job = Job.getInstance( conf);
+    job.setJarByClass(KomVodOrderEncryptor.class);
+    job.setJobName("KomVodOrderEncryptor");
+
+    DBInputFormat.setInput( job, KomVodOrderDBInputWritable.class, SELECT_QUERY, COUNT_QUERY);
+    FileOutputFormat.setOutputPath(job, new Path( args[args.length-1]));
+
+    job.setMapperClass( MyMapper.class);
+    job.setMapOutputKeyClass( Text.class);
+    job.setMapOutputValueClass( NullWritable.class);
+
+    job.setReducerClass( MyReducer.class);
+    job.setOutputKeyClass(NullWritable.class);
+    job.setOutputValueClass(NullWritable.class);
+
+    AvroMultipleOutputs.addNamedOutput(job, mopsFileName, AvroKeyOutputFormat.class, outputSchema, null);
+
+    //job.setNumReduceTasks(100);
+
+    boolean status = job.waitForCompletion(true);
+    cleanup( conf, args, monthId, mopsFileName);
+    return status ? 0 : 1;
+  }
+  
+  
+
+  public void cleanup( Configuration conf, String[] args, String monthIdStr, String mopsFileName) throws IOException {
+    String uatOutputDir = KOM_VOD_ORDER_PROD_HDFS_LOC + "/month_id=" + monthIdStr;
+    Util.deleteSuccessFiles( conf, args[args.length-1]);
+    String pattern1 =  mopsFileName + "-*";
+    Util.move( conf, args[args.length-1], uatOutputDir, pattern1);
+  }
+
+  public static void main(String[] args) throws Exception {
+    int res =  ToolRunner.run(new Configuration(), new KomVodOrderEncryptor(), args);
+    System.exit(res);
+  }
+}

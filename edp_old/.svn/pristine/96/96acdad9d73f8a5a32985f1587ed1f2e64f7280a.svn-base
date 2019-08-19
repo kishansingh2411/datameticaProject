@@ -1,0 +1,104 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Create Gold table(gold_rsdvr_preferences_delta_tbl)
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 05/05/2016
+--#   Log File    : .../log/mrdvr/MRDVR_DEPLOYMENT.log
+--#   SQL File    : 
+--#   Error File  : .../log/mrdvr/MRDVR_DEPLOYMENT.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          05/05/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+DROP TABLE IF EXISTS ${hivevar:database}.${hivevar:table_prefix}${hivevar:table_name}
+;
+
+CREATE EXTERNAL TABLE ${hivevar:database}.${hivevar:table_prefix}${hivevar:table_name}
+(      
+	 HOME_ID                                VARCHAR(255)     COMMENT 'home id of the requesting box',
+	 MAC_ADDRESS                            VARCHAR(255)     COMMENT 'macaddress of the requesting box',
+	 SERIAL_NUMBER                          VARCHAR(255)     COMMENT 'serial number of the requesting box',
+	 SYST                                   VARCHAR(6)       COMMENT '',
+	 SORT_OPTION                            INT              COMMENT 'the users preference for list sorting',
+	 SPACE_ALLOTED                          BIGINT           COMMENT 'the space alotted in the home (in KB)',
+	 SPACE_USED                             BIGINT           COMMENT 'the space used in the home (in KB)',
+	 AUTO_ERASE                             VARCHAR(1)       COMMENT 'should the recordings be erased when space is needed',
+	 SAVE_DAYS                              INT              COMMENT 'always 360 - not yet supported',
+	 NODE_ID                                INT              COMMENT 'the service group of the home',
+	 BLOCK_TITLES                           VARCHAR(5)       COMMENT 'whether or not blocked titles is turned on for the home',
+	 STATUS                                 INT              COMMENT 'The status of the provisioning operation for this home',
+	 CREATE_TIME                            TIMESTAMP        COMMENT '',
+	 STATUS_CHANGED                         TIMESTAMP        COMMENT '',
+	 INGESTS_ALLOTED                        INT              COMMENT '',
+	 VERSION1                               VARCHAR(2)       COMMENT '',
+     REC_PAST_FOLDERS                       VARCHAR(1)       COMMENT 'Y to see the recorded list in folders',
+     REC_EPISODE_KEEP                       VARCHAR(4)       COMMENT 'SN Space needed XD until deleted 1-14 - # days',
+     REC_EPISODE_QUALITY                    VARCHAR(1)       COMMENT 'H = HD, S = SD',
+     REC_EPISODE_STOP                       VARCHAR(8)       COMMENT 'minutes before (neg) or after (pos) the scheduled endtime the user wants the recording to end',
+     REC_SERIES_KEEP                        VARCHAR(8)       COMMENT 'SN Space needed XD until deleted 1-14 - # days',
+     REC_SERIES_QUALITY                     VARCHAR(4)       COMMENT 'H = HD, S = SD',
+     REC_SERIES_STOP                        VARCHAR(8)       COMMENT 'minutes before (neg) or after (pos) the scheduled endtime the user wants the recording to end',
+     REC_SERIES_SAVE_NUM_EP                 VARCHAR(6)       COMMENT 'the number of episodes of a series to save (0 - all)',
+     REC_SERIES_TYPE                        VARCHAR(2)       COMMENT 'N - new only, T - any Timeslot, A - Any Time',
+     RECORDER_ID                            INT              COMMENT '',
+     CREATED_BY                             VARCHAR(64)      COMMENT '',
+     MODIFY_TIME                            TIMESTAMP        COMMENT '',
+     MODIFIED_BY                            VARCHAR(64)      COMMENT '',
+	 LOADTIME          	                    TIMESTAMP        COMMENT 'date/time data loaded into table',
+	 LAST_UPDATED                           TIMESTAMP        COMMENT '',
+	 SORT_OPTION_IND                        VARCHAR(1)       COMMENT '',
+	 SPACE_ALLOTED_IND                      VARCHAR(1)       COMMENT '',
+	 SPACE_USED_IND                         VARCHAR(1)       COMMENT '',
+	 AUTO_ERASE_IND                         VARCHAR(1)       COMMENT '',
+	 SAVE_DAYS_IND                          VARCHAR(1)       COMMENT '',
+	 NODE_ID_IND                            VARCHAR(1)       COMMENT '',
+	 BLOCK_TITLES_IND                       VARCHAR(1)       COMMENT '',
+	 STATUS_IND                             VARCHAR(1)       COMMENT '',
+	 CREATE_TIME_IND                        VARCHAR(1)       COMMENT '',
+	 STATUS_CHANGED_IND                     VARCHAR(1)       COMMENT '',
+	 INGESTS_ALLOTED_IND                    VARCHAR(1)       COMMENT '',
+	 VERSION1_IND                           VARCHAR(1)       COMMENT '',
+     REC_PAST_FOLDERS_IND                   VARCHAR(1)       COMMENT '',
+     REC_EPISODE_KEEP_IND                   VARCHAR(1)       COMMENT '',
+     REC_EPISODE_QUALITY_IND                VARCHAR(1)       COMMENT '',
+     REC_EPISODE_STOP_IND                   VARCHAR(1)       COMMENT '',
+     REC_SERIES_KEEP_IND                    VARCHAR(1)       COMMENT '',
+     REC_SERIES_QUALITY_IND                 VARCHAR(1)       COMMENT '',
+     REC_SERIES_STOP_IND                    VARCHAR(1)       COMMENT '',
+     REC_SERIES_SAVE_NUM_EP_IND             VARCHAR(1)       COMMENT '',
+     REC_SERIES_TYPE_IND                    VARCHAR(1)       COMMENT '',
+     RECORDER_ID_IND                        VARCHAR(1)       COMMENT '',
+     CREATED_BY_IND                         VARCHAR(1)       COMMENT '',
+     MODIFY_TIME_IND                        VARCHAR(1)       COMMENT '',
+     MODIFIED_BY_IND                        VARCHAR(1)       COMMENT '',
+     LAST_UPDATED_IND                       VARCHAR(1)       COMMENT '',
+	 OP_TYPE                                VARCHAR(1)       COMMENT '',
+	 DTM_CREATED                            TIMESTAMP        COMMENT '',
+	 RSDVR_PREFERENCES_DELTA_SEQ            BIGINT           COMMENT ''
+)
+PARTITIONED BY (LOAD_DATE STRING)
+STORED AS ORC
+LOCATION '${hivevar:location}'
+TBLPROPERTIES ("orc.compress"="SNAPPY")
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

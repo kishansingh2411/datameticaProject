@@ -1,0 +1,193 @@
+package com.alticeusa.ds.svodusagedemographics.utils;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.conf.Configuration;
+
+/**
+ * Util class contains the common utility functions used
+ * across various classes.
+ *
+ * @author Kriti Singh
+ */
+public final class Util
+{
+	  private static final Logger logger = LoggerFactory.getLogger(Util.class);		
+  private static final DateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
+  private static final DateFormat dayFormat = new SimpleDateFormat( "yyyy-MM-dd");
+
+  private static final Date CURRENT_DATE = new Date( );
+  private static final String DATESTR = dayFormat.format( CURRENT_DATE);
+
+  private static final String SUCCESS_FILE = "_SUCCESS";
+
+  public static void deleteLogFiles( Configuration conf, String dir)
+    throws IOException
+  {
+    FileSystem fs = FileSystem.get( conf);
+    fs.delete( new Path( dir + "/" + "_logs"), true);
+  }
+  
+  public static void deleteSuccessFiles( Configuration conf, String dir)
+    throws IOException
+  {
+    FileSystem fs = FileSystem.get( conf);
+    fs.delete( new Path( dir + "/" + SUCCESS_FILE), true);
+  }
+
+  public static void remove( Configuration conf, String dir)
+    throws IOException
+  {
+    FileSystem fs = FileSystem.get( conf);
+    fs.delete( new Path( dir), true);
+  }
+
+  public static void rename( Configuration conf, String olddir, String newdir)
+    throws IOException
+  {
+    FileSystem fs = FileSystem.get( conf);
+    fs.rename( new Path( olddir), new Path( newdir));
+  }
+
+  static void copy( String src, String dst, Configuration conf) 
+    throws IOException 
+  {
+    FileSystem fs = FileSystem.get( conf);
+    Path srcPath = new Path( src);
+    Path dstPath = new Path( dst);
+    fs.mkdirs( dstPath);
+
+    FileStatus[] srcs = fs.listStatus( srcPath);
+
+    for( int i = 0; i < srcs.length; i++)
+      FileUtil.copy( fs, srcs[i].getPath( ), fs, dstPath, false, conf);
+  }
+
+  /**
+   * Moves the files from source to target where the filename matches the 
+   * given pattern.
+   * If target dir does not exists, it will be created. If it already exists,
+   * then files will be copied into it. Existing files in the target directory
+   * won't be affected. If target directory contains files with the same names
+   * move will fail.
+   */
+  public static void move( Configuration conf, String srcDir, String tgtDir,
+                           String pattern)
+    throws IOException
+  {
+    FileSystem fs = FileSystem.get( conf);
+    fs.mkdirs( new Path( tgtDir));
+
+    String filePattern =  srcDir + "/" + pattern;
+    FileStatus[] fileStatusArr = fs.globStatus( new Path( filePattern));
+
+    for( int i = 0; i < fileStatusArr.length; i++)
+    {
+      Path srcPath = fileStatusArr[i].getPath( );
+      String name = srcPath.getName( );
+      Path destPath = new Path( tgtDir + "/" + name);
+      fs.rename( srcPath, destPath);
+    }
+  }
+  
+  public static void main(String[] args) {
+	try {
+		getSchema();
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+  
+  public static Map<String, String> getSchema() throws Exception {
+		Map<String, String> propertiesMap = new HashMap<String, String>();
+		Map<String, String> dbPropertiesMap = null;
+		try {
+			Properties prop = new Properties();
+			//String dir = System.getProperty("user.dir");
+			//String propsFileName = dir + "\\etc\\svodusagedemographics.properties";
+			//String propsFileName = "D:\\Sonali\\CableVision\\Workspace\\SVODUsageDemographics\\etc\\svodusagedemographics.properties";
+			//InputStream input = Util.class.getClassLoader().getResourceAsStream(propsFileName);
+			String propFilePath = "/apphdp/hdp/svod_test/edp_batch/svodusagedemographics/etc/svodusagedemographics.properties";
+			System.out.println("propFilePath-------->"+propFilePath);
+			FileInputStream input = new FileInputStream(propFilePath);
+			if (input == null) {
+				logger.warn("Unable to find file ->" + propFilePath);
+			}
+			prop.load(input);
+
+			Enumeration<?> e = prop.propertyNames();
+			while (e.hasMoreElements()) {
+				String key = (String) e.nextElement();
+				String value = prop.getProperty(key);
+				propertiesMap.put(key, value);
+			}
+			String filePath = propertiesMap.get("schema.location");
+			String nameNodeService = propertiesMap.get("nameNodeService");
+			System.out.println("Got filepath n nameNodeService as : "+filePath+ " : "+nameNodeService);
+			if(filePath!=null && !filePath.equals("") && nameNodeService!=null && !nameNodeService.equals("")){
+				logger.info("Found file path ["+filePath+"] and nameNodeService ["+nameNodeService+"]");
+				System.out.println("Found file path ["+filePath+"] and nameNodeService ["+nameNodeService+"]");
+				dbPropertiesMap = getSchemaDetails(filePath, nameNodeService);
+			}
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(),ex);
+			throw new Exception(ex);
+		}
+		return dbPropertiesMap;
+	}
+
+private static Map<String, String> getSchemaDetails(String schemaFilePath, String nameNodeService) throws Exception {
+		Map<String, String> dbPropertiesMap = new HashMap<String, String>();
+		String currentLine = null;
+		String[] tokens = null;
+		BufferedReader br =null;
+		try{
+			Configuration conf = new Configuration ();
+			System.out.println("creating url : "+"hdfs://"+nameNodeService+"/"+schemaFilePath+"/svodusagedemographics-schema.properties");
+			URI uri = URI.create("hdfs://"+nameNodeService+"/"+schemaFilePath+"/svodusagedemographics-schema.properties");
+	        FileSystem fs = FileSystem.get(uri, conf);
+	        Path path  = new Path(uri);
+	        if(fs.exists(path)){
+		        br = new BufferedReader(new InputStreamReader(fs.open(new Path(uri))));
+		        while ((currentLine = br.readLine()) != null) {
+		        	if(currentLine.contains("=")){
+			        	tokens = currentLine.split("=");
+			        	dbPropertiesMap.put(tokens[0], tokens[1]);
+		        	}
+				}
+	        }else{
+	        	logger.error("Schema Details file not found ->" + path.getName());
+	        }
+		}catch(Exception ex){
+			logger.error(ex.getMessage(),ex);
+			throw new Exception(ex);
+  } finally{
+  	try {
+				br.close();
+			} catch (IOException ex) {
+				logger.error(ex.getMessage(),ex);
+				throw new Exception(ex);
+			}
+  }
+		return dbPropertiesMap;
+	}
+  
+}

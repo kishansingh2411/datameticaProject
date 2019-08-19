@@ -1,0 +1,39 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: footprints.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 02/05/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          02/05/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Incoming Hive Table names
+INCOMING_CMTS_INTERFACE_MAC_TBL=incoming_cmts_interface_mac
+
+
+##Gold Hive Table names
+GOLD_EXPORT_CMTS_NODE_TBL=gold_export_cmts_node
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

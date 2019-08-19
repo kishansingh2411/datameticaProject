@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+#
+#	Project Name: VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#	Description: uat_coordinator.xml file contains the frequency and schedule of
+#   execution of the prod_workflow.xml
+#
+#	Author: Kriti Singh
+#	Date: 05/11/2016
+#
+-->
+
+<coordinator-app xmlns="uri:oozie:coordinator:0.1"
+                 name="SVODUsageDemoCoordinator"
+				 frequency="${coord:days(1)}"
+				 start="${startTime}"
+				 end="${endTime}"
+				 timezone="${timeZoneDef}">
+
+
+    <!--<datasets>
+		<dataset name="inputKomDGenre" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+			<uri-template>${triggerKomDGenreDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+		</dataset>
+        <dataset name="inputKomDGeogCorp" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+            <uri-template>${triggerKomDGeogCorpDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+        </dataset>
+        <dataset name="inputKomDPeriod" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+            <uri-template>${triggerKomDPeriodDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+        </dataset>
+        <dataset name="inputKomDProductMaster" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+            <uri-template>${triggerKomDProductMasterDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+        </dataset>
+        <dataset name="inputKomDSubscriptionGroup" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+            <uri-template>${triggerKomDSubscriptionGroupDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+        </dataset>
+        <dataset name="inputKomFVodOrder" frequency="${coord:days(1)}" initial-instance="${startTime}" timezone="${timeZoneDef}">
+            <uri-template>${triggerKomFVodOrderDataset}/year=${year_id}/month=${month_id}/day=${day_id}</uri-template>
+            <done-flag>SUCCESS.avro</done-flag>
+        </dataset>
+	</datasets>-->
+
+	<action>
+		<workflow>
+			<app-path>${workflowAppPath}</app-path>
+            <configuration>
+                <property>
+                    <name>year_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'yyyy')}</value>
+                </property>
+                <property>
+                    <name>month_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'MM')}</value>
+                </property>
+                <property>
+                    <name>day_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'dd')}</value>
+                </property>
+                <property>
+                    <name>year_month_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'yyyyMM')}</value>
+                </property>
+            </configuration>
+		</workflow>
+	</action>
+</coordinator-app>
+

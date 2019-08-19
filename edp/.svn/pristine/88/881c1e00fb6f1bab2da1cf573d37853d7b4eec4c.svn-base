@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://ws.ejb.interfaces.css.services.cih.amdocs.com" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://ws.ejb.interfaces.css.services.cih.amdocs.com" xmlns:intf="http://ws.ejb.interfaces.css.services.cih.amdocs.com" xmlns:tns2="http://datatypes.common.css.services.cih.amdocs.com" xmlns:tns3="http://common.services.amdocs.com" xmlns:tns4="http://awsi.amdocs.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!--WSDL created by << AWSI >> 8.1.0.pb00_hf6 build 744 AWSI 8.1.0.0 HF6 & Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT).
+Built on Tue Apr 26 20:06:31 IST 2011-->
+
+  <wsdl:types>
+
+    <schema elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema">
+
+	   <xsd:import namespace="http://ws.ejb.interfaces.css.services.cih.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__ws.ejb.interfaces.css.services.cih.amdocs.com.xsd"/>
+
+  </schema>
+
+    <schema elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema">
+
+	   <xsd:import namespace="http://common.services.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__common.services.amdocs.com.xsd"/>
+
+  </schema>
+
+    <schema elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema">
+
+	   <xsd:import namespace="http://awsi.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__awsi.amdocs.com.xsd"/>
+
+  </schema>
+
+    <schema elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema">
+
+	   <xsd:import namespace="http://datatypes.common.css.services.cih.amdocs.com" schemaLocation="_SecurityTokenServiceSvc__datatypes.common.css.services.cih.amdocs.com.xsd"/>
+
+  </schema>
+
+  </wsdl:types>
+
+
+    <wsdl:message name="loginResponse">
+
+
+        <wsdl:part element="impl:loginResponse" name="parameters"/>
+
+
+    </wsdl:message>
+
+
+    <wsdl:message name="loginRequest">
+
+
+        <wsdl:part element="impl:login" name="parameters"/>
+
+
+    </wsdl:message>
+
+
+    <wsdl:portType name="SecurityTokenServiceSvc">
+
+
+        <wsdl:operation name="login">
+
+
+            <wsdl:input message="impl:loginRequest" name="loginRequest"/>
+
+
+            <wsdl:output message="impl:loginResponse" name="loginResponse"/>
+
+
+        </wsdl:operation>
+
+
+    </wsdl:portType>
+
+
+    <wsdl:binding name="SecurityTokenServiceSvcSoapBinding" type="impl:SecurityTokenServiceSvc">
+
+
+        <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+
+        <wsdl:operation name="login">
+
+
+            <wsdlsoap:operation soapAction=""/>
+
+
+            <wsdl:input name="loginRequest">
+
+
+                <wsdlsoap:body use="literal"/>
+
+
+            </wsdl:input>
+
+
+            <wsdl:output name="loginResponse">
+
+
+                <wsdlsoap:body use="literal"/>
+
+
+            </wsdl:output>
+
+
+        </wsdl:operation>
+
+
+    </wsdl:binding>
+
+
+    <wsdl:service name="SecurityTokenServiceSvcService">
+
+
+        <wsdl:port binding="impl:SecurityTokenServiceSvcSoapBinding" name="SecurityTokenServiceSvc">
+
+
+            <wsdlsoap:address location="http://uowsep.cablevision.com/sts/services/SecurityTokenServiceSvc"/>
+
+
+        </wsdl:port>
+
+
+    </wsdl:service>
+
+
+</wsdl:definitions>

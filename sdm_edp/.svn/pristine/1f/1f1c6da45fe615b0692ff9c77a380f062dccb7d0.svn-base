@@ -1,0 +1,56 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: subject-area.env.properties 
+#   Program type: 
+#   Purpose:    : This file contains properties which would be used in this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/19/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          12/28/2015       Initial version
+#
+#
+#####################################################################################################################
+
+# Defines project name that is used in different path context. It shall not     
+# contain any special characters. It shall only contain alphanumeric character     
+# or underscores or hypens. It shall not start with number             
+SUBJECT_AREA_NAME=ivr
+
+LOCAL_DATA_DIRECTORY=/UTIL/inbound/incoming
+
+#Define directory path to be used for different layers of directory                                                               
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA=${DATA_LAYER_DIR_INCOMING}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_GOLD_SUBJECT_AREA=${DATA_LAYER_DIR_GOLD}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_ARCHIVE_SUBJECT_AREA=${DATA_LAYER_DIR_ARCHIVE}/${SUBJECT_AREA_NAME}
+###                                                                           
+# Root directory to store all logs based on subject area project module and     
+# batch Admin shall implement appropriate policies to clean the logs or     
+# upload them to HDFS after those logs have been present for more than      
+# configured amount of time Make use of functions defined in functions.sh      
+# file for logging any information Users don't need to specific this location     
+# as it is automatically calculate                                        
+# @Type  :  Path
+# @Final :  true
+LOG_DIR_SUBJECT_AREA=${LOG_DIR}/${SUBJECT_AREA_NAME}
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

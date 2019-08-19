@@ -1,0 +1,97 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_cpe_tc table from gold tables.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module.hql
+--#   Date        : 01/23/2017
+--#   Log File    : .../log/cpe/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/cpe/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/23/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+WITH
+    tmp_cpe_tc as  (  
+        SELECT 
+        	   SITE_ID      
+             , ACCT_NBR         
+             , SUM(1)                                           WO_TC_TOTAL
+             , SUM(CASE WHEN W_O_CLASS = 'C' THEN 1 ELSE 0 END) WO_TC_VIDEO
+             , SUM(CASE WHEN W_O_CLASS = 'D' THEN 1 ELSE 0 END) WO_TC_DATA
+             , SUM(CASE WHEN W_O_CLASS = 'T' THEN 1 ELSE 0 END) WO_TC_PHONE
+             , COMPLETE_DT 
+        FROM (   
+                SELECT 
+                	   SITE_ID      
+                     , ACCT_NBR         
+                     , WORK_ORDER_NBR  
+                     , COMPLETE_DT
+                     , W_O_STATUS         
+                     , W_O_TYPE          
+                     , OFFICE_ONLY_FLG      
+                     , W_O_CLASS            
+                 FROM  (       
+                         SELECT SITE_ID      
+                              , ACCT_NBR         
+                              , WORK_ORDER_NBR  
+                              , 19000000+ INSTALL_COMPLETION_DT    COMPLETE_DT
+                              , W_O_STATUS         
+                              , W_O_TYPE          
+                              , OFFICE_ONLY_FLG                    
+                              , W_O_CLASS      
+                              , CHANGE_TYPE
+                              , time_slot
+                              , row_number() OVER (PARTITION BY SITE_ID, WORK_ORDER_NBR ORDER BY last_change DESC, CHANGE_TYPE DESC) AS change_rank
+                         FROM ${hivevar:incoming_database}.${hivevar:table_prefix}${hivevar:incoming_work_order_master_table}
+                         WHERE 1 = 1
+                         AND   P_YYYYMMDD >= '${hivevar:source_date}'
+                         AND   W_O_TYPE = 'TC'
+                         AND   CHANGE_TYPE <> 'D'
+                      ) t1
+                WHERE change_rank = 1
+                AND   OFFICE_ONLY_FLG <> 'Y'
+                AND   time_slot <> 'V2'           
+                AND   W_O_STATUS = 'CP'
+                AND   W_O_CLASS IN ('D', 'C', 'T')
+            ) T2
+        GROUP BY  COMPLETE_DT, SITE_ID, ACCT_NBR
+    )
+        
+INSERT OVERWRITE TABLE ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_cpe_tc_table}
+ PARTITION(P_YYYYMMDD)
+SELECT SITE_ID      
+     , ACCT_NBR         
+     , WO_TC_TOTAL  
+     , WO_TC_VIDEO
+     , WO_TC_DATA
+     , WO_TC_PHONE
+     , '${hivevar:source_date}' P_YYYYMMDD
+FROM 
+     tmp_cpe_tc
+WHERE 1 = 1
+      AND   COMPLETE_DT = '${hivevar:source_date}' 
+DISTRIBUTE BY P_YYYYMMDD
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

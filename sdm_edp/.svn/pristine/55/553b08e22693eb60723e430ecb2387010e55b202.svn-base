@@ -1,0 +1,136 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive script
+--#   Purpose:    : Deriving the gold_customer table from gold.
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform.hql
+--#   Date        : 01/23/2017
+--#   Log File    : .../log/sdm/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/sdm/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          01/23/2017       Initial version
+--#
+--#
+--#####################################################################################################################
+
+INSERT OVERWRITE TABLE ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_table} PARTITION(P_YYYYMMDD)
+SELECT 
+       cust.SITE_ID 
+     , cust.ACCT_NBR
+     , (CASE WHEN cust.site_id = 100 THEN 'COMM'
+             WHEN house.BILL_TYP_CD IN ('C', ,'M') THEN 'COMM'
+             ELSE 'RESI'
+        END) cust_group_cd
+     , cust.COMPANY_NBR 
+     , cust.DIVISION_NBR 
+     , cust.FRANCHISE_NBR
+     , cust.FIRST_NM
+     , cust.LAST_NM
+     , cust.HOME_AREA_CD
+     , cust.HOME_EXCHG_NBR
+     , cust.HOME_PHONE_NBR
+     , cust.BUS_AREA_CD
+     , cust.BUS_EXCHG_NBR 
+     , cust.BUS_PHONE_NBR 
+     , cust.OTHER_AREA_CD
+     , cust.OTHER_EXCHG_NBR
+     , cust.OTHER_PHONE
+     , cust.CUST_TYPE_CD
+     , cust.CUST_CATG 
+     , cust.CUST_STS_CD 
+     , cust.CUST_NM
+     , (CASE 
+            WHEN INSTALL_DT = 0 THEN 
+                NULL
+            ELSE
+                concat( substr(lpad(CAST(19000000 + INSTALL_DT as string), 8,'0'), 1, 4)
+                      ,'-'
+                      ,substr(lpad(CAST(19000000 + INSTALL_DT as string), 8,'0'), 5, 2)
+                      ,'-'
+                      ,substr(lpad(CAST(19000000 + INSTALL_DT as string), 8,'0'), 7, 2))
+         END) AS INSTALL_DT
+     , (CASE 
+            WHEN CONNECT_DT = 0 THEN 
+                NULL
+            ELSE
+                concat( substr(lpad(CAST(19000000 + CONNECT_DT as string), 8,'0'), 1, 4)
+                      ,'-'
+                      ,substr(lpad(CAST(19000000 + CONNECT_DT as string), 8,'0'), 5, 2)
+                      ,'-'
+                      ,substr(lpad(CAST(19000000 + CONNECT_DT as string), 8,'0'), 7, 2))
+        END) AS CONNECT_DT
+     , house.HOUSE_NBR 
+     , house.ADDR_LOC 
+     , house.ADDR_FRACTION 
+     , house.PRE_DIRECTIONAL 
+     , house.ADDL_POST_DIR
+     , house.STREET_NM
+     , house.CITY_NM
+     , house.STATE_CD
+     , house.US_ZIP5 
+     , house.US_ZIP4 
+     , house.BLDG 
+     , house.APT 
+     , house.DWELLING_TYP 
+     , house.BILL_TYP_CD  
+     , house.HEADEND 
+     , house.HOUSE_STATUS_CD 
+     , house.PRISM_CD
+     , house.NODE_CD
+     , house.NODE_ID 
+     , house.LONGT_NO 
+     , house.LAT_NO 
+     , hier.REGION_DESCR
+     , hier.REGION_PS_ID
+     , hier.BUSINESS_UNIT_DESCR
+     , hier.BUSINESS_UNIT_PS_ID
+     , hier.BUDGET_ENTITY_DESCR
+     , hier.BUDGET_ENTITY_PS_ID
+     , hier.PLANT_MANAGER_DESCR
+     , hier.PLANT_MANAGER_PS_ID
+     , hier.HEAD_END_DESCR
+     , hier.HEAD_END_STATE_ABBRV
+     , hier.HEAD_END_PS_ID
+     , hier.FRANCHISE_AUTHORITY_DESCR
+     , hier.FRANCHISE_STATE_ABBRV
+     , hier.REPORT_FLAG
+     , hier.HSD_USAGE_RPT_FLAG
+     , '${hivevar:source_date}' P_YYYYMMDD
+FROM  (
+        SELECT *
+        FROM  
+        	${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_acct_hier_table}  
+        WHERE  1 = 1
+           AND P_YYYYMMDD  = '${hivevar:source_date}' AND REPORT_FLAG = 1
+       ) hier    
+INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_customer_master_table}  cust
+             ON cust.P_YYYYMMDD  = '${hivevar:source_date}'
+                AND cust.SITE_ID = hier.ICOMS_SITE AND cust.COMPANY_NBR = hier.ICOMS_COMPANY
+                AND cust.DIVISION_NBR = hier.ICOMS_DIVISION AND cust.FRANCHISE_NBR = hier.ICOMS_FRANCHISE 
+INNER JOIN ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_house_master_table} house
+             ON house.P_YYYYMMDD  = '${hivevar:source_date}'
+             AND house.SITE_ID = cust.SITE_ID AND house.HOUSE_NBR = cust.HOUSE_NBR
+WHERE 1 = 1
+	-- AND   cust.CUST_STS_CD = 'A'
+	-- discard MEMO accounts
+	-- AND   cust.CUST_TYPE_CD NOT IN ('0','4','5','6','6','7','8')
+ORDER BY cust.SITE_ID, cust.ACCT_NBR
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

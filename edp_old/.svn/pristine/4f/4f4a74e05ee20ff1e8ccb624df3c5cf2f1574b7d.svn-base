@@ -1,0 +1,16 @@
+name=oracle-ddp-5
+connector.class=com.cablevision.edp.CustomJdbcSourceConnector
+tasks.max=1
+#Oracle database connection url e.g. jdbc:oracle:thin:edpusr/######@cvdwrddb.cscdev.com:1530:cvdwrd
+connection.url=
+table.whitelist=DWRVWR.EDP_BOXINVTRY
+mode=incrementing
+incrementing.column.name=BOXINVTRY_SEQ
+#comma-separated list of topic names for each table mentioned in table.whitelist property
+topics=DDP_ORACLE_BOXINVTRY
+#interval in milliseconds to query the database to fetch the incremental data 
+poll.interval.ms=3600000
+query.hint=NO_PARALLEL(angel)
+#Postgres database connection url e.g. jdbc:postgresql://cvldhdpan1.cscdev.com:5432/pgedhd?user=edhmgr&password=######
+offset.db.connection.url=
+batch.max.rows=10000

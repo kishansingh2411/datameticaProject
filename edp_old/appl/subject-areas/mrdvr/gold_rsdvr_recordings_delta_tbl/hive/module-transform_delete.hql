@@ -1,0 +1,114 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Build Gold table from Work Tmp table
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-transform-delete.hql
+--#   Date        : 09/06/2016
+--#   Log File    : .../log/mrdvr/MRDVR_MOVE_TO_GOLD_JOB.log
+--#   SQL File    : 
+--#   Error File  : .../log/mrdvr/MRDVR_MOVE_TO_GOLD_JOB.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          19/10/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT INTO TABLE ${hivevar:hive_database_name_gold}.${hivevar:gold_rsdvr_recordings_delta} 
+	PARTITION (LOAD_DATE)
+SELECT
+   GOLD_RSDVR_RECORDINGS_LAST_REC.ASSET_ID	                      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.CALL_SIGN	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.CALL_SIGN_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.CREATE_TIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.CREATE_TIME_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DS_RECTIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DS_RECTIME_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DS_STARTTIME	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DS_STARTTIME_IND	          
+   ,CASE 
+      WHEN WORK_RSDVR_RECORDINGS_DELETE_DEDUP.HOME_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.ASSET_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.SCHEDULE_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.RECORDING_ID IS NOT NULL 
+            THEN  CURRENT_TIMESTAMP 
+      ELSE GOLD_RSDVR_RECORDINGS_LAST_REC.DTM_CREATED 
+   END AS DTM_CREATED                    	
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DURATION	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.DURATION_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.ENDTIME_ADJUSTMENT_PREV	      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.ENDTIME_ADJUSTMENT_PREV_IND	  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.ENDTIME_ADJUSTMENT	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.ENDTIME_ADJUSTMENT_IND      	
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.HOME_ID	                      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.KEEP_TYPE_CODE	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.KEEP_TYPE_CODE_IND	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.LAST_UPDATED	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.LAST_UPDATED_IND
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.LOADTIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.LOADTIME_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.MODIFY_TIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.MODIFY_TIME_IND	              
+   ,CASE 
+      WHEN WORK_RSDVR_RECORDINGS_DELETE_DEDUP.HOME_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.ASSET_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.SCHEDULE_ID IS NOT NULL 
+         AND WORK_RSDVR_RECORDINGS_DELETE_DEDUP.RECORDING_ID IS NOT NULL 
+            THEN WORK_RSDVR_RECORDINGS_DELETE_DEDUP.OP_TYPE 
+      ELSE GOLD_RSDVR_RECORDINGS_LAST_REC.OP_TYPE 
+   END AS OP_TYPE
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.PAUSE_TIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.PAUSE_TIME_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_DATE	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_DATE_IND	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_ID	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_LOCKED	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_LOCKED_IND	      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_STATUS	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_STATUS_IND	      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_TIME	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_TIME_IND	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.RSDVR_RECORDINGS_DELTA_SEQ
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.SCHEDULE_ID	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.START_DATE	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.START_DATE_IND	              
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.START_TIME	                  
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.START_TIME_IND              	
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.STARTDATE_STARTTIME	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.STARTDATE_STARTTIME_IND	      
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.TEMPORARY_ASSET_ID	          
+   ,GOLD_RSDVR_RECORDINGS_LAST_REC.TEMPORARY_ASSET_ID_IND
+   ,"${hivevar:source_date}" AS LOAD_DATE
+FROM 
+	${hivevar:hive_database_name_gold}.${hivevar:gold_rsdvr_recordings_last_rec} GOLD_RSDVR_RECORDINGS_LAST_REC 
+INNER JOIN ${hivevar:hive_database_name_work}.${hivevar:work_rsdvr_recordings_delete_dedup} WORK_RSDVR_RECORDINGS_DELETE_DEDUP 
+ON
+   (
+      GOLD_RSDVR_RECORDINGS_LAST_REC.HOME_ID = WORK_RSDVR_RECORDINGS_DELETE_DEDUP.HOME_ID 
+      AND GOLD_RSDVR_RECORDINGS_LAST_REC.ASSET_ID = WORK_RSDVR_RECORDINGS_DELETE_DEDUP.ASSET_ID
+      AND GOLD_RSDVR_RECORDINGS_LAST_REC.SCHEDULE_ID = WORK_RSDVR_RECORDINGS_DELETE_DEDUP.SCHEDULE_ID
+      AND GOLD_RSDVR_RECORDINGS_LAST_REC.RECORDING_ID = WORK_RSDVR_RECORDINGS_DELETE_DEDUP.RECORDING_ID
+   )
+WHERE
+	GOLD_RSDVR_RECORDINGS_LAST_REC.RSDVR_RECORDINGS_DELTA_SEQ = WORK_RSDVR_RECORDINGS_DELETE_DEDUP.RSDVR_RECORDINGS_DELTA_SEQ
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

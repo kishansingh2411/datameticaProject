@@ -1,0 +1,239 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: postgres_schema.sql
+--#   Program type: SQL script
+--#   Purpose:    : Create Job_statistics table and generate_seq_id sequence
+--#   Author(s)   : DataMetica Team
+--#   Usage       : psql -f postgres_schema.sql
+--#   Date        : 05/02/2016
+--#   Log File    : .../log/subject-area/DEPLOYMENT.log
+--#   SQL File    : 
+--#   Error File  : .../log/subject-area/DEPLOYMENT.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          05/02/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+CREATE SEQUENCE GENERATE_SEQ_ID 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE TABLE JOB_STATISTICS
+(
+   BATCH_ID              INTEGER NOT NULL,
+   JOB_NAME              TEXT NOT NULL,
+   START_TIME            TIMESTAMP NOT NULL,
+   END_TIME              TIMESTAMP,
+   TOTAL_TIME            TEXT,
+   NO_OF_RECORDS         TEXT,
+   STATUS                TEXT,
+   SOURCE_DATA_TIMESTAMP TIMESTAMP,
+   LOG_FILE_PATH         TEXT,
+   SOURCE_FILE_NAME      TEXT,
+   ARGS                  TEXT,
+   PRIMARY KEY(BATCH_ID, JOB_NAME, START_TIME)
+)
+;
+
+CREATE TABLE KEY_PARAMS
+(   
+   KEY_PARAM_ID          INTEGER NOT NULL,
+   JOB_KEY               TEXT NOT NULL,
+   PARAM_DESC            TEXT NOT NULL,
+   PARAM_DTM_START       TIMESTAMP ,
+   PARAM_DTM_END         TIMESTAMP,
+   PARAM1                TEXT,
+   PARAM2                TEXT,
+   INCREMENTAL_IN_HRS    INTEGER,
+   PROCESS_LAG_IN_MINS   INTEGER,
+   DTM_CREATED           TIMESTAMP,
+   DTM_LAST_UPDATED      TIMESTAMP,
+   PRIMARY KEY(KEY_PARAM_ID)
+)
+;
+
+CREATE TABLE DDP_AUDIT
+(
+   TABLE_NAME      TEXT,
+   MIN_SEQUENCE    BIGINT,
+   MAX_SEQUENCE    BIGINT,
+   TABLE_TYPE      TEXT,
+   LAST_MODIFIED   TIMESTAMP,
+   LOAD_START_DATE TIMESTAMP,
+   LOAD_END_DATE   TIMESTAMP,
+   PRIMARY KEY(TABLE_NAME)
+)
+;
+
+CREATE TABLE MRDVR_AUDIT
+(
+   TABLE_NAME      TEXT,
+   TABLE_LAST_UPDATED TIMESTAMP,
+   LAST_UPDATED TIMESTAMP,
+   PRIMARY KEY(TABLE_NAME)
+)
+;
+
+CREATE TABLE EDP_AUDIT
+(  
+   DATA_SOURCE     TEXT,
+   TABLE_NAME      TEXT,
+   MIN_SEQUENCE    BIGINT,
+   MAX_SEQUENCE    BIGINT,
+   LAST_MODIFIED   TIMESTAMP,
+   LOAD_START_DATE TIMESTAMP,
+   LOAD_END_DATE   TIMESTAMP,  
+   PRIMARY KEY(TABLE_NAME)
+)
+;
+
+CREATE TABLE CDC_PROCESS_LOG
+(  
+   DATASET_NAME     TEXT,
+   TABLE_NAME       TEXT,
+   RUNDATE          TEXT,
+   DEDUP_CNT        BIGINT,
+   INSERT_CNT       BIGINT,
+   UPDATE_CNT       BIGINT,
+   DELETE_CNT       BIGINT,  
+   TOTAL_CNT        BIGINT,
+   PRIMARY KEY(DATASET_NAME,TABLE_NAME)
+)
+;
+
+CREATE RSDVR_PREFERENCES_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE RSDVR_REQUESTS_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE RSDVR_SCHEDULE_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE RSDVR_RECORDINGS_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE RSDVR_REQUESTS_ARCHIVE_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+CREATE RSDVR_RECORDINGS_ARCHIVE_SEQ 
+   INCREMENT BY 1 
+   MINVALUE 100
+;
+
+INSERT INTO DDP_AUDIT VALUES('edp_auxcust',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_auxhouse',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_boxinvtry',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_custmaster',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_housemaster',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_zipmaster',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_code36',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_code95',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_code999',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_controlparams',0,0,'low',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_custbilladdr',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_wipoutlet',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_custrates',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_ratecodes',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_ratepricearea',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_ratepricelevel',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_raterptctrs',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_rptctrs',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_slsmn',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_techs',0,0,'medium',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_wipcustrate',0,0,'large',NULL,NULL,NULL);
+INSERT INTO DDP_AUDIT VALUES('edp_wipmaster',0,0,'large',NULL,NULL,NULL);
+
+
+INSERT INTO EDP_AUDIT VALUES('ODS','cust_services_last_rec',0,0,NULL,NULL,NULL);
+
+INSERT INTO KEY_PARAMS VALUES
+    (600002,'600002','LOAD OMINITURE UNIFIED GLOBAL DATA','2016-03-04','2016-03-04','cablevis-uow-com',null,720,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600003,'600003','LOAD HULU DATA','2016-03-29','2016-03-29',null,null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600004,'600004','LOAD DDP DATA','2016-05-20','2016-05-20',null,null,456,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600005,'600005','LOAD CHANNEL900 DATA','2016-05-18','2016-05-18','CHANNEL900',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600006,'600006','LOAD MRDVR DATA','2016-01-01','2016-01-01',null,null,168,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600008,'600008','LOAD CHANNEL TUNING DATA','2013-05-01','2013-06-01',null,null,720,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600009,'600009','LOAD ONET PROD DATA','2016-02-05','2016-02-05','onet_prod',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600015,'600015','LOAD ODS CHANNEL900 DATA','2016-07-19','2016-07-19','',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600016,'600016','LOAD CHANNEL TUNING FACT DATA',DATE_TRUNC('SECOND',NOW()::TIMESTAMP),DATE_TRUNC('SECOND',(NOW() + (720 * INTERVAL '1 HOUR'))::TIMESTAMP),'',null,720,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600017,'600017','LOAD CHANNEL TUNING DIMENSION DATA',DATE_TRUNC('SECOND',NOW()::TIMESTAMP),DATE_TRUNC('SECOND',NOW()::TIMESTAMP),'',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600018,'600018','LOAD ODS GLOBAL UNIFIED DATA','2016-08-19','2016-08-19','',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600019,'600019','LOAD ODS ONET PROD DATA','2016-08-19','2016-08-19','',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600020,'600020','LOAD OPTIMUM APP','2016-08-19','2016-08-19','STOCK-97',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600021,'600021','LOAD OPTIMUM APP','2016-08-19','2016-08-19','STOCK-98',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600022,'600022','LOAD OPTIMUM APP','2016-08-19','2016-08-19','STOCK-99',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+INSERT INTO KEY_PARAMS VALUES
+    (600023,'600023','LOAD OPTIMUM APP','2016-08-19','2016-08-19','STOCK-PCMAC',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600024,'600024','LOAD OPTIMUM APP','2016-08-19','2016-08-19','ACCESS',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+INSERT INTO KEY_PARAMS VALUES
+    (600025,'600025','LOAD OPTIMUM APP TO NETEZZA','2016-08-19','2016-08-19','OPT_APP_TO_NETEZZA_EXPORT',null,24,0,DATE_TRUNC('SECOND',NOW()::TIMESTAMP),null)
+;
+
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

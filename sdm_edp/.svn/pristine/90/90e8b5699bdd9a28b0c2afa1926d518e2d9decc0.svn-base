@@ -1,0 +1,39 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: ivr.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/18/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/18/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Incoming Hive Table names
+INCOMING_CDR_RESI_TBL=incoming_cdr_resi
+
+
+##Gold Hive Table names
+GOLD_CDR_RESI_TBL=gold_cdr_resi
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

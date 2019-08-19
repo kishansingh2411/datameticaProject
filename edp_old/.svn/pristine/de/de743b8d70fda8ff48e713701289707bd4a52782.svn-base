@@ -1,0 +1,95 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.pig
+--#   Program type: Pig script
+--#   Purpose:    : Loading data from incoming_a_dom_nsn_in_usage_tbl to work_a_dom_nsn_in_usage_tbl
+--#   Author(s)   : DataMetica Team
+--#   Usage       : pig -p var1=var1 -useHCatalog module-transform.pig
+--#   Date        : 12/19/2016
+--#   Log File    : .../log/ovcdr/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/ovcdr/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          12/19/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+--#                                   Load                                     #
+--##############################################################################
+
+incoming_stg_data = 
+	LOAD '${hive_database_name_incoming}.${incoming_stg_tbl}' 
+	USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+work_chc_data = 
+	LOAD '${hive_database_name_work}.${work_chc_tbl}' 
+	USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+	   
+--##############################################################################
+--#                                 Filter                                     #
+--##############################################################################
+
+incoming_stg_data_filter = 
+	FILTER incoming_stg_data 
+    BY (source_date == '$source_date' )
+;
+
+--##############################################################################
+--#         Generate Corp, Dwelling_nrb, Cust                                  #
+--##############################################################################
+
+incoming_stg_data_filter_join =
+   JOIN incoming_stg_data_filter BY (usage_date,telephone_number) LEFT,
+   work_chc_data BY (usage_date,telephone_number)
+;
+   
+--##############################################################################
+--#                                 Transform                                  #
+--##############################################################################
+	 
+generated_records = 
+	FOREACH incoming_stg_data_filter_join 
+	GENERATE
+         incoming_stg_data_filter::usage_date                                                                 as usage_date       ,
+		 incoming_stg_data_filter::telephone_number                                                           as telephone_number ,
+		 ((incoming_stg_data_filter::call_type is null)? 'NULL':UPPER(incoming_stg_data_filter::call_type))   as call_type ,
+		 ((incoming_stg_data_filter::seconds_of_use is null)? 0:(incoming_stg_data_filter::seconds_of_use))   as seconds_of_use,
+		 ((incoming_stg_data_filter::number_of_calls is null)?0:(incoming_stg_data_filter::number_of_calls))  as number_of_calls  ,
+		 incoming_stg_data_filter::batch_nbr                                                                  as batch_nbr ,
+		 ((incoming_stg_data_filter::attempt_count is null)?0:(incoming_stg_data_filter::attempt_count))      as attempt_count    ,
+		 (work_chc_data::corp is null ? '-1': work_chc_data::corp)                                            as corp            ,
+		 (work_chc_data::house is null ? '-1': work_chc_data::house)                                          as house            ,
+		 (work_chc_data::cust is null ? '-1': work_chc_data::cust)                                            as cust             ,
+		 CurrentTime()                                                                                        as dtm_created      ,
+		 CurrentTime()                                                                                        as dtm_last_modified,
+		 '${file_name}'                                                                                       as file_name	   
+;
+
+--##############################################################################
+--#                                 Store                                      #
+--##############################################################################
+
+  STORE generated_records 
+   INTO '${hive_database_name_work}.${work_target_tbl}' 
+   USING org.apache.hive.hcatalog.pig.HCatStorer()
+; 
+				
+--##############################################################################
+--#                              End                                           #
+--##############################################################################			
+
+

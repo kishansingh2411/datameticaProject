@@ -1,0 +1,39 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: fourthwall_media.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/30/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/30/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Gold Hive Table names
+GOLD_FWM_HOUSE_EQMT_DATA_TBL=gold_fwm_house_eqmt_data
+
+##Outgoing Hive Table names
+OUTGOING_FWM_DEVICE_DATA_TBL=outgoing_fwm_device_data
+OUTGOING_FWM_HOUSEHOLD_DATA_TBL=outgoing_fwm_household_data
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

@@ -1,0 +1,45 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.hql
+--#   Program type: Hive Query Language script
+--#   Purpose:    : Build Work table from Incoming table
+--#   Author(s)   : DataMetica Team
+--#   Usage       : beeline -u  <url> -n <username> -p <password> -hivevar var1=var1 -f module-prepare.hql
+--#   Date        : 12/28/2016
+--#   Log File    : .../log/ovcdr/{job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/ovcdr/{job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          12/28/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+
+insert OVERWRITE table ${hivevar:work_database}.${hivevar:table_prefix}${hivevar:work_table}
+select *  from ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_table}
+  where 
+   usage_date in (
+   select distinct gold_metadata.usage_date from
+  ${hivevar:incoming_database}.${hivevar:table_prefix}${hivevar:incoming_table} incoming
+   left outer join
+   ${hivevar:gold_database}.${hivevar:table_prefix}${hivevar:gold_metadata_table} gold_metadata   
+  on ( incoming.batch_id = gold_metadata.batch_nbr)
+  where gold_metadata.batch_nbr is not null and incoming.source_date= '${hivevar:source_date}'
+)
+;
+
+--##############################################################################
+--#                                    End                                     #
+--##############################################################################

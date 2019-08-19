@@ -1,0 +1,43 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: edp_offload.cfg 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/19/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/19/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###############################################################################
+#                     Project Environment Base Properties                     #
+###############################################################################
+
+
+EMAIL_ERROR_LIST=dmalvi@cablevision.com,srawool@cablevision.com,hjaswal@cablevision.com
+EMAIL_SUCCESS_LIST=dmalvi@cablevision.com,srawool@cablevision.com,hjaswal@cablevision.com
+
+MIN_JOB_ID=100183
+MAX_JOB_ID=100195
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

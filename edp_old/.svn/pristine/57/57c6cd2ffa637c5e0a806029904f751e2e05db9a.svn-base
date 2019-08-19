@@ -1,0 +1,43 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: mysql.Properties 
+#   Program type: 
+#   Purpose:    : This file contain properties which are needed to connect to oracle database             
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 05/05/2016
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          05/05/2016       Initial version
+#
+#
+#####################################################################################################################
+
+###                                                                           
+# Defines properties needed to connect oracle     
+MYSQL_DRIVER=com.mysql.jdbc.Driver
+MYSQL_HOST=cvldhdpan1.cscdev.com
+MYSQL_PORT=3306
+MYSQL_DATABASE=rsdvr
+MYSQL_SCHEMA=rsdvr
+MYSQL_USERNAME=eit_dwh
+MYSQL_PASSWORD=eit_dwh
+
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

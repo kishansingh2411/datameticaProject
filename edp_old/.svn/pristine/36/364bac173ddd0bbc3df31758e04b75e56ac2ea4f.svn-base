@@ -1,0 +1,90 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: subject-area.env.properties 
+#   Program type: 
+#   Purpose:    : This file contains properties which would be used in this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 12/28/2015
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          12/28/2015       Initial version
+#
+#
+#####################################################################################################################
+
+# Defines project name that is used in different path context. It shall not     
+# contain any special characters. It shall only contain alphanumeric character     
+# or underscores or hypens. It shall not start with number             
+SUBJECT_AREA_NAME=omniture
+
+LOCAL_DATA_DIRECTORY=/UTIL/inbound/incoming/omniture
+
+#Define directory path to be used for different layers of directory                                                               
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA=${DATA_LAYER_DIR_INCOMING}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_WORK_SUBJECT_AREA=${DATA_LAYER_DIR_WORK}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_GOLD_SUBJECT_AREA=${DATA_LAYER_DIR_GOLD}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA=${DATA_LAYER_DIR_SMITH}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_KOM=${DATA_LAYER_DIR_SMITH}/kom/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_MKT=${DATA_LAYER_DIR_SMITH}/mkt/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_ARCHIVE_SUBJECT_AREA=${DATA_LAYER_DIR_ARCHIVE}/${SUBJECT_AREA_NAME}
+
+DATA_LAYER_DIR_OUTGOING_SUBJECT_AREA=${DATA_LAYER_DIR_OUTGOING}/${SUBJECT_AREA_NAME}
+
+###                                                                           
+# Root directory to store all logs based on subject area project module and     
+# batch Admin shall implement appropriate policies to clean the logs or     
+# upload them to HDFS after those logs have been present for more than      
+# configured amount of time Make use of functions defined in functions.sh      
+# file for logging any information Users don't need to specific this location     
+# as it is automatically calculate                                        
+# @Type  :  Path
+# @Final :  true
+LOG_DIR_SUBJECT_AREA=${LOG_DIR_PREFIX}/app/edp/log
+
+## Define additional directories needed for omniture dataset
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_LANDING=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA}/landing
+
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_DATA=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA}/data
+
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_STAGING=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA}/staging
+
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_BADDATA=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_DATA}/bad_data
+
+DATA_LAYER_DIR_INCOMING_SUBJECT_AREA_LOOKUP=${DATA_LAYER_DIR_INCOMING_SUBJECT_AREA}/lookup
+
+DATA_LAYER_DIR_WORK_SUBJECT_AREA_LOOKUP=${DATA_LAYER_DIR_WORK_SUBJECT_AREA}/lookup
+
+DATA_LAYER_DIR_WORK_SUBJECT_AREA_DATA=${DATA_LAYER_DIR_WORK_SUBJECT_AREA}/data
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_KOM_FACT=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_KOM}/fact
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_MKT_FACT=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA_MKT}/fact
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_DIMENSION=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA}/dimension
+
+DATA_LAYER_DIR_SMITH_SUBJECT_AREA_AGGREGATE=${DATA_LAYER_DIR_SMITH_SUBJECT_AREA}/aggregate
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

@@ -1,0 +1,247 @@
+--######################################################################################################################
+--#   This source code is the property of:
+--#   Cablevision Systems Corporation, Inc. (c) 2015
+--#   1111 Stewart Avenue, Bethpage, NY 11714
+--#   www.cablevision.com
+--#   Department: AM
+--#
+--#   Program name: module-transform.pig
+--#   Program type: Pig script
+--#   Purpose:    : Loading data in work_chc_dom_in
+--#   Author(s)   : DataMetica Team
+--#   Usage       : pig -p var1=var1 -useHCatalog module-prepare.pig
+--#   Date        : 22/12/2016
+--#   Log File    : .../log/ovcdr/${job_name}.log
+--#   SQL File    : 
+--#   Error File  : .../log/ovcdr/${job_name}.log
+--#   Dependency  : 
+--#   Disclaimer  : 
+--#
+--#   Modification History :
+--#   =======================
+--#
+--#    ver     who                      date             comments
+--#   ------   --------------------     ----------       -------------------------------------
+--#    1.0     DataMetica Team          22/12/2016       Initial version
+--#
+--#
+--#####################################################################################################################
+--#                                   Load                                     #
+--##############################################################################
+
+define Stitch org.apache.pig.piggybank.evaluation.Stitch;
+define Over org.apache.pig.piggybank.evaluation.Over('int');
+
+incoming_dom_nsn = LOAD '${hive_database_name_incoming}.${incoming_stg_dom_nsn_in_usage}'
+   USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+incoming_dom_nsn_current = 
+   FILTER incoming_dom_nsn BY (source_date == '${source_date}')
+;
+
+incoming_dom_rec = FOREACH incoming_dom_nsn_current
+   GENERATE usage_date,
+   telephone_number
+;
+
+ov_telephone_number = LOAD '${hive_database_name_ods_incoming}.${incoming_ov_telephone_number}' 
+    USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+ov_telephone_number_rec = FOREACH ov_telephone_number
+   GENERATE 
+   corp as corp,
+   customer_account_id,
+   dtm_last_modified,
+   telephone_number,
+  ToString(dtm_efftv,'yyyyMMdd') as dtm_efftv,
+  ToString(dtm_expired,'yyyyMMdd') as dtm_expired
+;
+
+ov_telephone_number_filter = FILTER
+   ov_telephone_number_rec BY (dtm_efftv <= '${source_date}') AND (dtm_expired > '${source_date}')
+;
+
+customer_account = LOAD '${hive_database_name_ods_incoming}.${incoming_customer_account}'
+USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+customer_account_gen = FOREACH customer_account
+    GENERATE dwelling_nbr as coct_dwelling_nbr,
+	customer_account_id,
+    cust as coct_cust
+;
+
+--------------------------
+sip_pilot = LOAD '${hive_database_name_ods_incoming}.${incoming_ip_sip_pilot_phone_nbr}'
+   USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+sip_pilot_gen = FOREACH sip_pilot
+  GENERATE   corp as ippt_corp,
+  dwelling_nbr as ippt_dwelling_nbr,
+  cust as ippt_cust,
+  dtm_last_updated as dtm_last_updated,
+  CONCAT(area_code,phone_exchange,exchange_extention) as telephone_number,  
+  ToString(dtm_efftv,'yyyyMMdd') as dtm_efftv,
+  ToString(dtm_expired,'yyyyMMdd') as dtm_expired
+;
+
+sip_pilot_filter = FILTER
+   sip_pilot_gen BY (dtm_efftv <= '${source_date}') AND (dtm_expired > '${source_date}')
+;
+
+----------
+sip_did = LOAD '${hive_database_name_ods_incoming}.${incoming_ip_sip_did_phone_nbr}'
+   USING org.apache.hive.hcatalog.pig.HCatLoader()
+;
+
+sip_did_gen = FOREACH sip_did
+   GENERATE corp as ipdd_corp,
+   dwelling_nbr as ipdd_dwelling_nbr,
+   cust as ipdd_cust,
+   dtm_last_updated,
+   CONCAT(area_code,phone_exchange,exchange_extention) as telephone_number,
+   ToString(dtm_efftv,'yyyyMMdd') as dtm_efftv,
+   ToString(dtm_expired,'yyyyMMdd') as dtm_expired
+;
+
+sip_did_gen_filter = FILTER
+   sip_did_gen BY (dtm_efftv <= '${source_date}') AND (dtm_expired > '${source_date}')
+;
+
+-------------------------------------
+
+dom_rec_ov_telephone_join = 
+   JOIN incoming_dom_rec BY telephone_number LEFT OUTER,
+   ov_telephone_number_filter BY telephone_number
+;
+
+dom_rec_ov_telephone_record = FOREACH dom_rec_ov_telephone_join
+   GENERATE usage_date,
+   incoming_dom_rec::telephone_number as telephone_number,
+   corp,
+   customer_account_id 
+;
+
+-- Split if corp is null 
+   
+SPLIT dom_rec_ov_telephone_record
+   INTO  dom_rec_ov_telephone_corp_nn
+   IF(
+      corp is not null
+   ),
+   dom_rec_ov_telephone_corp_null otherwise
+;
+
+----------------
+
+customer_account_dom_join = 
+   JOIN dom_rec_ov_telephone_corp_nn BY customer_account_id LEFT OUTER,
+   customer_account_gen BY customer_account_id
+;
+
+customer_account_dom_record = FOREACH customer_account_dom_join
+   GENERATE dom_rec_ov_telephone_corp_nn::incoming_dom_rec::usage_date as usage_date,
+   dom_rec_ov_telephone_corp_nn::telephone_number as telephone_number,
+   corp as ovtn_corp,
+   customer_account_gen::customer_account_id as customer_account_id,
+   coct_dwelling_nbr,
+   coct_cust
+;
+
+sip_did_dom_join = 
+   JOIN dom_rec_ov_telephone_corp_null BY telephone_number LEFT OUTER,
+   sip_did_gen_filter BY telephone_number
+;
+
+sip_did_dom_rec = FOREACH sip_did_dom_join
+   GENERATE dom_rec_ov_telephone_corp_null::incoming_dom_rec::usage_date as usage_date,
+   dom_rec_ov_telephone_corp_null::telephone_number as telephone_number,
+   sip_did_gen_filter::ipdd_corp as ipdd_corp,
+   sip_did_gen_filter::ipdd_dwelling_nbr as ipdd_dwelling_nbr,
+   sip_did_gen_filter::ipdd_cust as ipdd_cust
+;
+
+sip_pilot_did_dom_rec_join = JOIN 
+   sip_did_dom_rec BY telephone_number LEFT OUTER,
+   sip_pilot_filter BY telephone_number
+;
+
+sip_did_pilot_dom_rec = FOREACH sip_pilot_did_dom_rec_join
+   GENERATE sip_did_dom_rec::usage_date as usage_date,
+   sip_did_dom_rec::telephone_number as telephone_number,
+   sip_did_dom_rec::ipdd_corp as ipdd_corp,
+   sip_did_dom_rec::ipdd_dwelling_nbr as ipdd_dwelling_nbr,
+   sip_did_dom_rec::ipdd_cust as ipdd_cust,
+   sip_pilot_filter::ippt_corp as ippt_corp,
+   sip_pilot_filter::ippt_dwelling_nbr as ippt_dwelling_nbr,
+   sip_pilot_filter::ippt_cust as ippt_cust
+;
+
+sip_did_pilot_dom_rec_group = GROUP 
+   sip_did_pilot_dom_rec BY (usage_date,telephone_number)
+
+sip_did_pilot_dom_rec_derive_row_num = 
+   FOREACH sip_did_pilot_dom_rec_group
+   {
+      sip_did_pilot_dom_rec_order = 
+	     ORDER sip_did_pilot_dom_rec 
+		 BY ipdd_corp ASC,
+		    ipdd_dwelling_nbr ASC,
+			ipdd_cust ASC,
+			ippt_corp ASC,
+			ippt_dwelling_nbr ASC,
+			ippt_cust ASC
+   ;
+   GENERATE 
+   FLATTEN(Stitch(sip_did_pilot_dom_rec_order,Over(sip_did_pilot_dom_rec_order,'row_number')));
+   }
+;
+
+sip_did_pilot_dom_rec_derive_row_gen = FOREACH sip_did_pilot_dom_rec_derive_row_num
+   GENERATE 
+   stitched::usage_date as usage_date,
+   stitched::telephone_number as telephone_number,
+   stitched::ipdd_corp as ipdd_corp,
+   stitched::ipdd_dwelling_nbr as ipdd_dwelling_nbr,
+   stitched::ipdd_cust as ipdd_cust,
+   stitched::ippt_corp as ippt_corp,
+   stitched::ippt_dwelling_nbr as ippt_dwelling_nbr,
+   stitched::ippt_cust as ippt_cust,
+   stitched::result as row_number
+;
+
+sip_did_pilot_dom_rec_derive_unique = FILTER sip_did_pilot_dom_rec_derive_row_gen BY (row_number == 1)
+; 
+
+dom_chc_full_outer_join = JOIN customer_account_dom_record 
+   BY telephone_number FULL OUTER,
+   sip_did_pilot_dom_rec_derive_unique BY telephone_number
+;
+
+dom_chc_record = FOREACH dom_chc_full_outer_join
+   GENERATE (customer_account_dom_record::usage_date is null ? sip_did_pilot_dom_rec_derive_unique::usage_date : customer_account_dom_record::usage_date ) as usage_date,
+   (customer_account_dom_record::telephone_number is null ? sip_did_pilot_dom_rec_derive_unique::telephone_number : customer_account_dom_record::telephone_number) as telephone_number,
+   (chararray)(ovtn_corp is null ? (ipdd_corp is null ? ippt_corp :ipdd_corp) : ovtn_corp) as corp,
+   (coct_dwelling_nbr is null ? (ipdd_dwelling_nbr is null ? ippt_dwelling_nbr : ipdd_dwelling_nbr) : coct_dwelling_nbr) as dwelling_nbr,
+   (coct_cust is null ? (ipdd_cust is null ? ippt_cust : ipdd_cust) : coct_cust) as cust
+;
+
+work_dom_chc_record = FOREACH dom_chc_record
+   GENERATE usage_date,
+   telephone_number,
+   (corp is null ? '-1' : corp) as corp,
+   (dwelling_nbr is null ? '-1' : dwelling_nbr) as house,
+   (cust is null ? '-1' : cust) as cust
+;
+     
+STORE work_dom_chc_record
+   INTO '${hive_database_name_work}.${work_chc_dom_in}' 
+   USING org.apache.hive.hcatalog.pig.HCatStorer()
+;
+				 
+--##############################################################################
+--#                              End                                           #
+--##############################################################################			

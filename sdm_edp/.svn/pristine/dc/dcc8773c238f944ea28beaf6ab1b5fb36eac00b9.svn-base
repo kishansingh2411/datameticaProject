@@ -1,0 +1,51 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: remedy.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/28/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          01/28/2017       Initial version
+#
+#
+#####################################################################################################################
+
+##Gold Hive Table names
+GOLD_CUSTOMER_SERVICE_GROUPS_TBL=gold_customer_service_groups
+GOLD_EXPORT_NODE_SRVGRP_TBL=gold_export_node_srvgrp
+
+## Gold reference table 
+GOLD_ACCT_HIER_FA_DIM_TBL=gold_acct_hier_fa_dim
+GOLD_CUSTOMER_MASTER_TBL=gold_customer_master
+GOLD_CUSTOMER_SERVICES_TBL=gold_customer_services
+GOLD_EQUIPMENT_DTLS_TBL=gold_equipment_dtls
+GOLD_EQUIPMENT_MASTER_TBL=gold_equipment_master
+GOLD_HOUSE_MASTER_TBL=gold_house_master
+GOLD_ITEM_DTL_TBL=gold_item_dtl
+GOLD_ITEM_MASTER_TBL=gold_item_master
+GOLD_SRV_DIM_TBL=gold_srv_dim
+GOLD_WORK_ORDER_MASTER_TBL=gold_work_order_master
+GOLD_CUSTOMER_TBL=gold_customer
+GOLD_EQUIPMENT_TBL=gold_equipment
+
+
+###############################################################################
+#                                     End                                     #
+###############################################################################

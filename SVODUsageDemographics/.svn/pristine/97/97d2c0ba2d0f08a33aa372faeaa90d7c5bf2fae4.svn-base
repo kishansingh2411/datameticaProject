@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+#
+#	Project Name : VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#	Description : prod_workflow.xml file contains the DAG of this project.
+#
+#	Author : Kriti Singh
+#	Date : 05/11/2016
+#
+#
+-->
+
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="SVODUsageDemoWorkFlow">
+    <global>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <!-- <job-xml>${hiveConfig}</job-xml>
+        <configuration>
+            <property>
+                <name>hive.metastore.uris</name>
+                <value>${metaStoreURI}</value>
+            </property>
+        </configuration> -->
+    </global>
+
+  <!--  <credentials>
+        <credential name='my-hcat-creds' type='hcat'>
+            <property>
+                <name>hcat.metastore.uri</name>
+                <value>thrift://cvldhdpmn3.cscdev.com:9083,thrift://cvldhdpmn4.cscdev.com:9083</value>
+            </property>
+            <property>
+                <name>hcat.metastore.principal</name>
+                <value>hive/_HOST@ALTDEV.COM</value>
+            </property>
+        </credential>
+    </credentials> -->
+
+    <start to="Generate_batch_id"/>
+
+   <!-- <action name="check_dependency">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${dependencyScriptPath}</command>
+            <args>${sourceAppworxId}</args>
+        </ssh>
+        <ok to="compute_max_date"/>
+        <error to="sendFailEmail"/>
+    </action> -->
+
+    <action name="Generate_batch_id">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${Generate_batch_id_script}</command>
+            <args>${key_param_id}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="KomVodOrderEncryptor"/>
+        <error to="sendFailEmail"/>
+    </action>
+
+	<action name="KomVodOrderEncryptor">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${KomVodOrderEncryptor_script}</command>
+            <args>${key_param_id}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="KomCustomerAccountBulkEncryptor"/>
+        <error to="sendFailEmail"/>
+    </action>
+	
+	<action name="KomCustomerAccountBulkEncryptor">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${KomCustomerAccountBulkEncryptor_script}</command>
+            <args>${key_param_id}</args>		
+            <capture-output/>
+        </ssh>
+        <ok to="D_Vod_Studio"/>
+        <error to="sendFailEmail"/>
+    </action>
+	
+	 <action name="D_Vod_Studio">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_gold_script}</command>
+            <args>${key_param_id}</args>
+			<args>${d_vod_studio}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="D_Vod_Title"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="D_Vod_Title">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_gold_script}</command>
+            <args>${key_param_id}</args>
+			<args>${d_vod_title}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="D_Vod_Genre"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="D_Vod_Genre">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_gold_script}</command>
+            <args>${key_param_id}</args>
+			<args>${d_vod_genre}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="D_Vod_Subscription_Name"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="D_Vod_Subscription_Name">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_gold_script}</command>
+            <args>${key_param_id}</args>
+			<args>${d_vod_subscription_name}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Encrypted_D_Ecohort_Chc"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Encrypted_D_Ecohort_Chc">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${encrypted_d_ecohort_chc}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Encrypted_D_Ethnic_Chc"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Encrypted_D_Ethnic_Chc">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${encrypted_d_ethnic_chc}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Stg_D_Geog_Corp"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Stg_D_Geog_Corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${stg_d_geog_corp}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Stg1_Vod_Orders_Mth_Corp"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Stg1_Vod_Orders_Mth_Corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${stg1_vod_orders_mth_corp}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Stg2_Vod_Orders_Mth_Corp"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Stg2_Vod_Orders_Mth_Corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${stg2_vod_orders_mth_corp}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="Stg3_Vod_Orders_Mth_Corp"/>
+        <error to="sendFailEmail"/>
+    </action>
+	<action name="Stg3_Vod_Orders_Mth_Corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_incoming_script}</command>
+            <args>${key_param_id}</args>
+			<args>${stg3_vod_orders_mth_corp}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="F_Vod_Orders_Mth_Corp"/>
+        <error to="sendFailEmail"/>
+    </action>	
+	<action name="F_Vod_Orders_Mth_Corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${load_gold_script}</command>
+            <args>${key_param_id}</args>
+			<args>${f_vod_orders_mth_corp}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_d_vod_studio"/>
+        <error to="sendFailEmail"/>
+    </action>
+    <action name="copy_d_vod_studio">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100020</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_d_vod_genre"/>
+        <error to="sendFailEmail"/>
+    </action>
+
+    <action name="copy_d_vod_genre">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100019</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_d_vod_title"/>
+        <error to="sendFailEmail"/>
+    </action>
+
+    <action name="copy_d_vod_title">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100018</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_d_vod_subscription_name"/>
+        <error to="sendFailEmail"/>
+    </action>
+    <action name="copy_d_vod_subscription_name">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100021</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_d_vod_subscription_type"/>
+        <error to="sendFailEmail"/>
+    </action>
+
+    <action name="copy_d_vod_subscription_type">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100022</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_vod_subscription_name_type_mapping"/>
+        <error to="sendFailEmail"/>
+    </action>
+    <action name="copy_vod_subscription_name_type_mapping">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100023</args>
+            <capture-output/>
+        </ssh>
+        <ok to="copy_f_vod_orders_mth_corp"/>
+        <error to="sendFailEmail"/>
+    </action>
+    <action name="copy_f_vod_orders_mth_corp">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${bach1SshUser}@${bach1HostName}</host>
+            <command>${dtuShellScriptPath}</command>
+            <args>100024</args>
+            <args>${wf:actionData('KomVodOrderEncryptor')['year_month_id']}</args>
+			<capture-output/>
+		</ssh>
+		<ok to="print_final_numbers"/>
+		<error to="sendFailEmail"/>
+	</action>
+
+	<action name="print_final_numbers">
+                <ssh xmlns="uri:oozie:ssh-action:0.1">
+                        <host>${sshUser}@${hostName}</host>
+                        <command>${printFinalNumbersScript}</command>
+                        <args>${key_param_id}</args>
+                        <capture-output/>
+                </ssh>
+                <ok to="update_key_param"/>
+                <error to="sendFailEmail"/>
+        </action>
+
+    <action name="update_key_param">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${sshUser}@${hostName}</host>
+            <command>${update_key_param_script}</command>
+            <args>${key_param_id}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="sendSuccessEmail"/>
+        <error to="sendFailEmail"/>
+    </action>
+   
+    <action name="sendSuccessEmail">
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${emailToAddress}</to>
+			<subject>SVOD - Workflow ${wf:name()} with ID :${wf:id()} completed successfully
+			</subject>
+			<body>
+		The vod workflow ${wf:id()} completed successfully. 
+		
+		The data processed for the month id: ${wf:actionData('print_final_numbers')['month_id']}
+		The start date is: ${wf:actionData('print_final_numbers')['start_date']}
+		The end date is: ${wf:actionData('print_final_numbers')['end_date']}
+		
+		The total records for f_vod_orders_mth_corp for this month id: ${wf:actionData('print_final_numbers')['fact_formatted']}
+		The total records for kom_f_vod_order for this month id: ${wf:actionData('print_final_numbers')['kom_f_vod_order_formatted']}
+		The total records for kom_vod_order for this month id: ${wf:actionData('print_final_numbers')['kom_vod_order_formatted']}
+			</body>
+		</email>
+		<ok to="end"/>
+		<error to="end"/>
+	</action>
+
+
+    <action name="sendFailEmail">
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${emailToAddress}</to>
+			<subject>SVOD - Failed Workflow ${wf:name()} with ID :${wf:id()} failed
+			</subject>
+			<body>
+		The vod workflow ${wf:id()} had errors and was killed. 
+		
+		The data not processed for the month id: ${wf:actionData('print_final_numbers')['month_id']}
+		The start date is: ${wf:actionData('print_final_numbers')['start_date']}
+		The end date is: ${wf:actionData('print_final_numbers')['end_date']}
+		
+		The total records for f_vod_orders_mth_corp for this month id: ${wf:actionData('print_final_numbers')['fact_formatted']}
+		The total records for kom_f_vod_order for this month id: ${wf:actionData('print_final_numbers')['kom_f_vod_order_formatted']}
+		The total records for kom_vod_order for this month id: ${wf:actionData('print_final_numbers')['kom_vod_order_formatted']}
+			</body>
+		</email>
+		<ok to="kill"/>
+		<error to="kill"/>
+	</action>
+
+    <kill name="kill">
+        <message>"Killed job due to error:
+            ${wf:errorMessage(wf:lastErrorNode())}"
+        </message>
+    </kill>
+    <end name="end"/>
+
+</workflow-app>

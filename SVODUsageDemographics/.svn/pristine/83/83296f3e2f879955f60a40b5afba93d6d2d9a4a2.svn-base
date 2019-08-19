@@ -1,0 +1,67 @@
+######################################################################################################################
+#   This source code is the property of:
+#   Cablevision Systems Corporation, Inc. (c) 2015
+#   1111 Stewart Avenue, Bethpage, NY 11714
+#   www.cablevision.com
+#   Department: AM
+#
+#   Program name: sdm.properties 
+#   Program type: 
+#   Purpose:    : Contain Environment variable for this subject area              
+#   Author(s)   : DataMetica Team
+#   Usage       : 
+#   Date        : 01/18/2017
+#   Log File    : 
+#   SQL File    : 
+#   Error File  : 
+#   Dependency  : 
+#   Disclaimer  : 
+#
+#   Modification History :
+#   =======================
+#
+#    ver     who                      date             comments
+#   ------   --------------------     ----------       -------------------------------------
+#    1.0     DataMetica Team          03/18/2017       Initial version
+#
+#
+#####################################################################################################################
+
+#gold table 
+GOLD_D_VOD_STUDIO_TBL=gold_d_vod_studio
+GOLD_D_VOD_TITLE_TBL=gold_d_vod_title
+GOLD_D_VOD_GENRE_TBL=gold_d_vod_genre
+GOLD_D_VOD_SUBSCRIPTION_NAME_TBL=gold_d_vod_subscription_name
+GOLD_F_VOD_ORDERS_MTH_CORP_TBL=gold_f_vod_orders_mth_corp
+
+
+#Incoming table
+INCOMING_ENCRYPTED_D_ECOHORT_CHC_TBL=incoming_encrypted_d_ecohort_chc
+INCOMING_ENCRYPTED_D_ETHNIC_CHC_TBL=incoming_encrypted_d_ethnic_chc
+INCOMING_STG_D_GEOG_CORP_TBL=incoming_stg_d_geog_corp
+INCOMING_STG1_VOD_ORDERS_MTH_CORP_TBL=incoming_stg1_vod_orders_mth_corp
+INCOMING_STG2_VOD_ORDERS_MTH_CORP_TBL=incoming_stg2_vod_orders_mth_corp
+INCOMING_STG3_VOD_ORDERS_MTH_CORP_TBL=incoming_stg3_vod_orders_mth_corp
+INCOMING_KOM_VOD_ORDER_TBL=incoming_kom_vod_order
+INCOMING_KOM_CUSTOMER_ACCOUNT_TBL=incoming_kom_customer_account
+INCOMING_VOD_SUBSCRIPTION_NAME_TYPE_MAPPING_TBL=incoming_vod_subscription_name_type_mapping
+INCOMING_KOM_CUSTOMER_ACCOUNT_TBL=incoming_kom_customer_account
+
+## Tables Populated by Cam Tool
+INCOMING_KOM_D_PRODUCT_MASTER_TBL=kom_d_product_master
+INCOMING_KOM_D_GENRE_TBL=kom_d_genre
+INCOMING_KOM_D_SUBSCRIPTION_GROUP_TBL=kom_d_subscription_group
+INCOMING_KOM_F_VOD_ORDER_TBL=kom_f_vod_order
+INCOMING_KOM_D_PERIOD_TBL=kom_d_period
+
+GOLD_D_ECOHORT_CHC_TBL=d_ecohort_chc
+GOLD_D_ETHNIC_CHC_TBL=d_ethnic_chc
+GOLD_D_GEOG_CORP_TBL=d_geog_corp
+GOLD_D_VOD_SUBSCRIPTION_TYPE_TBL=d_vod_subscription_type
+
+CAM_DATABASE_GOLD=processed
+
+schema_location=/user/etlmgr/edp_app/edp_batch/svodusagedemographics/etc
+nameNodeService=althdpdev
+
+

@@ -1,0 +1,2 @@
+##Hold HDFS path of file containing schema details
+schema.location=/edp/conf/rdbms

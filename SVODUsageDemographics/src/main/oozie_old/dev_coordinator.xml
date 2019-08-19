@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+#
+#	Project Name: VOD/SVOD/FOD/PVOD Usage by Customer Demographic Attributes
+#
+#	Description: uat_coordinator.xml file contains the frequency and schedule of
+#   execution of the prod_workflow.xml
+#
+#	Author: Kriti Singh
+#	Date: 05/11/2016
+#
+-->
+
+<coordinator-app xmlns="uri:oozie:coordinator:0.1"
+                 name="SVODUsageDemoCoordinator"
+                 frequency="${coord:days(1)}"
+                 start="${startTime}"
+                 end="${endTime}"
+                 timezone="${timeZoneDef}">
+
+    <action>
+        <workflow>
+            <app-path>${workflowAppPath}</app-path>
+            <configuration>
+                <property>
+                    <name>year_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'yyyy')}</value>
+                </property>
+                <property>
+                    <name>month_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'MM')}</value>
+                </property>
+                <property>
+                    <name>day_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'dd')}</value>
+                </property>
+                <property>
+                    <name>year_month_id</name>
+                    <value>${coord:formatTime(coord:nominalTime(), 'yyyyMM')}</value>
+                </property>
+            </configuration>
+        </workflow>
+    </action>
+</coordinator-app>
+
