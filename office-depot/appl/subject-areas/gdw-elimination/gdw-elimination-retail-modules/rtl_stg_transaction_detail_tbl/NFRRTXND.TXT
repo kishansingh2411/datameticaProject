@@ -1,0 +1,264 @@
+--drop procedure nfrrtxnd;
+
+create procedure nfrrtxnd
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+            datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/tdet like transaction_detail
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/tdet (
+        BUSINESS_CHANNEL_ID,
+        COUNTRY_CD,
+        CURRENCY_CD,
+        EXT_GROSS_COST_AMT,
+        EXT_GROSS_SALES_AMT,
+        EXT_ITEM_COST_AMT,
+        EXT_SELLING_PRICE_AMT,
+        FULFILLMENT_ID,
+        SELLING_SKU,
+        SHIPPED_QTY,
+        SKU_NUM,
+        TRANSACTION_ID,
+        TRANSACTION_LINE_NUM,
+        TRANSACTION_LINE_TYPE,
+        UNIT_ITEM_COST_AMT,
+        UNIT_SELLING_PRICE_AMT
+        )
+select
+        CAST ('R' AS CHAR(1) ) AS BUSINESS_CHANNEL_ID,
+        CAST ('FR' AS CHAR(2) ) AS COUNTRY_CD,
+        CAST ('EUR' AS CHAR(3) ) AS CURRENCY_CD,
+        CAST (CSEXCS AS DECIMAL(15,3) ) AS EXT_GROSS_COST_AMT,
+        CAST (CSQTY AS DECIMAL(15,2) ) AS EXT_GROSS_SALES_AMT,
+        CAST (CSEXCS AS DECIMAL(15,3) ) AS EXT_ITEM_COST_AMT,
+        CAST (CSEXPR AS DECIMAL(15,2) ) AS EXT_SELLING_PRICE_AMT,
+        CAST (0 AS SMALLINT ) AS FULFILLMENT_ID,
+        CAST (CSSKU AS VARCHAR(20)) AS SELLING_SKU,
+        CAST (CSQTY AS INTEGER ) AS SHIPPED_QTY,
+        CAST (CSSKU AS VARCHAR(20)) AS SKU_NUM,
+        CAST (CSSTOR AS CHAR(40) ) AS TRANSACTION_ID,
+        CAST (CSSEQ AS INTEGER ) AS TRANSACTION_LINE_NUM,
+        CAST (CSQTY AS CHAR(1) ) AS TRANSACTION_LINE_TYPE,
+        CAST (CSCOST AS DECIMAL(15,3) ) AS UNIT_ITEM_COST_AMT,
+        CAST (CSEXPR AS DECIMAL(15,2) ) AS UNIT_SELLING_PRICE_AMT
+from
+        COMFMSTDTA/CSHDET
+;
+
+get diagnostics w1rcnt = row_count;
+
+ -- Set status info for pre existing rows
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'Txn Details',
+        'LEGACY',
+        'INPDETLF',
+        'nfrrtxnd',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+--*************************************************************
+-- END
+--*************************************************************
+
+ update qtemp/tdet
+ set processed_dt = current date
+ ;
+
+
+
+--*****************************************************************
+-- Update fields of tdet temp table which are not yet updated
+--*****************************************************************
+
+ update qtemp/tdet a
+ set (
+        BACKORDER_QTY,
+        BIG_DEAL_COST_AMT,
+        BSD_COST_CENTRE,
+        BSD_USER,
+        COMMISSIONABLE_IND,
+        CONTRACT_ID,
+        CONTRACT_SEQ,
+        CONTRACT_TYPE_CD,
+        CORE_IND,
+        DELIVERED_TO_ADDRESS_ID,
+        DELIVERED_TO_CUSTOMER_ID,
+        DIRECT_DELIVERY_CD,
+        DISCOUNT_AMT,
+        EFFORT_ID,
+        EFFORT_YR,
+        ENTERED_SKU,
+        EXT_BIG_DEAL_COST_AMT,
+        HOW_PRICED_CD,
+        INV_LOCATION_ID,
+        ITEM_TAXABLE_CD,
+        ORDER_HEADER_ID,
+        ORDER_LINE_ID,
+        ORDER_QTY,
+        PREMIUM_COST_AMT,
+        PRICE_CD,
+        PRICE_CHANGE_RSN_CD,
+        PRICE_PREFIX_CD,
+        PROCESSED_DT,
+        RETURN_REASON_CD,
+        SALES_ASSOCIATE_ID,
+        UNIT_LIST_PRICE_AMT,
+        UNIT_ORIGINAL_PRICE_AMT,
+        VENDOR_ID
+                ) =
+           (select
+                   BACKORDER_QTY,
+                   BIG_DEAL_COST_AMT,
+                   BSD_COST_CENTRE,
+                   BSD_USER,
+                   COMMISSIONABLE_IND,
+                   CONTRACT_ID,
+                   CONTRACT_SEQ,
+                   CONTRACT_TYPE_CD,
+                   CORE_IND,
+                   DELIVERED_TO_ADDRESS_ID,
+                   DELIVERED_TO_CUSTOMER_ID,
+                   DIRECT_DELIVERY_CD,
+                   DISCOUNT_AMT,
+                   EFFORT_ID,
+                   EFFORT_YR,
+                   ENTERED_SKU,
+                   EXT_BIG_DEAL_COST_AMT,
+                   HOW_PRICED_CD,
+                   INV_LOCATION_ID,
+                   ITEM_TAXABLE_CD,
+                   ORDER_HEADER_ID,
+                   ORDER_LINE_ID,
+                   ORDER_QTY,
+                   PREMIUM_COST_AMT,
+                   PRICE_CD,
+                   PRICE_CHANGE_RSN_CD,
+                   PRICE_PREFIX_CD,
+                   PROCESSED_DT,
+                   RETURN_REASON_CD,
+                   SALES_ASSOCIATE_ID,
+                   UNIT_LIST_PRICE_AMT,
+                   UNIT_ORIGINAL_PRICE_AMT,
+                   VENDOR_ID
+            from   transaction_detail b
+            where  a.country_cd = b.country_cd
+            and    a.transaction_id = b.transaction_id
+            and    a.fulfillment_id = b.fulfillment_id
+            and    a.transaction_line_num = b.transaction_line_num
+                        )
+ where exists
+           (select 1
+            from   transaction_detail b
+            where  a.country_cd = b.country_cd
+            and    a.transaction_id = b.transaction_id
+            and    a.fulfillment_id = b.fulfillment_id
+            and    a.transaction_line_num = b.transaction_line_num
+                        )
+ ;
+--*************************************************************
+-- END
+--*************************************************************
+
+
+
+
+
+
+
+
+--*************************************************************
+-- Inserting rows from temp table to staging table
+--*************************************************************
+
+insert into stg_transaction_detail
+select *
+from   qtemp/tdet
+;
+
+--*************************************************************
+-- END
+--*************************************************************
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'Txn Details',
+        'STAGING',
+        'STG_TRANSACTION_DETAIL',
+        'nfrrtxnd',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+

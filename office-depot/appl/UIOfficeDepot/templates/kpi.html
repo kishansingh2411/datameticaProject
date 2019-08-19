@@ -1,0 +1,262 @@
+         <div class="filters">
+              
+              <div class="col-md-12">
+                <div class="date_range">
+                 <div class="title bod">
+                      Period
+                  </div>
+                  <div class="radiobtns">
+                    <div class="weekrange">
+                    <ul class="list-group" id="radio-div">
+                        
+                        <li class="list-group-item">
+                            <div class="radio">
+                                <label>
+
+                                    <input type="radio"  name="weekrange" ng-model="content" value="Prior Week" ng-click="setP(content)">
+                                    Prior Week
+                                </label>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="weekrange" ng-model="content" value="6 Weeks Avg" ng-click="setP(content)" >
+                                    6 Weeks Avg
+                                </label>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="weekrange" ng-model="content" value="13 Weeks Avg" ng-click="setP(content)">
+                                    13 Weeks Avg
+                                </label>
+                            </div>
+                        </li>
+             
+                    </ul>
+                  </div>
+                  </div>
+              </div>
+
+                <div class="country_sel">
+                <div class="text bod">
+                      Country
+                </div>
+                <div class="selectbox">
+                  <select name="country" id="countries" ng-options="country.name for country in countries track by country.id" style="font-size:13px;" ng-model="sel_country"
+          ng-change="set(sel_country)" >
+                  <!--  <option value="All COUNTRIES">All COUNTRIES</option>
+                    <option value="AUSTRIA">AUSTRIA</option>
+                     <option value="BELGIUM">BELGIUM</option>
+                      <option value="CZECH REPUBLIC">CZECH REPUBLIC</option>
+                       <option value="ITALY">ITALY</option>
+                        <option value="NETHERLANDS">NETHERLANDS</option>
+                         <option value="POLAND">POLAND</option>
+                          <option value="UNITED KINGDOM">UNITED KINGDOM</option>
+                           <option value="SWITZERLAND">SWITZERLAND</option>
+                            <option value="IRELAND">IRELAND</option>
+                             <option value="SLOVENIA">SLOVENIA</option>
+                              <option value="GERMANY">GERMANY</option>  --> 
+                             <!--  <option>--</option>  -->
+                    </select>
+              </div>
+              </div>
+
+              <div class="visitor_seg">
+                <div class="title bod">
+                      Visitor Segment
+                </div>
+                <div class="selectbox">
+
+                   <select name="visitegment" id="Visitor" ng-options="visitor.name for visitor in visitors track by visitor.id"  ng-model="sel_visitor" ng-change="setV(sel_visitor)"  style="font-size:13px;" >
+                   <!--  <option value="All VISITORS">All VISITORS</option>
+                    <option value="ANONYMOUSCUSTOMER">ANONYMOUSCUSTOMER</option>
+                    <option value="NEW VISITORS">NEW VISITORS</option> -->
+                    <!-- <option></option>          -->              
+                  </select>
+
+              </div>
+              </div>
+              <div class="gobutton">                  
+                    <button style="float:left;" ng-click ="filterall()" id="calc" class="gobtn btn primary" >Go</button>
+              </div>    
+
+              </div>
+
+		</div>
+
+
+
+  	<div class="container-fluid main-dashboard">    
+                <!-- Page Heading -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">
+                        <i class="fa fa-fw fa-dashboard"></i> KPI <small></small>
+                    </h1>
+                </div>
+
+            </div>
+
+            <div id="kpibarChart" class="panel panel-default">
+                <div class="panel-heading ">
+                    <h3 class="panel-title"><span class="clr">{{kpiTitle}}</span> for <span class="clr">{{sel_country.name}}</span> for <span class="clr">{{sel_visitor.val}}</span> <span class="addstring">in comparison to</span> <span class="clr">{{content}}</span>
+                </div>
+                <div class="panel-body resetpadding">
+
+					  <div class="tabs"> <!-- '#kpi3barChart', kpiurlone, kpicalc3 -->
+					    <div ng-click="selectTab('first')" ng-class="{'selected': selected == 'first'}" class="tab"> Order Conversion Rate</div>
+					  	<div ng-click="selectTab('second')" ng-class="{'selected': selected == 'second'}" class="tab"> Avg Revenue Per Order</div>
+              <div ng-click="selectTab('third')" ng-class="{'selected': selected == 'third'}" class="tab"> Avg Page Views Per Visit</div>
+              <div ng-click="selectTab('forthA')" ng-class="{'selected': selected == 'forthA'}" class="tab"> % Revenue From New Vistors</div>
+              <div ng-click="selectTab('forthB')" ng-class="{'selected': selected == 'forthB'}" class="tab"> % Revenue From Existing Visitors</div>
+              <div ng-click="selectTab('fifth')" ng-class="{'selected': selected == 'fifth'}" class="tab"> Shopping Cart Completion Rate</div>
+					  </div>
+					   
+					    <div ng-show="selected == 'first'" class="tab_content">
+
+                  <div class="col-md-6" id="kpi1barChart">    </div>
+                                 <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>
+                  <div class="col-md-6 kpicontent">
+                      <header>Order Conversion Rate (OCR)</header>
+                      <p>Describes the likelihood that any individual visit the site will make a purchase.</p>
+                        
+                      <p class="boldtext">Total Number of Orders Taken / Total Visits = OCR</p>
+                      <p class="darkred">Possible Impacting Factors</p>
+
+                      <ul>
+                        <li>Poor Qualification – The number of visits to the site has gone up but the new traffic is poorly qualified</li>
+                        <li>Visitor Confusion – The number of visits to the site has gone up but the visiting people can not find what they’re looking for</li>
+                        <li>Real changes – The number of orders have actually dramatically increased or decreased relative to the number of visits to the site</li>
+                      </ul>
+                  </div>
+                </div>
+					      
+
+					   
+					    <div ng-show="selected == 'second'" class="tab_content">
+                 <div class="col-md-6" id="kpi2barChart">    </div>
+                                <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>  
+                  <div class="col-md-6 kpicontent">
+                      <header>Average Revenue per Order</header>
+                                    
+                                    <p class="boldtext">Sum of Revenue Generated / Orders =Average Revenue per Order</p>
+                                    <p class="darkred">Expectation:</p>
+                                    <p>The strategy for improving this performance indicator is to attract more
+valuable visitors to your website. Consider this KPI to critically examine each new visitor acquisition effort, segmentation as necessary, to determine whether different strategies are actually working</p>
+                                    <p class="darkred">Possible Impacting Factors</p>
+
+                                    <ul>
+                                      <li>Marketing campaigns</li>
+                                      <li>Operations inefficiencies</li>
+                                      <li>Issue with revenue realization path</li>
+                                    </ul>
+                  </div>                
+					       
+					    </div>
+
+              <div ng-show="selected == 'third'" class="tab_content">
+               <div class="col-md-6" id="kpi3barChart">    </div>
+                                  <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>
+                  <div class="col-md-6 kpicontent">
+                      <header>Average Page Views per Visit</header>
+                                    <p>Excellent indicator of how compelling and easily navigated your visitors find your website</p>
+                                      
+                                    <p class="boldtext">Page Views / Visits = Average Page Views per Visit</p>
+                                    <p class="darkred">Expectation:</p>
+                                    <p>To increase this average indicating a greater interest on the part of the
+visitor. However, depending on specific goals of the site, more page views can indicate confusion on the part of the visitor</p>
+                                    <p class="darkred">Possible Impacting Factors</p>
+
+                                    <ul>
+                                      <li>Navigational Elements: If it is difficult for visitors to navigate your site, they will often be forced to view more pages as they hunt. Conversely, if your site is difficult to navigate, visitors may leave your site prematurely</li>
+                                      <li>Content / Range Gaps</li>
+                                    </ul>
+                  </div>
+                  
+              </div>
+
+
+              <div ng-show="selected == 'forthA'" class="tab_content">
+                <div class="col-md-6" id="kpi4abarChart">    </div>
+                                  <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>
+                  <div class="col-md-6 kpicontent">
+                      <header>Percent Revenue from New Visitors</header>
+                                    <p>Important indicator describing “when” you’re most likely to get the visitor to convert.</p>
+                                      
+                                    <p class="boldtext">Total Revenue from New Visitors / Total Revenue = Percent Revenue from New Visitors</p>
+                                    <p class="darkred">Expectation:</p>
+                                    <p>Most online business observe that the greatest percentage of revenue comes
+from returning visitors. Whether the same is true of returning customers depends on whether you’re likely to sell another productto someone once they’ve made the initial purchase, a function of your productassortment and the quality of job you do delivering the first product.</p>
+                                    <p class="darkred">Possible Impacting Factors</p>
+
+                                    <ul>
+                                      <li>A sudden increase in this KPI means that the decrease in the likelihood that previous visitors and customers placing orders</li>
+                                      <li>Customer dis-satisfaction</li>
+                                    </ul>
+                  </div>
+                
+              </div>
+
+
+              <div ng-show="selected == 'forthB'" class="tab_content">
+                <div class="col-md-6" id="kpi4bbarChart">    </div>
+                                  <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>
+                  <div class="col-md-6 kpicontent">
+                      <header>Percent Revenue from Returning Visitors</header>
+                                    <p>Important indicator describing “when” you’re most likely to get the visitor to convert.</p>
+                                      
+                                    <p class="boldtext">Total Revenue from Returning Visitors / Total Revenue = Percent Revenue from Returning Visitors</p>
+                                    <p class="darkred">Expectation:</p>
+                                    <p>Most online business observe that the greatest percentage of revenue comes
+from returning visitors. Whether the same is true of returning customers depends on whether you’re likely to sell another productto someone once they’ve made the initial purchase, a function of your productassortment and the quality of job you do delivering the first product.</p>
+                                    <p class="darkred">Possible Impacting Factors</p>
+
+                                    <ul>
+                                      <li>A sudden increase in this KPI means that the decrease in the likelihood that previous visitors and customers placing orders</li>
+                                      <li>Customer dis-satisfaction</li>
+                                    </ul>
+                  </div>
+
+                
+
+              </div>
+
+
+              <div ng-show="selected == 'fifth'" class="tab_content">
+                <div class="col-md-6" id="kpi5barChart">    </div>
+                                  <div class="overlayloading"><img src="images/loadingAnimation.gif"/></div>
+                  <div class="col-md-6 kpicontent">
+                      <header>Shopping Cart Completion Rate</header>
+                                    <p>Helps you to isolate problems with the shopping cart functionality.</p>
+                                      
+                                    <p class="boldtext">Total Orders / Total Visits where a Shopping Cart is Started = Cart Completion Rate</p>
+                                    <p class="darkred">Expectation:</p>
+                                    <p>If your cart completion rate is low but your cart start rate is high, the
+most likely problem is visitors experiencing problems with your checkout process.</p>
+                                    <p class="darkred">Possible Impacting Factors</p>
+
+                                    <ul>
+                                      <li>Visibility of the buttons or links used to move shoppers through the checkout process</li>
+                                      
+                                    </ul>
+                  </div>
+                
+              </div>
+
+
+                </div>
+            </div>
+    </div>
+<script>
+
+$(document).ready(function() {
+  var loadingW = $('#kpi1barChart').width() + 'px';
+  var loadingH = $('#kpi1barChart').height() + 'px';
+  $('.overlayloading').css({width : loadingW, height: loadingH});
+
+  //$('#Visitor').html($('#Visitor').html().replace('NEW CUSTOMER','NEW VISITORS'));
+});
+</script>

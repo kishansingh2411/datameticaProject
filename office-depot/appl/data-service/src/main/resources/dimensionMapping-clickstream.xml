@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dimensions>
+	<dimension>
+		<name>country</name>
+		<dataType>STRING</dataType>
+		<columnName>country</columnName>
+		<columnDataType>STRING</columnDataType>
+		<knobValues>in ('AUSTRIA','BELGIUM','BELGIUM(FL)','FRANCE','SWITZERLAND(FR)','CZECH REPUBLIC','GERMANY','ITALY','IRELAND','NETHERLANDS','POLAND','SLOVENIA','SWITZERLAND','UNITED KINGDOM','SPAIN','VIKING FRANCE') </knobValues>
+		<derived>false</derived>
+	</dimension>
+	<dimension>
+		<name>visitorSegment</name>
+		<dataType>STRING</dataType>
+		<columnName>visitor_segment</columnName>
+		<columnDataType>STRING</columnDataType>
+		<derived>false</derived>
+	</dimension>
+	<dimension>
+		<name>date</name>
+		<dataType>DATE</dataType>
+		<columnName>day</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>false</derived>
+	</dimension>
+	<dimension>
+		<name>week</name>
+		<dataType>DATE</dataType>
+		<columnName>week</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>false</derived>
+	</dimension>
+	<dimension>
+		<name>month</name>
+		<dataType>DATE</dataType>
+		<columnName>month</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>false</derived>
+	</dimension>
+	<dimension>
+		<name>quarter</name>
+		<dataType>DATE</dataType>
+		<columnName>quarter</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>false</derived>
+	</dimension>
+</dimensions>

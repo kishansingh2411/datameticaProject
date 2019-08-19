@@ -1,0 +1,365 @@
+-- INSERT COMSYS ES CUSTOMER INTO ACCOUNT STAGING TABLE
+-- VIA QTEMP
+-- OD TEAM   JUN 2015 INITIAL CREATE
+
+
+DROP PROCEDURE NESDACCT ;
+
+CREATE PROCEDURE NESDACCT
+
+ LANGUAGE SQL
+ MODIFIES SQL DATA
+ SET OPTION OUTPUT = *PRINT, DBGVIEW = *SOURCE, COMMIT = *NONE,
+    DATFMT = *ISO, DATSEP = '-'
+
+MAIN:
+
+ BEGIN
+     DECLARE SQLCODE INTEGER DEFAULT 0 ;
+     DECLARE SQLSTATE CHAR(5) DEFAULT '00000' ;
+
+--*****************************************************************
+-- LOCAL VARIABLES
+--*****************************************************************
+
+  DECLARE SRC_RW_CNT INTEGER DEFAULT 0 ;
+  DECLARE STG_RW_CNT INTEGER DEFAULT 0 ;
+
+--*****************************************************************
+-- ERROR FLAGS
+--*****************************************************************
+
+     DECLARE RNF INT DEFAULT 0 ;
+     DECLARE TNF INT DEFAULT 0 ;
+     DECLARE REC_NOT_FOUND CONDITION FOR '02000' ;
+     DECLARE TAB_NOT_FOUND CONDITION FOR '42704' ;
+
+--*****************************************************************
+-- CURSORS
+--*****************************************************************
+
+--*****************************************************************
+-- ERROR HANDLERS
+--*****************************************************************
+    DECLARE CONTINUE HANDLER FOR REC_NOT_FOUND SET RNF = 1 ;
+    DECLARE CONTINUE HANDLER FOR TAB_NOT_FOUND SET TNF = 1 ;
+
+--*****************************************************************
+-- INIT
+-- COUNT SOURCE ROWS EXPECTED TO BE LOADED
+--*****************************************************************
+
+  SELECT COUNT(*) INTO SRC_RW_CNT
+  FROM ESMSTDTA/FCU000P
+  WHERE FCU000P_COUNTRY_CODE = 'ES'
+    AND FCU000P_CONT_RETAIL_CODE <>'C' ;
+
+-- INSERT TO DQHIST
+
+   INSERT INTO DQHIST
+   (
+     COUNTRY_CD,
+     BUSINESS_CHANNEL_ID,
+     BUSINESS_AREA,
+     DATA_SRC,
+     DATA_TABLE,
+     PROCESS_NM,
+     UI_FLAG,
+     PROCESS_TIME,
+     ROW_CT,
+     ROW_VAL
+   )
+   VALUES ('ES','D','ACCOUNTS','COMSYS','FCU000P',
+   'NESDACCT','E',CURRENT TIMESTAMP, SRC_RW_CNT, 0.00);
+
+--*****************************************************************
+-- MAIN
+--*****************************************************************
+
+-- drop table qtemp/custacctwk ;
+
+-- CREATE TABLE QTEMP/CUSTACCTWK LIKE CUSTOMER_ACCOUNT ;
+   declare global temporary table session/custacctwk
+   like customer_account with replace ;
+
+   create index qtemp/custaccti1 on qtemp/custacctwk
+     (customer_id, country_cd, business_unit_type_cd,
+      od_customer_type_cd) ;
+
+   INSERT INTO QTEMP/CUSTACCTWK
+   (
+      CUSTOMER_ID,
+      COUNTRY_CD,
+      BUSINESS_UNIT_TYPE_CD,
+      ACCOUNT_ESTABLISHED_DT,
+      ACCOUNT_STATUS_CD,
+      OD_CUSTOMER_TYPE_CD,
+      CUSTOMER_TYPE_CD,
+      CUSTOMER_NM,
+      LANGUAGE_CD,
+      POSTAL_CD,
+      PHONE_NUM,
+      STANDARD_INDUSTRY_CD,
+      DUNS_ID,
+      CURRENT_RECORD_IND,
+      PROCESSED_DT,
+      ULTIMATE_PARENT_ID
+    )
+
+    SELECT FCU000P_CUSTOMER_ID,
+   FCU000P_COUNTRY_CODE,
+   'D',
+   CBDACR,
+   CASE WHEN FCU000P_DELETE_FLAG = 'N' THEN 'A'
+       ELSE 'I'
+   END,
+   'CONTRACT',
+   'CUSTOMER',
+   FCU000P_BUSINESS_NAME,
+   'DE',
+   substr(FCU000P_ZIP,1,10),
+   '0'||FCU000P_PRIMARY_PHONE,
+   FCU000P_SIC_CODE,
+   FCU000P_DUNS_NBR,
+   CASE WHEN FCU000P_DELETE_FLAG = 'N' THEN 1
+       ELSE 0
+   END,
+   CURRENT DATE,
+   ' '
+      FROM ESMSTDTA/FCU000P
+      WHERE FCU000P_COUNTRY_CODE = 'ES'
+AND FCU000P_CONT_RETAIL_CODE <>'C' ;
+
+--*****************************************************************
+-- Update language code
+--*****************************************************************
+
+update qtemp/custacctwk a
+ set language_cd =
+(select
+  case when cusinvadn_language_id = 'G' then 'DE'
+       when cusinvadn_language_id = '  ' then 'DE'
+       when cusinvadn_language_id = 'F' then 'FR'
+      else cusinvadn_language_id
+  end
+from ESmstdta/cusinvadn b
+       where a.customer_id = b.cusinvadn_customer_id)
+ where a.business_unit_type_cd = 'D'
+   and a.country_cd = 'ES' ;
+
+--*****************************************************************
+-- update account_type_cd
+--*****************************************************************
+
+update qtemp/custacctwk a
+ set account_type_cd =
+   (select case when biflao = 'F' then 'Field Account'
+when biflao = 'I' then 'Internal Account'
+when biflao = 'K' then 'Key Account'
+when biflao = 'M' then 'Major Account'
+when biflao = 'T' then '**TAM** Account'
+else biflao
+   end
+    from ESmstdta/ccu007f b
+    where b.ccu007f_customer_id = a.customer_id)
+where exists (select 1 from ESmstdta/ccu007f c
+      where a.customer_id = c.ccu007f_customer_id
+     )
+;
+
+update qtemp/custacctwk a
+ set account_type_cd = ' '
+where account_type_cd is null
+;
+
+--**************************************************************
+-- UPDATE QTEMP WITH CURRENT DATA FOR EXISTING RECORDS
+-- WILL ALLOW SIMPLE UPSERT TO MASTER TABLE
+--**************************************************************
+
+UPDATE QTEMP/CUSTACCTWK A
+SET (
+     ACCOUNT_ESTABLISHED_DT,
+     LOCATION_ID,
+     SET_UP_CHANNEL_ID,
+     FIRST_ORDER_METHOD_CD,
+     FIRST_ORDER_DT,
+     WLR_CUSTOMER_IND,
+     PREMIER_DT,
+     TAM_AGENT_ID,
+     CURRENT_CREDIT_STATUS_CD,
+     SPEND_POTENTIAL_AMT,
+     SHARE_OF_WALLET_AMT,
+     COMPANY_SIZE_QTY,
+     AVG_DAYS_TO_PAY_QTY,
+     CURRENT_BALANCE_AMT,
+     FIRST_ORDER_EFFORT_ID,
+     FIRST_ORDER_EFFORT_YR,
+     FIRST_ORDER_PREMIUM_IND,
+     NON_RENTAL_IND,
+     POLYBAG_IND,
+     MERGE_ID,
+     PROSPECT_ID,
+     CREDIT_CD,
+     MAIL_KEY_CD,
+     ONE_PERSON_COMPANY_IND,
+     PRIMARY_SEGMENT_CD,
+     MGM_IND,
+     FIRST_ORDER_SHIP_DT,
+     TAM_TARGET_GRP_NM,
+     TAM_CUSTOMER_IND,
+     PHONE_IND,
+     FAX_IND,
+     EMAIL_IND,
+     CUSTOMER_ABCD_CLASS_CD,
+     PREMIER_CUSTOMER_CD,
+     BRANCH_CD,
+     NO_OF_BUYERS_CNT,
+     NO_OF_MAILABLE_BUYERS_CNT,
+     WORK_LIFE_REWARD_DT,
+     CUSTOMER_SOURCE_CD,
+     SOURCE_REF_TAM_AGENT_ID,
+     CRM_ID,
+     CORPORATE_CUST_ACCOUNT_ID,
+     PAYMENT_TERMS,
+     LOYALTY_PROGRAM,
+     FIRST_ORD_VALUE_AMT,
+     FIRST_ORD_COG_AMT,
+     FIRST_ORD_PREMIUM_COSTS_AMT,
+     INTERNET_SETUP_IND,
+     LAST_ORDER_DT,
+     LAST_MAIL_DT,
+     LAST_EFFORT_MAILED,
+     LOC_SIC_CD,
+     UPDATE_DT,
+     IKA_ID,
+     NAT_ID,
+     IND_TYPE,
+     CURRENCY_CD,
+     MERGEPURGE_DT,
+     FIRST_INVOICE_DT,
+     FIRST_INVOICE_NUM,
+     FIRST_ORDER_NUM,
+     SPEND_BAND,
+     ULTIMATE_PARENT_ID
+) =
+(
+  SELECT B.ACCOUNT_ESTABLISHED_DT,
+ B.LOCATION_ID,
+ B.SET_UP_CHANNEL_ID,
+ B.FIRST_ORDER_METHOD_CD,
+ B.FIRST_ORDER_DT,
+ B.WLR_CUSTOMER_IND,
+ B.PREMIER_DT,
+ B.TAM_AGENT_ID,
+ B.CURRENT_CREDIT_STATUS_CD,
+ B.SPEND_POTENTIAL_AMT,
+ B.SHARE_OF_WALLET_AMT,
+ B.COMPANY_SIZE_QTY,
+ B.AVG_DAYS_TO_PAY_QTY,
+ B.CURRENT_BALANCE_AMT,
+ B.FIRST_ORDER_EFFORT_ID,
+ B.FIRST_ORDER_EFFORT_YR,
+ B.FIRST_ORDER_PREMIUM_IND,
+ B.NON_RENTAL_IND,
+ B.POLYBAG_IND,
+ B.MERGE_ID,
+ B.PROSPECT_ID,
+ B.CREDIT_CD,
+ B.MAIL_KEY_CD,
+ B.ONE_PERSON_COMPANY_IND,
+ B.PRIMARY_SEGMENT_CD,
+ B.MGM_IND,
+ B.FIRST_ORDER_SHIP_DT,
+ B.TAM_TARGET_GRP_NM,
+ B.TAM_CUSTOMER_IND,
+ B.PHONE_IND,
+ B.FAX_IND,
+ B.EMAIL_IND,
+ B.CUSTOMER_ABCD_CLASS_CD,
+ B.PREMIER_CUSTOMER_CD,
+ B.BRANCH_CD,
+ B.NO_OF_BUYERS_CNT,
+ B.NO_OF_MAILABLE_BUYERS_CNT,
+ B.WORK_LIFE_REWARD_DT,
+ B.CUSTOMER_SOURCE_CD,
+ B.SOURCE_REF_TAM_AGENT_ID,
+ B.CRM_ID,
+ B.CORPORATE_CUST_ACCOUNT_ID,
+ B.PAYMENT_TERMS,
+ B.LOYALTY_PROGRAM,
+ B.FIRST_ORD_VALUE_AMT,
+ B.FIRST_ORD_COG_AMT,
+ B.FIRST_ORD_PREMIUM_COSTS_AMT,
+ B.INTERNET_SETUP_IND,
+ B.LAST_ORDER_DT,
+ B.LAST_MAIL_DT,
+ B.LAST_EFFORT_MAILED,
+ B.LOC_SIC_CD,
+ B.UPDATE_DT,
+ B.IKA_ID,
+ B.NAT_ID,
+ B.IND_TYPE,
+ B.CURRENCY_CD,
+ B.MERGEPURGE_DT,
+ B.FIRST_INVOICE_DT,
+ B.FIRST_INVOICE_NUM,
+ B.FIRST_ORDER_NUM,
+ B.SPEND_BAND,
+ B.ULTIMATE_PARENT_ID
+ FROM CUSTOMER_ACCOUNT B
+ WHERE A.CUSTOMER_ID = B.CUSTOMER_ID
+    AND A.COUNTRY_CD = B.COUNTRY_CD
+    AND A.BUSINESS_UNIT_TYPE_CD = B.BUSINESS_UNIT_TYPE_CD
+    AND A.OD_CUSTOMER_TYPE_CD = B.OD_CUSTOMER_TYPE_CD
+ )
+
+ WHERE A.COUNTRY_CD = 'ES'
+   AND A.BUSINESS_UNIT_TYPE_CD = 'D'
+   AND EXISTS
+   (
+     SELECT 1
+     FROM CUSTOMER_ACCOUNT C
+     WHERE A.CUSTOMER_ID = C.CUSTOMER_ID
+     AND A.COUNTRY_CD = C.COUNTRY_CD
+     AND A.BUSINESS_UNIT_TYPE_CD = C.BUSINESS_UNIT_TYPE_CD
+     AND A.OD_CUSTOMER_TYPE_CD = C.OD_CUSTOMER_TYPE_CD
+   ) ;
+
+INSERT INTO STG_CUSTOMER_ACCOUNT
+SELECT * FROM QTEMP/CUSTACCTWK ;
+
+-- GET ROW COUNT
+   GET DIAGNOSTICS STG_RW_CNT = ROW_COUNT ;
+
+-- INSERT INTO DQHIST
+
+   INSERT INTO DQHIST
+   (
+     COUNTRY_CD,
+     BUSINESS_CHANNEL_ID,
+     BUSINESS_AREA,
+     DATA_SRC,
+     DATA_TABLE,
+     PROCESS_NM,
+     UI_FLAG,
+     PROCESS_TIME,
+     ROW_CT,
+     ROW_VAL
+   )
+   VALUES ('ES','D','ACCOUNTS','STAGING','STG_CUSTOMER_ACCOUNT',
+   'NESDACCT','I',CURRENT TIMESTAMP, STG_RW_CNT, 0.00);
+
+GOTO EXITPROC ;
+
+--**************************************************************
+-- LEAVE PROCEDURE
+--**************************************************************
+
+EXITPROC:
+LOOP
+LEAVE EXITPROC ;
+END LOOP ;
+
+END
+

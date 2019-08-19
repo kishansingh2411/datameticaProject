@@ -1,0 +1,88 @@
+01	A	"Culture et production animale, chasse et services annexes"
+02	A	Sylviculture et exploitation forestière
+03	A	Pêche et aquaculture
+05	B	Extraction de houille et de lignite
+06	B	Extraction d'hydrocarbures
+07	B	Extraction de minerais métalliques
+08	B	Autres industries extractives
+09	B	Services de soutien aux industries extractives
+10	C	Industries alimentaires
+11	C	Fabrication de boissons
+12	C	Fabrication de produits à base de tabac
+13	C	Fabrication de textiles
+14	C	Industrie de l'habillement
+15	C	Industrie du cuir et de la chaussure
+16	C	"Travail du bois et fabrication d'articles en bois et en liège, à l’exception des meubles ; fabrication d’articles en vannerie et sparterie"
+17	C	Industrie du papier et du carton
+18	C	Imprimerie et reproduction d'enregistrements
+19	C	Cokéfaction et raffinage
+20	C	Industrie chimique
+21	C	Industrie pharmaceutique
+22	C	Fabrication de produits en caoutchouc et en plastique
+23	C	Fabrication d'autres produits minéraux non métalliques
+24	C	Métallurgie
+25	C	"Fabrication de produits métalliques, à l’exception des machines et des équipements"
+26	C	"Fabrication de produits informatiques, électroniques et optiques"
+27	C	Fabrication d'équipements électriques
+28	C	Fabrication de machines et équipements n.c.a.
+29	C	Industrie automobile
+30	C	Fabrication d'autres matériels de transport
+31	C	Fabrication de meubles
+32	C	Autres industries manufacturières
+33	C	Réparation et installation de machines et d'équipements
+35	D	"Production et distribution d'électricité, de gaz, de vapeur et d'air conditionné"
+36	E	"Captage, traitement et distribution d'eau"
+37	E	Collecte et traitement des eaux usées
+38	E	"Collecte, traitement et élimination des déchets ; récupération"
+39	E	Dépollution et autres services de gestion des déchets
+41	F	Construction de bâtiments
+42	F	Génie civil
+43	F	Travaux de construction spécialisés
+45	G	Commerce et réparation d'automobiles et de motocycles
+46	G	"Commerce de gros, à l’exception des automobiles et des motocycles"
+47	G	"Commerce de détail, à l’exception des automobiles et des motocycles"
+49	H	Transports terrestres et transport par conduites
+50	H	Transports par eau
+51	H	Transports aériens
+52	H	Entreposage et services auxiliaires des transports
+53	H	Activités de poste et de courrier
+55	I	Hébergement
+56	I	Restauration
+58	J	Édition
+59	J	"Production de films cinématographiques, de vidéo et de programmes de télévision ; enregistrement sonore et édition musicale"
+60	J	Programmation et diffusion
+61	J	Télécommunications
+62	J	"Programmation, conseil et autres activités informatiques"
+63	J	Services d'information
+64	K	"Activités des services financiers, hors assurance et caisses de retraite"
+65	K	Assurance
+66	K	Activités auxiliaires de services financiers et d'assurance
+68	L	Activités immobilières
+69	M	Activités juridiques et comptables
+70	M	Activités des sièges sociaux ; conseil de gestion
+71	M	Activités d'architecture et d'ingénierie ; activités de contrôle et analyses techniques
+72	M	Recherche-développement scientifique
+73	M	Publicité et études de marché
+74	M	"Autres activités spécialisées, scientifiques et techniques"
+75	M	Activités vétérinaires
+77	N	Activités de location et location-bail
+78	N	Activités liées à l'emploi
+79	N	"Activités des agences de voyage, voyagistes, services de réservation et activités connexes"
+80	N	Enquêtes et sécurité
+81	N	Services relatifs aux bâtiments et aménagement paysager
+82	N	Activités administratives et autres activités de soutien aux entreprises
+84	O	Administration publique et défense ; sécurité sociale obligatoire
+85	P	Enseignement
+86	Q	Activités pour la santé humaine
+87	Q	Hébergement médico-social et social
+88	Q	Action sociale sans hébergement
+90	R	"Activités créatives, artistiques et de spectacle"
+91	R	"Bibliothèques, archives, musées et autres activités culturelles"
+92	R	Organisation de jeux de hasard et d'argent
+93	R	"Activités sportives, récréatives et de loisirs"
+94	S	Activités des organisations associatives
+95	S	Réparation d'ordinateurs et de biens personnels et domestiques
+96	S	Autres services personnels
+97	T	Activités des ménages en tant qu'employeurs de personnel domestique
+98	T	Activités indifférenciées des ménages en tant que producteurs de biens et services pour usage propre
+99	U	Activités des organisations et organismes extraterritoriaux

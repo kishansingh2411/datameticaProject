@@ -1,0 +1,453 @@
+drop procedure niedacct;
+
+create procedure niedacct
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+                 datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+     declare sqlcode integer default 0;
+     declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--****************************************************************
+-- ERROR FLAGS
+--****************************************************************
+
+     declare rnf int default 0;
+     declare tnf int default 0;
+     declare rec_not_found condition for '02000';
+     declare tab_not_found condition for '42704';
+
+
+--****************************************************************
+-- CURSORS
+--****************************************************************
+
+
+--****************************************************************
+-- ERROR HANDLERS
+--****************************************************************
+     declare continue handler for rec_not_found set rnf = 1;
+     declare continue handler for tab_not_found set tnf = 1;
+
+--****************************************************************
+-- INIT
+--****************************************************************
+
+declare global temporary table session/cuac like customer_account
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+
+ insert into qtemp/cuac (
+ ACCOUNT_ESTABLISHED_DT,
+ BRANCH_CD,
+ CREDIT_CD,
+ CURRENT_CREDIT_STATUS_CD,
+ CUSTOMER_ID,
+ CUSTOMER_NM,
+ FAX_IND,
+ MAILABLE_IND,
+ NON_RENTAL_IND,
+ ORG_NAME2_TXT,
+ ORG_NAME3_TXT,
+ ORG_NAME4_TXT,
+ POLYBAG_IND,
+ POSTAL_CD,
+ PREMIER_CUSTOMER_CD,
+ COUNTRY_CD,
+ WORK_LIFE_REWARD_DT,
+ WLR_CUSTOMER_IND,
+ CUSTOMER_TYPE_CD,
+ NAT_ID,
+ VAT_NUMBER,
+ ACC_GROUP_CD,
+ DELETE_FLAG,
+ OD_CUSTOMER_TYPE_CD,
+ CRM_ID,
+ CONSOLIDATED_CHANNEL_ID,
+ PHONE_NUM,
+ PAYMENT_TERMS,
+ LOYALTY_PROGRAM,
+ INTERNET_SETUP_IND,
+ LAST_MAIL_DT,
+ LAST_EFFORT_MAILED,
+ LOC_SIC_CD,
+ IKA_ID,
+ DUNS_ID,
+ IND_TYPE,
+ CURRENCY_CD,
+ CURRENT_RECORD_IND ,
+ TAM_CUSTOMER_IND,
+ TAM_AGENT_ID,
+ BUSINESS_UNIT_TYPE_CD,
+ ACCOUNT_STATUS_CD
+)
+select
+  digits(sucybt) || digits(suyrbt) || '-' || digits(sumtbt) || '-'
+  || digits(sudabt) AS ACCOUNT_ESTABLISHED_DT,
+  BRANBT AS BRANCH_CD,
+  char(CRCDBT) AS CREDIT_CD,
+  char(CRCDBT) AS CURRENT_CREDIT_STATUS_CD,
+  char(CUSTBT) AS CUSTOMER_ID,
+  BNAMBT AS CUSTOMER_NM,
+  CASE WHEN fax#bt = '' THEN 0 ELSE 1 END AS FAX_IND,
+  CASE WHEN NOMTBT = 'Y' THEN 1 ELSE 0 END AS MAILABLE_IND,
+  CASE WHEN NORNBT = 'Y' THEN 1 ELSE 0 END AS NON_RENTAL_IND,
+  BATTBT AS ORG_NAME2_TXT,
+  BADDBT AS ORG_NAME3_TXT,
+  BCTYBT AS ORG_NAME4_TXT,
+  CASE  WHEN NOCCBT= 'Y' or NOCCBT='' THEN 1 ELSE 0 END AS POLYBAG_IND,
+  char(ZIPOBT) || char(ZIPIBT) AS POSTAL_CD,
+  MSC3BT AS PREMIER_CUSTOMER_CD,
+  'IE' AS COUNTRY_CD,
+  '1900-01-01' as WORK_LIFE_REWARD_DT,
+  0 as WLR_CUSTOMER_IND,
+  'CUSTOMER' as CUSTOMER_TYPE_CD,
+  '' as NAT_ID,
+  '' as VAT_NUMBER,
+  '' as ACC_GROUP_CD,
+  '' as DELETE_FLAG,
+  'B2B' AS OD_CUSTOMER_TYPE_CD,
+  '' AS  CRM_ID,
+  'DIRECT' AS CONSOLIDATED_CHANNEL_ID,
+  '' AS PHONE_NUM,
+  '' AS PAYMENT_TERMS,
+  '' AS LOYALTY_PROGRAM,
+  0 AS  INTERNET_SETUP_IND,
+  '1900-01-01' AS LAST_MAIL_DT,
+  '' AS  LAST_EFFORT_MAILED,
+  '' AS  LOC_SIC_CD,
+  '' AS  IKA_ID,
+  '' AS  DUNS_ID,
+  '' AS  IND_TYPE,
+  'EUR' AS  CURRENCY_CD,
+  1 AS CURRENT_RECORD_IND,
+  0 AS TAM_CUSTOMER_IND,
+  0 AS TAM_AGENT_ID,
+  'D' AS BUSINESS_UNIT_TYPE_CD,
+  'A' AS ACCOUNT_STATUS_CD
+
+ from
+          UKMSTDTAPV/ORPBILTO
+ WHERE
+         CTRYBT = 'IR' ;
+
+ UPDATE qtemp/cuac A
+ SET
+   (CURRENT_BALANCE_AMT,
+    NINETY_DAY_AMT,
+    NINETY_DAY_IND,
+    SIXTY_DAY_AMT,
+    SIXTY_DAY_IND,
+    THIRTY_DAY_AMT,
+    THIRTY_DAY_IND)=
+  (SELECT
+     CURBAF AS CURRENT_BALANCE_AMT,
+     OV90AF AS NINETY_DAY_AMT,
+     case when OV90AF = 0.0 then 0 else 1 end AS NINETY_DAY_IND,
+     OV60AF AS SIXTY_DAY_AMT,
+     case when OV60AF = 0.0 then 0 else 1 end AS SIXTY_DAY_IND,
+     OV30AF AS THIRTY_DAY_AMT,
+     case when OV30AF = 0.0 then 0 else 1 end AS THIRTY_DAY_IND
+ FROM
+         UKMSTDTAPV/ARPAGING B
+ WHERE A.CUSTOMER_ID = CHAR(B.CUSTAF));
+
+
+
+/*
+BY DEFAULT VALUE FOR TAM_CUSTOMER_IND IS SET TO ZERO IN FIRST STATEMENT
+AND IF ONLY ROW FOUND THEN SET TO 1 IN BELOW QUERY. TAM_AGENT_ID IS SET
+TO NULL BY DEFAULT
+AND UPDATED ONLY IF ROW FOUND BELOW */
+
+UPDATE qtemp/cuac set TAM_CUSTOMER_IND=0;
+
+UPDATE qtemp/cuac A
+SET
+(
+TAM_CUSTOMER_IND
+)=
+ (SELECT 1  AS TAM_CUSTOMER_IND
+    FROM
+         AT_TAM/C_TAM_STAT B
+   WHERE
+         B.custid = A.CUSTOMER_ID
+    and  B.end_date='9999-12-31' and B.status_code IN (600,700,900)
+ );
+
+
+/* DATE FORMAT ISSUES */
+UPDATE qtemp/cuac A
+SET
+(PREMIER_DT)=
+(SELECT
+        digits(precys) ||
+        substr(digits(predts),1,2) || '-' ||
+        substr(digits(predts), 3, 2) || '-' ||
+         substr(digits(predts),5,2) AS PREMIER_DT
+        FROM UKMSTDTAPV/CMPDAT B
+        WHERE A.CUSTOMER_ID = CHAR(B.CUSTTS)) ;
+
+
+ UPDATE qtemp/cuac A
+ SET
+ (PROSPECT_ID)=
+ (SELECT
+         FINDPS AS PROSPECT_ID
+    FROM
+         UKMSTDTAPV/CMPPSPCV B
+   WHERE A.CUSTOMER_ID = CHAR(B.CUSTS));
+
+
+ UPDATE qtemp/cuac A
+ SET
+ (AVG_DAYS_TO_PAY_QTY)=
+ (SELECT
+         AD00DP AS AVG_DAYS_TO_PAY_QTY
+     FROM
+         UKMSTDTAPV/CRPDTOPY B
+     WHERE A.CUSTOMER_ID = CHAR(B.CUSTDP));
+
+ UPDATE qtemp/cuac A
+ SET
+         (COMPANY_SIZE_QTY,
+         PHONE_IND,
+         STANDARD_INDUSTRY_CD)=
+ (SELECT
+         CAST (EMP#CT AS INTEGER ) AS COMPANY_SIZE_QTY,
+         CASE WHEN NOTMCT=' ' THEN 1 ELSE 0 END AS PHONE_IND,
+         CAST (SICCT AS CHAR(30) ) AS STANDARD_INDUSTRY_CD
+ FROM
+         UKMSTDTAPV/ORPCOUNT B
+         WHERE CUSTOMER_ID = CHAR(B.CUSTCT));
+
+
+ UPDATE qtemp/cuac A
+ SET
+         (FIRST_ORDER_PREMIUM_IND,
+         MAIL_KEY_CD)=
+ (SELECT
+         CASE WHEN PREMCT = 'Y' THEN 1
+                                ELSE 0
+         END AS FIRST_ORDER_PREMIUM_IND,
+         CAST (ORTYCT AS CHAR(6) ) AS MAIL_KEY_CD
+ FROM
+         UKMSTDTAPV/ORPFRST B
+ WHERE A.CUSTOMER_ID =CHAR(B.CUSTCT));
+
+ UPDATE qtemp/cuac A
+ SET
+         (OD_CUSTOMER_TYPE_CD)=
+ (SELECT
+         CAST ('B2C' AS CHAR(30) ) AS OD_CUSTOMER_TYPE_CD
+FROM
+        UKMSTDTAPV/VKCUSATR B
+WHERE A.CUSTOMER_ID =CHAR(B.CUSTEA)
+  AND B.CODEEA = 'TYPE'
+  AND ATTREA = 'CONS');
+
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'IE',
+        'D',
+        'ACCOUNTS',
+        'LEGACY',
+        'ORPBILTO',
+        'niedacct',
+        'E',
+        current timestamp,
+
+         w1rcnt,
+         0,0)
+ ;
+--*************************************************************
+-- END
+--*************************************************************
+
+ update qtemp/cuac
+ set processed_dt = current date
+;
+
+/* Please see my comment in covering notes on this section of code*/
+/* not sure about how to use this part of code, so skipping for now.
+DM team, 23/06/15.
+BLOCK B
+Peoplesoft related code is removed and keeping update related code
+as per discussion with OD team. 24/06/2015.*/
+
+
+-- Set status info for pre existing rows
+
+update qtemp/cuac a
+set (
+AB_COMMENT_TXT,
+ACCOUNT_TYPE_CD,
+ALLOW_BACKORDER_IND,
+ALLOW_SPLIT_ORDER_IND,
+ALLOW_SUBSTITUTE_IND,
+CORPORATE_CUST_ACCOUNT_ID,
+CUSTOMER_ABCD_CLASS_CD,
+CUSTOMER_SOURCE_CD,
+EMAIL_IND,
+FIRST_INVOICE_DT,
+FIRST_INVOICE_NUM,
+FIRST_ORD_COG_AMT,
+FIRST_ORD_PREMIUM_COSTS_AMT,
+FIRST_ORD_VALUE_AMT,
+FIRST_ORDER_DT,
+FIRST_ORDER_EFFORT_ID,
+FIRST_ORDER_EFFORT_YR,
+FIRST_ORDER_METHOD_CD,
+FIRST_ORDER_NUM,
+FIRST_ORDER_SHIP_DT,
+FURNITURE_DELIVERY_FEE_IND,
+LANGUAGE_CD,
+LAST_ORDER_DT,
+LOCATION_ID,
+LTV_COG_AMT,
+LTV_ORDERS_CNT,
+LTV_PREMIUM_COST_AMT,
+LTV_SALES_AMT,
+MERGE_ID,
+MERGEPURGE_DT,
+MGM_IND,
+NEED_CREDIT_APPROVAL_IND,
+NEED_RETURN_APPROVAL_IND,
+NO_OF_BUYERS_CNT,
+NO_OF_MAILABLE_BUYERS_CNT,
+ONE_PERSON_COMPANY_IND,
+PRIMARY_SEGMENT_CD,
+PROCESSED_DT,
+SALES_LTV_ACTIVE_MONTH_AMT,
+SET_UP_CHANNEL_ID,
+SHARE_OF_WALLET_AMT,
+SOURCE_REF_TAM_AGENT_ID,
+SPEND_BAND,
+SPEND_POTENTIAL_AMT,
+TAM_TARGET_GRP_NM,
+ULTIMATE_PARENT_ID,
+UPDATE_DT
+                 ) =
+   (select
+                  AB_COMMENT_TXT,
+                  ACCOUNT_TYPE_CD,
+                  ALLOW_BACKORDER_IND,
+                  ALLOW_SPLIT_ORDER_IND,
+                  ALLOW_SUBSTITUTE_IND,
+                  CORPORATE_CUST_ACCOUNT_ID,
+                  CUSTOMER_ABCD_CLASS_CD,
+                  CUSTOMER_SOURCE_CD,
+                  EMAIL_IND,
+                  FIRST_INVOICE_DT,
+                  FIRST_INVOICE_NUM,
+                  FIRST_ORD_COG_AMT,
+                  FIRST_ORD_PREMIUM_COSTS_AMT,
+                  FIRST_ORD_VALUE_AMT,
+                  FIRST_ORDER_DT,
+                  FIRST_ORDER_EFFORT_ID,
+                  FIRST_ORDER_EFFORT_YR,
+                  FIRST_ORDER_METHOD_CD,
+                  FIRST_ORDER_NUM,
+                  FIRST_ORDER_SHIP_DT,
+                  FURNITURE_DELIVERY_FEE_IND,
+                  LANGUAGE_CD,
+                  LAST_ORDER_DT,
+                  LOCATION_ID,
+                  LTV_COG_AMT,
+                  LTV_ORDERS_CNT,
+                  LTV_PREMIUM_COST_AMT,
+                  LTV_SALES_AMT,
+                  MERGE_ID,
+                  MERGEPURGE_DT,
+                  MGM_IND,
+                  NEED_CREDIT_APPROVAL_IND,
+                  NEED_RETURN_APPROVAL_IND,
+                  NO_OF_BUYERS_CNT,
+                  NO_OF_MAILABLE_BUYERS_CNT,
+                  ONE_PERSON_COMPANY_IND,
+                  PRIMARY_SEGMENT_CD,
+                  PROCESSED_DT,
+                  SALES_LTV_ACTIVE_MONTH_AMT,
+                  SET_UP_CHANNEL_ID,
+                  SHARE_OF_WALLET_AMT,
+                  SOURCE_REF_TAM_AGENT_ID,
+                  SPEND_BAND,
+                  SPEND_POTENTIAL_AMT,
+                  TAM_TARGET_GRP_NM,
+                  ULTIMATE_PARENT_ID,
+                  UPDATE_DT
+   from   customer_account b
+   where  a.country_cd = b.country_cd
+   and    a.customer_id = b.customer_id
+   and    A.BUSINESS_UNIT_TYPE_CD = B.BUSINESS_UNIT_TYPE_CD
+     AND    A.OD_CUSTOMER_TYPE_CD = B.OD_CUSTOMER_TYPE_CD
+                 )
+  where exists
+    (select 1
+     from   customer_account b
+     where  a.country_cd = b.country_cd
+     and    a.customer_id = b.customer_id
+     and    A.BUSINESS_UNIT_TYPE_CD = B.BUSINESS_UNIT_TYPE_CD
+     AND    A.OD_CUSTOMER_TYPE_CD = B.OD_CUSTOMER_TYPE_CD
+)
+;
+
+insert into stg_customer_account
+select *
+from   qtemp/cuac
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'IE',
+        'D',
+        'ACCOUNTS',
+        'STAGING',
+        'STG_CUSTOMER_ACCOUNT',
+        'niedacct',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+end ;
+

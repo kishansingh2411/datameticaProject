@@ -1,0 +1,50 @@
+<!--********************************************************************************-->
+<!--Name:- COVERAGEANALYTICS_gold_sub_workflow.xml           								-->
+<!--								          										-->
+<!--Description:- COVERAGEANALYTICS Gold table mapping workFlow   						-->
+<!--								           										-->
+<!--Author:- Sonali Rawool, Harshvardhan Jagtap, Sarfaraz Khan           			-->
+<!--********************************************************************************-->
+
+<workflow-app name="CoverageAnalyticsGoldSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+    <start to="COVERAGEANALYTICS_FORK_GOLD_JOB" />
+    
+    <fork name="COVERAGEANALYTICS_FORK_GOLD_JOB">
+        <path start="COVERAGE_ANALYTICS_GOLD_CC_UNIV_JOB" />
+		<path start="COVERAGE_ANALYTICS_GOLD_DM_CDMPRDDTA_JOB" />
+
+    </fork>
+      
+    <join name="COVERAGEANALYTICS_JOIN_GOLD_JOB" to="COVERAGEANALYTICS_GOLD_SUB_WORKFLOW_END" />
+    
+    
+    <action name="COVERAGE_ANALYTICS_GOLD_CC_UNIV_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${goldCcUnivScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_GOLD_JOB" />
+		<error to="KILL" />
+	</action>
+    
+        <action name="COVERAGE_ANALYTICS_GOLD_DM_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${goldDmCdmprddtaScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_GOLD_JOB" />
+		<error to="KILL" />
+	</action>
+                                
+    <kill name="KILL">
+        <message>Coremetric Gold SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+        </message>
+    </kill>
+
+    <end name="COVERAGEANALYTICS_GOLD_SUB_WORKFLOW_END" />
+</workflow-app>
+    

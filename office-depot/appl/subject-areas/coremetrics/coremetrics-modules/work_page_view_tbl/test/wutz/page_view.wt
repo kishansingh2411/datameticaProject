@@ -1,0 +1,3 @@
+debug=On
+
+verify storeoutput  hdfs:/office_depot/clickstream/test/compare_result/work_page_view.txt  with  hdfs:/office_depot/clickstream/test/work/data/work_page_view/part-r-00000 

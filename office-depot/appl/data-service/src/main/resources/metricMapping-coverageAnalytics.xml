@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metrics>
+	<metric>
+		<name>totalAccount</name>
+		<datadataType>LONG</datadataType>
+		<columnName>count(distinct(account_id))</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>true</derived>
+	</metric>
+	<metric>
+		<name>totalAssociate</name>
+		<dataType>LONG</dataType>
+		<columnName>count(distinct(sales_represntative_id))</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>true</derived>
+	</metric>
+	<metric>
+		<name>totalProsperts</name>
+		<dataType>LONG</dataType>
+		<columnName>distinct(total_prospect)</columnName>
+		<columnDataType>INTEGER</columnDataType>
+		<derived>true</derived>
+	</metric>
+	<metric>
+		<name>totalRevenue</name>
+		<dataType>DOUBLE</dataType>
+		<columnName>round(sum(total_revenue),2)</columnName>
+		<columnDataType>DOUBLE</columnDataType>
+		<derived>true</derived>
+	</metric>
+	<metric>
+		<name>coverageRatioByAccount</name>
+		<dataType>DOUBLE</dataType>
+		<columnName>count(distinct(sales_represntative_id))/count(distinct(account_id))</columnName>
+		<columnDataType>DOUBLE</columnDataType>
+		<derived>true</derived>
+	</metric>
+	<metric>
+		<name>coverageRatioByProspects</name>
+		<dataType>DOUBLE</dataType>
+		<columnName>count(distinct(sales_represntative_id))/distinct(total_prospect)</columnName>
+		<columnDataType>DOUBLE</columnDataType>
+		<derived>true</derived>
+	</metric>
+</metrics>

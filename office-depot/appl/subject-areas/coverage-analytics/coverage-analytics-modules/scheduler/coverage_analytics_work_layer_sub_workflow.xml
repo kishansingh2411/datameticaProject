@@ -1,0 +1,197 @@
+<workflow-app name="CoverageAnalyticsWorkLayerSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COVERAGE_ANALYTICS_FORK_WORK_LAYER_JOB" />
+	
+	<fork name="COVERAGE_ANALYTICS_FORK_WORK_LAYER_JOB">
+		<path start="COVERAGE_ANALYTICS_WORK_NL_UNIV_VIKBASE_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_GE_UNIV_SCHOBER_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_BE_UNIV_SCHOBER_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_IT_UNIV_DBITALY_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_AT_UNIV_KSV_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_AT_UNIV_SCHOBER_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_UK_UNIV_LBMDATA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_IR_UNIV_BILLMOSS_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_FR_MDUGAST_N80FIN_JOB" />
+       	<path start="COVERAGE_WORK_CDM_DM_ASSIGNED_CUSTOMER_JOB" />
+       	<path start="COVERAGE_WORK_CDM_DM_TRANSACTION_DTL_JOB" />
+       	<path start="COVERAGE_WORK_CDM_DM_ASSOCIATE_JOB" />
+       	<path start="COVERAGE_WORK_CDM_DM_COUNTRY_JOB" />
+       	<path start="COVERAGE_WORK_CDM_DM_CALENDAR_JOB" />
+        <path start="COVERAGE_WORK_CDM_DM_CUSTOMER_ACCOUNT_JOB" />
+        
+    </fork> 
+    
+    <join name="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" to="COVERAGE_ANALYTICS_WORK__LAYER_SUB_WORKFLOW_END" />
+    
+    <!-- First WordCount MapReduce job -->
+	<action name="COVERAGE_ANALYTICS_WORK_NL_UNIV_VIKBASE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workNlUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_GE_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workGeUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_BE_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workBeUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_IT_UNIV_DBITALY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workItUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_AT_UNIV_KSV_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workAtUnivKsvScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_AT_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workAtUnivSchoberScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_UK_UNIV_LBMDATA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workUkUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_IR_UNIV_BILLMOSS_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workIrUnivScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_FR_MDUGAST_N80FIN_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workFr_MdugastScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_ASSIGNED_CUSTOMER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmAssignedCustomerScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_TRANSACTION_DTL_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmTransactionDtlScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_ASSOCIATE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmAssociateScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_COUNTRY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmCountryScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_CALENDAR_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmCalendarScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_WORK_CDM_DM_CUSTOMER_ACCOUNT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmCustomerAccountScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_LAYER_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<kill name="KILL">
+		<message>Coremetric Work SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COVERAGE_ANALYTICS_WORK__LAYER_SUB_WORKFLOW_END" />
+</workflow-app>

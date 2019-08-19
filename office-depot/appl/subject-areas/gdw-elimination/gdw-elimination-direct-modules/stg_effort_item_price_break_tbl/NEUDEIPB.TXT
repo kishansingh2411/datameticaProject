@@ -1,0 +1,160 @@
+drop procedure neudeipb;
+
+create procedure neudeipb
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+            datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/eipb like effort_item_price_break
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/eipb (
+                        BREAK_DESC,
+                        BREAK_END_QTY,
+                        BREAK_ID,
+                        BREAK_PRICE_AMT,
+                        BREAK_START_QTY,
+                        BUSINESS_CHANNEL_ID,
+                        COUNTRY_CD,
+                        --CURRENT_RECORD_IND,
+                        /*FIELD NOT EXIST IN TARGET*/
+                        --EFFECTIVE_END_DT,
+                        /*FIELD NOT EXIST IN TARGET*/
+                        --EFFECTIVE_START_DT,
+                        /*FIELD NOT EXIST IN TARGET*/
+                        EFFORT_ID,
+                        EFFORT_YR,
+                        PRICE_PREFIX_CD,
+                        PROCESSED_DT,
+                        SKU_NUM
+        )
+select
+                CAST (BREAK_DESCRIPTION AS VARCHAR(250)) AS BREAK_DESC,
+                CAST (END_QUANTITY AS SMALLINT ) AS BREAK_END_QTY,
+                CAST (BREAK_ID AS SMALLINT ) AS BREAK_ID,
+                CAST (BREAK_VALUE AS DECIMAL(11,3) ) AS BREAK_PRICE_AMT,
+                CAST (START_QUANTITY AS SMALLINT ) AS BREAK_START_QTY,
+                CAST (CHANNEL_ID AS CHAR(1) ) AS BUSINESS_CHANNEL_ID,
+                CAST (COUNTRY_ID AS CHAR(2) ) AS COUNTRY_CD,
+                --CAST (''      AS CHAR(1) ) AS CURRENT_RECORD_IND,
+                /*FIELD NOT EXISTIN TARGET*/
+                --NULL AS EFFECTIVE_END_DT,
+                /*FIELD NOT EXISTIN TARGET*/
+                --NULL AS EFFECTIVE_START_DT,
+                /*FIELD NOT EXISTIN TARGET*/
+                CAST (PROMOTION_ID AS CHAR(3) ) AS EFFORT_ID,
+                CAST (PROMOTION_YEAR_ID AS SMALLINT ) AS EFFORT_YR,
+                CAST (PREFIX_ID AS CHAR(3) ) AS PRICE_PREFIX_CD,
+                CAST(NULL AS DATE) AS PROCESSED_DT,
+                CAST (ITEM_ID AS VARCHAR(250)) AS SKU_NUM
+from
+        EDWEXTRACT/PRICEBRKDY
+/*Table does not exist in any existing schema in EDW, DM Team 06/30/2015*/
+;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'EU',
+        'D',
+        'EFF ITM PRC BREAK',
+        'LEGACY',
+        'PRICEBRKDY',
+        'neudeipb',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+ --*************************************************************
+ -- END
+ --*************************************************************
+
+ update qtemp/eipb
+ set processed_dt = current date
+ ;
+
+insert into stg_effort_item_price_break
+select *
+from   qtemp/eipb
+;
+
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'EU',
+        'D',
+        'EFF ITM PRC BREAK',
+        'STAGING',
+        'STG_EFFORT_ITEM_PRICE_BREAK',
+        'neudeipb',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+
+

@@ -1,0 +1,84 @@
+<!--********************************************************************************-->
+<!--Name:- coremetrics_work_sub_workflow.xml           								-->
+<!--								          										-->
+<!--Description:- Coremetrics Work table mapping workFlow   						-->
+<!--								           										-->
+<!--Author:- Sonali Rawool, Harshvardhan Jagtap, Sarfaraz Khan           			-->
+<!--********************************************************************************-->
+<workflow-app name="CoremetricWorkSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COREMETRICS_FORK_WORK_JOB" />
+	
+	<fork name="COREMETRICS_FORK_WORK_JOB">
+		<path start="COREMETRICS_WORK_CART_ITEM_ABANDONMENT_JOB" />
+       	<path start="COREMETRICS_WORK_CART_ITEM_ADDITION_JOB" />
+       	<path start="COREMETRICS_WORK_ORDER_JOB" />
+       	<path start="COREMETRICS_WORK_PAGE_VIEW_JOB" />
+       	<path start="COREMETRICS_WORK_PRODUCT_VIEW_JOB" />
+        
+    </fork>
+	
+	<join name="COREMETRICS_JOIN_WORK_JOB" to="COREMETRICS_WORK_SUB_WORKFLOW_END" />
+	
+	<!-- First WordCount MapReduce job -->
+	<action name="COREMETRICS_WORK_CART_ITEM_ABANDONMENT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workCartItemAbandonmentScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COREMETRICS_WORK_CART_ITEM_ADDITION_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workCartItemAdditionScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+        
+        <action name="COREMETRICS_WORK_ORDER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workOrderScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+        
+        <action name="COREMETRICS_WORK_PAGE_VIEW_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workPageViewScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+        
+        <action name="COREMETRICS_WORK_PRODUCT_VIEW_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workProductViewScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+        
+        <kill name="KILL">
+		<message>Coremetric Work SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COREMETRICS_WORK_SUB_WORKFLOW_END" />
+</workflow-app>

@@ -1,0 +1,165 @@
+<!--********************************************************************************-->
+<!--Name:- coremetrics_workflow.xml           										-->
+<!--								          										-->
+<!--Description:- Coremetrics Oozie workFlow   										-->
+<!--								           										-->
+<!--Author:- Sonali Rawool, Harshvardhan Jagtap, Sarfaraz Khan           			-->
+<!--********************************************************************************-->
+
+<workflow-app name="CoremetricsWorkFlow" xmlns="uri:oozie:workflow:0.1">
+	<start to="COREMETRICS_SETUP_JOB"/>
+	<action name="COREMETRICS_SETUP_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${setupScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_UNZIP_JOB" />
+		<error to="FAIL" />
+    </action>
+    <action name="COREMETRICS_UNZIP_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${unzipScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_VALIDATE_SCHEMA_JOB" />
+		<error to="FAIL" />
+    </action>
+    <action name="COREMETRICS_VALIDATE_SCHEMA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${validateSchemaScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_CREATE_SCHEMA_JOB" />
+		<error to="FAIL" />
+    </action>
+    <action name="COREMETRICS_CREATE_SCHEMA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${createSchemaScriptPath}</command>
+	    	<args>${debugMode}</args>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COREMETRICS_INCOMING_SCHEMA" />
+		<error to="FAIL" />
+    </action>
+	<action name="POPULATE_COREMETRICS_INCOMING_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coremetrics_incoming_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		<ok to="COREMETRICS_WORK_GEOGRAPHY_COUNTRY_COOKIE_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	<action name="COREMETRICS_WORK_GEOGRAPHY_COUNTRY_COOKIE_SCHEMA">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${workgeographyscriptpath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+		<ok to="POPULATE_COREMETRICS_GOLD_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	 <action name="POPULATE_COREMETRICS_GOLD_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coremetrics_gold_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		<ok to="MANAGE_HIVE_TABLES_JOB" />
+		<error to="FAIL" />
+	</action>
+	<action name="MANAGE_HIVE_TABLES_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${manageHiveTables}</command>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COREMETRICS_WORK_SCHEMA" />
+		<error to="FAIL" />
+    </action>
+	<action name="POPULATE_COREMETRICS_WORK_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coremetrics_work_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		<ok to="POPULATE_COREMETRICS_OUTGOING_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	<!-- <action name="POPULATE_COREMETRICS_OUTGOING_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coremetrics_outgoing_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		<ok to="POPULATE_COREMETRICS_HBASE_SCHEMA" />
+		<error to="FAIL" />
+	</action> -->
+	 <action name="POPULATE_COREMETRICS_OUTGOING_SCHEMA">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${outgoingClickstreamViewDailyScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COREMETRICS_HBASE_SCHEMA" />
+		<error to="FAIL" />
+	</action> 
+	<action name="POPULATE_COREMETRICS_HBASE_SCHEMA">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${hbaseCopyScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="DATA_VALIDATION_JOB" />
+		<error to="FAIL" />
+    </action>
+    <action name="DATA_VALIDATION_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${dataValidaion}</command>
+            <capture-output/>
+        </ssh>
+        <ok to="CLEAN_UP" />
+		<error to="FAIL" />
+    </action>
+    <action name="CLEAN_UP">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${cleanUpScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COMPLETE" />
+		<error to="FAIL" />
+    </action>
+	<action name="COMPLETE">
+        <email xmlns="uri:oozie:email-action:0.1">
+            <to>${emailToAddress}</to>
+            <subject>Coremetrics Processing Completed</subject>
+            <body>Coremetrics All Jobs completed successfully</body>
+        </email>
+        <ok to="END"/>
+        <error to="FAIL"/>
+    </action>
+	<action name="FAIL">
+        <email xmlns="uri:oozie:email-action:0.1">
+            <to>${emailToAddress}</to>
+            <subject>Coremetrics Processing Failed</subject>
+            <body>Job failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+        </email>
+        <ok to="KILL"/>
+        <error to="KILL"/>
+    </action>
+	<kill name="KILL">
+		<!-- <message>"Killed job due to error"</message> -->
+		<message>Job failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="END" />
+</workflow-app>

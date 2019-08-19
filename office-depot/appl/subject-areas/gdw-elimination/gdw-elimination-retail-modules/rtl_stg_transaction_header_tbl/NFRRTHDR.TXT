@@ -1,0 +1,223 @@
+--drop procedure nfrrthdr;
+
+create procedure nfrrthdr
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+declare sqlcode integer default 0;
+declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+declare rnf int default 0;
+declare tnf int default 0;
+declare rec_not_found condition for '02000';
+declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+declare continue handler for rec_not_found set rnf = 1;
+declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/thdr like transaction_header
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/thdr (
+        ACCOUNTING_DT,
+        BUSINESS_CHANNEL_ID,
+        COUNTRY_CD,
+        CURRENCY_CD,
+        CUSTOMER_ID,
+        FULFILLMENT_ID,
+        LOB_ID,
+        ORDER_ASSOCIATE_ID,
+        PLACEMENT_METHOD_CD,
+        TOTAL_ORDER_AMT,
+        TOTAL_SALES_AMT,
+        TRANSACTION_ID
+)
+select
+        CSDATE  AS ACCOUNTING_DT,
+        /* NOT SURE HOW TO CAST FROM DECIMAL
+        TO DATE SINCE THERE IS NO DATA IN SOURCE*/
+        CAST ('R' AS CHAR(1) ) AS BUSINESS_CHANNEL_ID,
+        CAST ('FR' AS CHAR(2) ) AS COUNTRY_CD,
+        CAST ('EUR' AS CHAR(3) ) AS CURRENCY_CD,
+        CAST (CSCUST AS CHAR(20) ) AS CUSTOMER_ID,
+        CAST (0 AS SMALLINT ) AS FULFILLMENT_ID,
+        CAST ('R' AS CHAR(2) ) AS LOB_ID,
+        CAST (CSEMP AS CHAR(10) ) AS ORDER_ASSOCIATE_ID,
+        CAST ('S' AS CHAR(6) ) AS PLACEMENT_METHOD_CD,
+        CAST (CSTAMT AS DECIMAL(11,2) ) AS TOTAL_ORDER_AMT,
+        CAST (CSTAMT AS DECIMAL(11,2) ) AS TOTAL_SALES_AMT,
+        CAST (CSSTOR AS CHAR(40) ) AS TRANSACTION_ID
+from
+        COMFMSTDTA/CSHHDR A;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'TXN HEADERS',
+        'LEGACY',
+        'INPHEADF',
+        'nfrrthdr',
+        'E',
+        current timestamp,
+        w1rcnt,
+0,0)
+;
+--*************************************************************
+-- END
+--*************************************************************
+
+
+
+update qtemp/thdr
+set processed_dt = current date
+;
+
+-- Set status info for pre existing rows
+
+update qtemp/thdr a
+set (
+        ASSOCIATION_ID,
+        BILL_TO_ADDRESS_ID,
+        CONTRACT_ASSOCIATE_ID,
+        DELIVERY_METHOD_CD,
+        INVENTORY_LOCATION_ID,
+        INVOICE_DT,
+        INVOICE_NUM,
+        NEW_EXISTING_CUSTOMER_IND,
+        ORDER_DT,
+        ORDER_LOCATION_ID,
+        ORDER_NUM,
+        ORDER_SERVICE_TYPE_CD,
+        ORDER_STATUS_CD,
+        ORDER_TAXABLE_CD,
+        ORDER_TYPE_CD,
+        PREPAID_AMT,
+        PROCESSED_DT,
+        PROMISED_FULFILLMENT_DT,
+        SALES_LOCATION_ID,
+        SHIP_TO_ADDRESS_ID,
+        SHIP_TO_CONTACT_ID,
+        TOTAL_DELIVERY_CHARGE_AMT,
+        TOTAL_DISCOUNT_AMT,
+        TOTAL_TAX_AMT,
+        WINNING_EFFORT_ID,
+        WINNING_EFFORT_YR
+) =
+(select
+       ASSOCIATION_ID,
+       BILL_TO_ADDRESS_ID,
+       CONTRACT_ASSOCIATE_ID,
+       DELIVERY_METHOD_CD,
+       INVENTORY_LOCATION_ID,
+       INVOICE_DT,
+       INVOICE_NUM,
+       NEW_EXISTING_CUSTOMER_IND,
+       ORDER_DT,
+       ORDER_LOCATION_ID,
+       ORDER_NUM,
+       ORDER_SERVICE_TYPE_CD,
+       ORDER_STATUS_CD,
+       ORDER_TAXABLE_CD,
+       ORDER_TYPE_CD,
+       PREPAID_AMT,
+       PROCESSED_DT,
+       PROMISED_FULFILLMENT_DT,
+       SALES_LOCATION_ID,
+       SHIP_TO_ADDRESS_ID,
+       SHIP_TO_CONTACT_ID,
+       TOTAL_DELIVERY_CHARGE_AMT,
+       TOTAL_DISCOUNT_AMT,
+       TOTAL_TAX_AMT,
+       WINNING_EFFORT_ID,
+       WINNING_EFFORT_YR
+from   transaction_header b
+where  a.TRANSACTION_ID = b.TRANSACTION_ID
+        and    a.COUNTRY_CD = b.COUNTRY_CD
+        and    a.FULFILLMENT_ID = b.FULFILLMENT_ID
+        )
+where exists
+(select 1
+from   transaction_header b
+where  a.TRANSACTION_ID = b.TRANSACTION_ID
+        and    a.COUNTRY_CD = b.COUNTRY_CD
+        and    a.FULFILLMENT_ID = b.FULFILLMENT_ID)
+;
+
+insert into stg_transaction_header
+select *
+from   qtemp/thdr
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'TXN HEADERS',
+        'STAGING',
+        'STG_TRANSACTION_HEADER',
+        'nfrrthdr',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+
+
+

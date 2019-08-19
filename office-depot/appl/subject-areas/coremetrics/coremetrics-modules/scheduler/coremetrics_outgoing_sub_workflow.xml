@@ -1,0 +1,42 @@
+<!--******************************************************************************** -->
+<!--Name:- coremetrics_work_sub_workflow.xml -->
+<!-- -->
+<!--Description:- Coremetrics Outgoing table mapping workFlow -->
+<!-- -->
+<!--Author:- Sonali Rawool -->
+<!--******************************************************************************** -->
+<workflow-app name="CoremetricOutgoingSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COREMETRICS_FORK_OUTGOING_JOB" />
+		<fork name="COREMETRICS_FORK_OUTGOING_JOB">
+			<path start="COREMETRICS_OUTGOING_CLICKSTREAM_VIEW_DAILY_JOB" />
+			<path start="COREMETRICS_OUTGOING_ORDER_JOB" />
+		</fork>
+	<join name="COREMETRICS_JOIN_OUTGOING_JOB" to="COREMETRICS_OUTGOING_SUB_WORKFLOW_END" />
+
+	<action name="COREMETRICS_OUTGOING_CLICKSTREAM_VIEW_DAILY_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${outgoingClickstreamViewDailyScriptPath}</command>
+			<args>${nfsHomeDirectory}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COREMETRICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COREMETRICS_OUTGOING_ORDER_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${outgoingOrderScriptPath}</command>
+			<args>${nfsHomeDirectory}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COREMETRICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	<kill name="KILL">
+		<message>Coremetric Outgoing SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COREMETRICS_OUTGOING_SUB_WORKFLOW_END" />
+</workflow-app>

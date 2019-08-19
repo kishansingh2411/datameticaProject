@@ -1,0 +1,350 @@
+drop procedure nfrracct;
+
+create procedure nfrracct
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+    datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/cuac like customer_account
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+
+insert into qtemp/cuac (
+                        CUSTOMER_ID,
+                        COUNTRY_CD,
+                        BUSINESS_UNIT_TYPE_CD,
+                        OD_CUSTOMER_TYPE_CD,
+                        ACCOUNT_ESTABLISHED_DT,
+                        CUSTOMER_NM,
+                        ACCOUNT_STATUS_CD,
+                        ACCOUNT_TYPE_CD,
+                        CUSTOMER_TYPE_CD,
+                        TAM_CUSTOMER_IND,
+                        TAM_AGENT_ID,
+                        LANGUAGE_CD,
+                        CURRENCY_CD,
+                        CURRENT_RECORD_IND
+                        )
+select
+        cbcus#          AS CUSTOMER_ID,
+        'FR'            AS COUNTRY_CD,
+        'R'             AS BUSINESS_UNIT_TYPE_CD,
+        'RETAIL'        AS OD_CUSTOMER_TYPE_CD,
+        cbdacr          AS ACCOUNT_ESTABLISHED_DT,
+        cbnamb          AS CUSTOMER_NM,
+        'A'             AS ACCOUNT_STATUS_CD,
+        'RETAIL'        AS ACCOUNT_TYPE_CD,
+        'CUSTOMER'      AS CUSTOMER_TYPE_CD,
+        0               AS TAM_CUSTOMER_IND,
+        0               AS TAM_AGENT_ID,
+        'FR'            AS LANGUAGE_CD,
+        'EUR'           AS CURRENCY_CD,
+        1               AS CURRENT_RECORD_IND
+from COMFMSTDTA/FCU000P
+;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'ACCOUNTS',
+        'LEGACY',
+        'FCU000P',
+        'nfrracct',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+ --*************************************************************
+ -- END
+ --*************************************************************
+
+ -- Set status info for pre existing rows
+
+ update qtemp/cuac a
+ set (
+        AB_COMMENT_TXT,
+        ACC_GROUP_CD,
+        ALLOW_BACKORDER_IND,
+        ALLOW_SPLIT_ORDER_IND,
+        ALLOW_SUBSTITUTE_IND,
+        AVG_DAYS_TO_PAY_QTY,
+        BRANCH_CD,
+        COMPANY_SIZE_QTY,
+        CONSOLIDATED_CHANNEL_ID,
+        CORPORATE_CUST_ACCOUNT_ID,
+        CREDIT_CD,
+        CRM_ID,
+        CURRENT_BALANCE_AMT,
+        CURRENT_CREDIT_STATUS_CD,
+        CUSTOMER_ABCD_CLASS_CD,
+        CUSTOMER_SOURCE_CD,
+        DELETE_FLAG,
+        DUNS_ID,
+        EMAIL_IND,
+        FAX_IND,
+        FIRST_INVOICE_DT,
+        FIRST_INVOICE_NUM,
+        FIRST_ORD_COG_AMT,
+        FIRST_ORD_PREMIUM_COSTS_AMT,
+        FIRST_ORD_VALUE_AMT,
+        FIRST_ORDER_DT,
+        FIRST_ORDER_EFFORT_ID,
+        FIRST_ORDER_EFFORT_YR,
+        FIRST_ORDER_METHOD_CD,
+        FIRST_ORDER_NUM,
+        FIRST_ORDER_PREMIUM_IND,
+        FIRST_ORDER_SHIP_DT,
+        FURNITURE_DELIVERY_FEE_IND,
+        IKA_ID,
+        IND_TYPE,
+        INTERNET_SETUP_IND,
+        LAST_EFFORT_MAILED,
+        LAST_MAIL_DT,
+        LAST_ORDER_DT,
+        LOC_SIC_CD,
+        LOCATION_ID,
+        LOYALTY_PROGRAM,
+        LTV_COG_AMT,
+        LTV_ORDERS_CNT,
+        LTV_PREMIUM_COST_AMT,
+        LTV_SALES_AMT,
+        MAIL_KEY_CD,
+        MAILABLE_IND,
+        MERGE_ID,
+        MERGEPURGE_DT,
+        MGM_IND,
+        NAT_ID,
+        NEED_CREDIT_APPROVAL_IND,
+        NEED_RETURN_APPROVAL_IND,
+        NINETY_DAY_AMT,
+        NINETY_DAY_IND,
+        NO_OF_BUYERS_CNT,
+        NO_OF_MAILABLE_BUYERS_CNT,
+        NON_RENTAL_IND,
+        ONE_PERSON_COMPANY_IND,
+        ORG_NAME2_TXT,
+        ORG_NAME3_TXT,
+        ORG_NAME4_TXT,
+        PAYMENT_TERMS,
+        PHONE_IND,
+        PHONE_NUM,
+        POLYBAG_IND,
+        POSTAL_CD,
+        PREMIER_CUSTOMER_CD,
+        PREMIER_DT,
+        PRIMARY_SEGMENT_CD,
+        PROCESSED_DT,
+        PROSPECT_ID,
+        SALES_LTV_ACTIVE_MONTH_AMT,
+        SET_UP_CHANNEL_ID,
+        SHARE_OF_WALLET_AMT,
+        SIXTY_DAY_AMT,
+        SIXTY_DAY_IND,
+        SOURCE_REF_TAM_AGENT_ID,
+        SPEND_BAND,
+        SPEND_POTENTIAL_AMT,
+        STANDARD_INDUSTRY_CD,
+        TAM_TARGET_GRP_NM,
+        THIRTY_DAY_AMT,
+        THIRTY_DAY_IND,
+        ULTIMATE_PARENT_ID,
+        UPDATE_DT,
+        VAT_NUMBER,
+        WLR_CUSTOMER_IND,
+        WORK_LIFE_REWARD_DT
+   ) =
+   (select
+           AB_COMMENT_TXT,
+           ACC_GROUP_CD,
+           ALLOW_BACKORDER_IND,
+           ALLOW_SPLIT_ORDER_IND,
+           ALLOW_SUBSTITUTE_IND,
+           AVG_DAYS_TO_PAY_QTY,
+           BRANCH_CD,
+           COMPANY_SIZE_QTY,
+           CONSOLIDATED_CHANNEL_ID,
+           CORPORATE_CUST_ACCOUNT_ID,
+           CREDIT_CD,
+           CRM_ID,
+           CURRENT_BALANCE_AMT,
+           CURRENT_CREDIT_STATUS_CD,
+           CUSTOMER_ABCD_CLASS_CD,
+           CUSTOMER_SOURCE_CD,
+           DELETE_FLAG,
+           DUNS_ID,
+           EMAIL_IND,
+           FAX_IND,
+           FIRST_INVOICE_DT,
+           FIRST_INVOICE_NUM,
+           FIRST_ORD_COG_AMT,
+           FIRST_ORD_PREMIUM_COSTS_AMT,
+           FIRST_ORD_VALUE_AMT,
+           FIRST_ORDER_DT,
+           FIRST_ORDER_EFFORT_ID,
+           FIRST_ORDER_EFFORT_YR,
+           FIRST_ORDER_METHOD_CD,
+           FIRST_ORDER_NUM,
+           FIRST_ORDER_PREMIUM_IND,
+           FIRST_ORDER_SHIP_DT,
+           FURNITURE_DELIVERY_FEE_IND,
+           IKA_ID,
+           IND_TYPE,
+           INTERNET_SETUP_IND,
+           LAST_EFFORT_MAILED,
+           LAST_MAIL_DT,
+           LAST_ORDER_DT,
+           LOC_SIC_CD,
+           LOCATION_ID,
+           LOYALTY_PROGRAM,
+           LTV_COG_AMT,
+           LTV_ORDERS_CNT,
+           LTV_PREMIUM_COST_AMT,
+           LTV_SALES_AMT,
+           MAIL_KEY_CD,
+           MAILABLE_IND,
+           MERGE_ID,
+           MERGEPURGE_DT,
+           MGM_IND,
+           NAT_ID,
+           NEED_CREDIT_APPROVAL_IND,
+           NEED_RETURN_APPROVAL_IND,
+           NINETY_DAY_AMT,
+           NINETY_DAY_IND,
+           NO_OF_BUYERS_CNT,
+           NO_OF_MAILABLE_BUYERS_CNT,
+           NON_RENTAL_IND,
+           ONE_PERSON_COMPANY_IND,
+           ORG_NAME2_TXT,
+           ORG_NAME3_TXT,
+           ORG_NAME4_TXT,
+           PAYMENT_TERMS,
+           PHONE_IND,
+           PHONE_NUM,
+           POLYBAG_IND,
+           POSTAL_CD,
+           PREMIER_CUSTOMER_CD,
+           PREMIER_DT,
+           PRIMARY_SEGMENT_CD,
+           PROCESSED_DT,
+           PROSPECT_ID,
+           SALES_LTV_ACTIVE_MONTH_AMT,
+           SET_UP_CHANNEL_ID,
+           SHARE_OF_WALLET_AMT,
+           SIXTY_DAY_AMT,
+           SIXTY_DAY_IND,
+           SOURCE_REF_TAM_AGENT_ID,
+           SPEND_BAND,
+           SPEND_POTENTIAL_AMT,
+           STANDARD_INDUSTRY_CD,
+           TAM_TARGET_GRP_NM,
+           THIRTY_DAY_AMT,
+           THIRTY_DAY_IND,
+           ULTIMATE_PARENT_ID,
+           UPDATE_DT,
+           VAT_NUMBER,
+           WLR_CUSTOMER_IND,
+           WORK_LIFE_REWARD_DT
+    from   customer_account b
+    where  a.country_cd = b.country_cd
+    and    a.customer_id = b.customer_id
+    and    a.BUSINESS_UNIT_TYPE_CD = b.BUSINESS_UNIT_TYPE_CD
+    AND    a.OD_CUSTOMER_TYPE_CD = b.OD_CUSTOMER_TYPE_CD
+                )
+ where exists
+   (select 1
+    from   customer_account b
+    where  a.country_cd = b.country_cd
+    and    a.customer_id = b.customer_id
+    and    a.BUSINESS_UNIT_TYPE_CD = b.BUSINESS_UNIT_TYPE_CD
+    AND    a.OD_CUSTOMER_TYPE_CD = b.OD_CUSTOMER_TYPE_CD
+)
+ ;
+
+
+insert into stg_customer_account
+select *
+from   qtemp/cuac
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'FR',
+        'R',
+        'ACCOUNTS',
+        'STAGING',
+        'STG_CUSTOMER_ACCOUNT',
+        'nfrracct',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+

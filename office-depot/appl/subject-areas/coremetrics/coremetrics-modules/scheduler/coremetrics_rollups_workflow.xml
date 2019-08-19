@@ -1,0 +1,74 @@
+<!--********************************************************************************-->
+<!--Name:- coremetrics_workflow.xml           										-->
+<!--								          										-->
+<!--Description:- Coremetrics Oozie workFlow   										-->
+<!--								           										-->
+<!--Author:- Sonali Rawool          												-->
+<!--********************************************************************************-->
+
+<workflow-app name="CoremetricsWorkFlow" xmlns="uri:oozie:workflow:0.1">
+	<start to="COREMETRICS_SETUP_JOB"/>
+	<action name="COREMETRICS_SETUP_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${setupScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_ROLLUP_JOB" />
+		<error to="FAIL" />
+    </action>
+	<action name="COREMETRICS_ROLLUP_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${rollUpsScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COREMETRICS_HBASE_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	<action name="POPULATE_COREMETRICS_HBASE_SCHEMA">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${hbaseCopyScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="CLEAN_UP" />
+		<error to="FAIL" />
+    </action>
+    <action name="CLEAN_UP">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${cleanUpScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COMPLETE" />
+		<error to="FAIL" />
+    </action>
+	<action name="COMPLETE">
+        <email xmlns="uri:oozie:email-action:0.1">
+            <to>${emailToAddress}</to>
+            <subject>Coremetrics Processing Completed</subject>
+            <body>Coremetrics All Jobs completed successfully</body>
+        </email>
+        <ok to="END"/>
+        <error to="FAIL"/>
+    </action>
+	<action name="FAIL">
+        <email xmlns="uri:oozie:email-action:0.1">
+            <to>${emailToAddress}</to>
+            <subject>Coremetrics Processing Failed</subject>
+            <body>Job failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+        </email>
+        <ok to="KILL"/>
+        <error to="KILL"/>
+    </action>
+	<kill name="KILL">
+		<!-- <message>"Killed job due to error"</message> -->
+		<message>Job failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="END" />
+</workflow-app>

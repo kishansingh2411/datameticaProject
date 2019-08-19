@@ -1,0 +1,162 @@
+drop procedure nnldefpg;
+
+create procedure nnldefpg
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+ datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/efftpage like effort_page
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+INSERT INTO qtemp/efftpage (
+                COUNTRY_CD,
+                DISPLAY_AREA_QTY,
+                EFFORT_ID,
+                EFFORT_YR,
+                PAGE_NUM,
+                PAGE_SUFFIX_ID,
+                PAGE_TYPE_CD,
+                PROCESSED_DT
+        )
+select
+                CAST ('NL' AS CHAR(2) ) AS COUNTRY_CD,
+                CAST (0 AS DECIMAL(10,2) ) AS DISPLAY_AREA_QTY,
+                CAST (PCEIOL AS CHAR(3) ) AS EFFORT_ID,
+                CAST (PCEYOL||PCECOL AS SMALLINT ) AS EFFORT_YR,
+                CAST (PRDIOL AS VARCHAR(20) ) AS PAGE_NUM,
+                CAST (PGESOL AS CHAR(1) ) AS PAGE_SUFFIX_ID,
+                CAST ('' AS CHAR(2) ) AS PAGE_TYPE_CD,
+                CAST (NULL AS DATE ) AS PROCESSED_DT
+from
+                NLMSTDTA/OAPPRFC;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'NL',
+        'D',
+        'EFFORT PAGE',
+        'LEGACY',
+        'OAPPRFC',
+        'nnldefpg',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+ -- update process_dt column
+ update qtemp/efftpage
+ set processed_dt = current date
+ ;
+
+ -- Set status info for pre existing rows
+
+UPDATE qtemp/efftpage a
+ set (DISPLAY_AREA_QTY)= (SELECT
+ b.BLKPOK
+ FROM
+ (select pceiol,pcecol,pceyol,pgesol,prdiol,b.blkpok from
+  ukmstdtapv/oapprfc a,
+  ukmstdtapv/oappdfc b
+  where  a.pceiol = b.pceiok
+  and a.pcecol = b.pcecok
+  and a.pceyol = b.pceyok
+  and a.pge#ol = b.pge#ok
+  and a.pgesol = b.pgesok
+  and a.pgebol = b.pgebok
+ ) b
+ WHERE
+      a.effort_id = b.PCEIOL
+ and  a.effort_yr = CAST (b.PCEYOL||b.PCECOL AS SMALLINT )
+ and  a.page_num  = b.PRDIOL
+ and  a.page_suffix_id = b.pgesol);
+
+
+
+ --INSERT INTO STAGING TABLE
+insert into STG_EFFORT_PAGE
+select *
+from   qtemp/efftpage
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'NL',
+        'D',
+        'EFFORT PAGE',
+        'STAGING',
+        'STG_EFFORT_PAGE',
+        'nnldefpg',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+
+

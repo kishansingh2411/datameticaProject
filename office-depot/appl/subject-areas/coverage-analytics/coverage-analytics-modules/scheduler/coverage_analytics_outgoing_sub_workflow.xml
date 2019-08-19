@@ -1,0 +1,119 @@
+<!--********************************************************************************-->
+<!--Name:- COVERAGE_ANALYTICS_work_sub_workflow.xml           								-->
+<!--								          										-->
+<!--Description:- COVERAGE_ANALYTICS Outgoing table mapping workFlow   						-->
+<!--								           										-->
+<!--Author:- Shweta Karwa                                               			-->
+<!--********************************************************************************-->
+<workflow-app name="CoverageAnalyticsOutgoingSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COVERAGE_ANALYTICS_FORK_OUTGOING_JOB" />
+	
+	<fork name="COVERAGE_ANALYTICS_FORK_OUTGOING_JOB">
+		<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_AT_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_BE_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_FR_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_GE_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_IR_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_IT_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_NL_JOB" />
+       	<path start="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_UK_JOB" />
+        
+    </fork> 
+	
+	<join name="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" to="COVERAGE_ANALYTICS_OUTGOING_SUB_WORKFLOW_END" />
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_AT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyAtScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_BE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyBeScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_FR_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyFrScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_GE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyGeScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_IR_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyIrScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_IT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyItScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_NL_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyNlScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_OUTGOING_VIEW_MONTHLY_UK_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingViewMonthlyUkScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_OUTGOING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+        <kill name="KILL">
+		<message>Coremetric Work SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COVERAGE_ANALYTICS_OUTGOING_SUB_WORKFLOW_END" />
+</workflow-app>

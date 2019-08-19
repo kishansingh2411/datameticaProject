@@ -1,0 +1,129 @@
+--drop procedure natdvcmp;
+
+create procedure natdvcmp
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+declare sqlcode integer default 0;
+declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+declare rnf int default 0;
+declare tnf int default 0;
+declare rec_not_found condition for '02000';
+declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+declare continue handler for rec_not_found set rnf = 1;
+declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/vcmp   like voucher_campaign
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+INSERT INTO qtemp/vcmp  (
+      CAMPAIGN_CD,
+      CAMPAIGN_EXPIRY_DT,
+      CAMPAIGN_START_DT,
+      COUNTRY_CD,
+      INTERNAL_VOUCHER_CD
+)
+select
+      CAST (PVCAMP AS CHAR(4) ) AS CAMPAIGN_CD,
+      CAST (PVEXPIRY AS DATE ) AS CAMPAIGN_EXPIRY_DT,
+      CAST (PVSTART AS DATE ) AS CAMPAIGN_START_DT,
+      CAST (PVCTRY AS CHAR(3) ) AS COUNTRY_CD,
+      CAST (PVICODE AS DECIMAL(7,0) ) AS INTERNAL_VOUCHER_CD
+from  GEMSTDTA/PDCAMP
+where PVCTRY = 'AT';
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+'AT',
+'D',
+'VOUCHER CAMPAIGN',
+'LEGACY',
+'PDCAMP',
+'natdvcmp',
+'E',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+
+
+
+--INSERT INTO STAGING TABLE
+insert into STG_VOUCHER_CAMPAIGN
+select *
+from   qtemp/vcmp
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+'AT',
+'D',
+'VOUCHER CAMPAIGN',
+'STAGING',
+'STG_VOUCHER_CAMPAIGN',
+'natdvcmp',
+'I',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+

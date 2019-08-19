@@ -1,0 +1,679 @@
+  /*    col 
+       {
+        width:200px;
+       }
+
+    .table 
+    {
+        width: auto;
+    }*/
+
+
+
+
+    /*Custom css Added by Siddharth*/
+    body,html
+    {
+      background:white;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+
+    }
+
+    #container .highcharts-container svg>text
+    {
+      display:none;
+    }
+    .highcharts-button
+    {
+      display:none;
+    }
+    .mt-20{margin-top:20px;}
+    .mt-14{margin-top:14px;}
+
+
+
+    /*.active
+    {
+      font-size:14px;
+      font-weight: bold;
+      transition : linear .2s all;
+      -webkit-transition : linear .2s all;
+      background: #e3213c!important;
+      color:black !important;
+    }*/
+  
+
+    .percentFix
+    {
+      font-weight: bolder;
+      font-size: 24px;
+    }
+
+
+    .backChange
+    {
+      background: #5F9387 !important;
+      border-color:#5F9387 !important;
+    }
+    
+
+    .upGreen
+    {
+      color:  rgb(140, 247, 140) !important;
+    }
+
+
+     .downRed
+    {
+      color: rgb(208, 69, 69)!important;
+    }
+
+
+
+    #secondContextChart
+    {
+      display: none;
+    }
+
+    .goLeft
+    {
+      float: left;
+    }
+
+
+    /*Funnel View*/
+    /*Comment if Want To Revert To Normal Width For ALL*/
+    .topShift
+    {
+        margin: 40px auto;
+    }
+
+.canvasFunnel
+{
+  width:100%;height:200%!important;
+}
+.highcharts-container {width:450px!important;margin-left:21%;}
+svg:not(:root) {width:450px!important;}
+.fixedFunnel{margin-bottom:4px;}
+
+.canvasLine
+{
+
+}
+
+.colorWhite
+{
+  color:white;
+}
+    .shiftPrimary
+    {
+      margin: 0px auto;
+      width:100%;
+    }
+
+    .shiftGreen
+    {
+       margin: 0px auto;
+      width:95%;
+
+    }
+     .shiftRed
+    {
+       margin: 0px auto;
+      width:90%;
+
+    }
+
+     .shiftYellow
+    {
+       margin: 0px auto;
+      width:85%;
+
+    }
+
+
+    /**/
+
+/*Comment  colorChange and colorChangeBorder*/
+    .colorChange
+    {
+      background: rgb(73, 79, 76) !important;
+        border-color:#ddd !important;
+    }
+
+      .colorChangeBorder
+    {
+   
+        border-color:#ddd !important;
+    }
+
+     .colorChangeWhite
+    {
+   
+        background:white !important;
+        color:black;
+    }
+
+    /*If want to revert to Drfault color*/
+
+    
+    .resetpadding
+    {
+      
+    }
+
+.alignWidth
+{
+    width:120px;
+    background: rgb(73, 79, 76) !important;
+  color:white !important;
+}
+
+
+.alignAll
+{
+  padding-left: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  background: rgb(73, 79, 76) !important;
+  color:white !important;
+
+}
+
+
+.visited
+{
+width:140px !important;
+}
+
+.viewedProduct
+{
+    width: 240px;
+}
+
+.placedProduct
+{
+  width:240px;
+}
+
+
+
+.canvasDraw
+{
+  z-index:999;
+ /* left:7%;*/
+ left: 94%;
+  top: 6%;
+  position: absolute;
+  display: none;
+}
+
+.fixNumbers
+{
+  font-weight: bold;
+}
+
+.whiteColor
+{
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.whiteColor:hover
+{
+  color: rgb(190, 190, 190) !important;
+  text-decoration: none !important;
+}
+
+/*.whiteColor:hover 
+{
+  color: white; rgb(51, 122, 183);
+  text-decoration: none;
+}
+
+
+.whiteColor:active
+{
+  color: white;
+  text-decoration: none;
+}
+*/
+
+@media  (min-width:1200px){
+
+.fixNumbers
+{
+  position: relative;
+  left:3%;
+  text-align: center;
+  font-size: 26px;
+  font-weight: bold;
+
+
+}
+
+
+}
+
+
+
+    /*Custom css Added by Siddharth ENds*/
+.textCenter
+{
+  text-align: center;
+}
+.alignLeft
+{
+  text-align: left !important;
+}
+
+.visited
+{
+
+width:180px;
+
+}
+
+.viewedProduct
+{
+    width: 240px;
+}
+
+.placedProduct
+{
+  width:250px;
+}
+
+/*datepicker css */
+.full button span {
+  background-color: limegreen;
+  border-radius: 32px;
+  color: black;
+}
+  .partially button span {
+  background-color: orange;
+  border-radius: 32px;
+  color: black;
+}
+.logo{margin-top: -11px;
+    margin-left: -10px;}
+
+#dispFrom, #dispTo{
+  border-radius: 4px;
+  border: 1px solid #CAC9C9;
+  height: 2.2em;
+  width: 6em;
+}
+
+
+@media screen and (min-width:1800px){
+
+  .fixNumbers
+  {
+    text-align:center;
+    font-size: 35px;
+  }
+
+  .totalIndicator
+  {
+    text-align:center;
+  }
+
+
+  .alignWidth
+  {
+    width:160px;
+    background: rgb(73, 79, 76) !important;
+  color:white !important;
+  }
+
+  .visited
+  {
+    width:460px;
+  }
+  .viewedProduct
+  {
+    width:545px;
+  }
+  .placedProduct
+  {
+      width:540px;
+  }
+
+
+}
+
+.panel-title .lt{float:left;}
+.panel-title .lt span:first-child{margin-right:10px;}
+.panel-title .rt{float:right;}
+
+@media screen and (max-width:460px){
+  .panel-title .lt {
+    clear: both;
+}
+  .panel-title .rt {
+    clear: both;
+    float: left;
+}
+}
+
+#tableRowData{font-size:12px;}
+h1{margin:0px!important;}
+.txt-center th{text-align:center;}
+.txt-center{border-top: 1px solid #D1D1D1;}
+
+
+.panel-footer{display:none!important;}
+.navbar{height:51px!important;min-height: 40px!important;
+    background: #fff;}
+.navbar-brand{ height: 78px;}
+.logo {}
+.navbar-inverse .navbar-nav>li>a {
+  color: #6f6f71;    font-size: 15px;
+}
+.filters{
+    float: left;
+    background: #BBBABA; /*#AEAEAE;*/
+    position: fixed;
+    padding: 5px 0px 0px 0px;
+    border-bottom:1px solid #CACACA;
+    width: 100%;
+    z-index: 99999;
+    top: 51px;
+    -moz-box-shadow: 5px 5px 5px rgba(68,68,68,0.6);
+    -webkit-box-shadow: 5px 5px 5px rgba(68,68,68,0.6);
+    box-shadow: 2px 5px 5px rgba(159, 159, 159, 0.6); 
+
+    filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30);
+    -ms-filter: "progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30)";
+    zoom: 1;
+    /*margin-left: -225px;*/
+}
+
+.visitor_seg .list-group-item, .weekrange .list-group-item {
+  display: inline-block;
+    padding: 6px 10px;
+    border-radius: 5px;
+}
+
+.visitor_seg  .radio {
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+.country_sel .btn{padding:3px 12px;}
+.date_range {float:left;margin-bottom: -14px;}
+.filters .panel-body{padding:0px;}
+.bod{font-weight:bold;padding:0px;font-size:13px;}
+.checkbox, .radio {margin-top:0px;margin-bottom:0px;}
+table thead tr th{text-align:center;}
+
+.table{max-width: 100%;overflow-x: hidden;text-align:center;}
+.cabg{border-bottom: 3px solid #357EBC!important;background:white;font-size: 16px;font-weight: normal;}
+.trbg{border-bottom: 3px solid #4DBE51!important;background:white;font-size: 16px;font-weight: normal;}
+.tobg{border-bottom: 3px solid #D59437!important;background:white;font-size: 16px;font-weight: normal;}
+.tvbg{border-bottom: 3px solid #CF6E8E!important;background:white;font-size: 16px;font-weight: normal;}
+.trgr{border-bottom: 3px solid #A09E9E!important;background:white;font-size: 16px;font-weight: normal;}
+
+.highcharts-title {font-size:15px!important;}
+
+.date_range {width:416px;/*margin-left:15%;*/}
+.country_sel, .visitor_seg{float: left; width: 177px;}
+.gobtn{height: 28px;
+    margin-top: 14px;
+    width: 66px;
+    margin-left: 22px;
+    background: #E3213C;
+    color: #CFCFCF;
+    font-weight: 400; }
+
+select{height: 34px;color:#646464;
+    border-radius: 5px;}
+
+.main-dashboard{margin-top:80px;}
+.td-border {border-right: 1px solid #DDD;}
+.td-bg1{background:#F2F2F2;}
+.td-bg2{background:#FFEFF4;}
+.table>tbody>tr>td{   /* padding: 5px 9px!important;*/}
+table, tbody, td, .table { border-color:#ddd!important; margin-bottom: 0px;font-size:13px;} 
+.navbar-inverse {
+    border: 0px!important;
+}
+.left-side-nav{background:#6f6f71;}
+.shadow1 {
+  margin: 0px;
+  background-color: rgb(255, 255, 255); /* Needed for IEs */
+
+  -moz-box-shadow: 5px 5px 5px rgba(68,68,68,0.6);
+  -webkit-box-shadow: 5px 5px 5px rgba(68,68,68,0.6);
+  box-shadow: 5px 5px 5px rgba(159, 159, 159, 0.6);
+
+  filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Blur(PixelRadius=3,MakeShadow=true,ShadowOpacity=0.30)";
+  zoom: 1;
+}
+
+.page-header{font-size: 24px;}
+.main-td{width:21%;}
+.index-td{width:16%;}
+.funnel-title{background: #fdfdfd;
+    height: 44px;
+    border-radius: 5px;
+    font-size: 18px;
+    line-height: 40px;
+    text-align: center;
+}
+
+.list-group-item {
+border: 1px solid #ACA7A7;
+}
+.panel {
+    margin-bottom: 0px; 
+}
+.panel-default {
+    border: 0px;
+}
+.panel-title{font-size: 20px;font-weight: bold;color: #646464;}
+.clr{color: #AA0707;font-size:17px;}
+.page-header {
+    padding-bottom: 8px;
+}
+.gobutton{visibility:hidden;}
+.left-nav-li {    background: white;
+    color: #6f6f71;
+    width: 91%;
+    margin-left: 10px;}
+.border-bt{border-bottom:1px solid #bec2c8}
+
+.box-base {
+    opacity:0;
+    padding: 20px;
+    margin: 20px;
+    color: white;
+    border:1px solid black;
+    background: #434343;
+}
+.box-base.box1 {
+    -webkit-transition: opacity linear 0.5s;
+    transition: opacity linear 0.5s;
+}
+.show-me {
+    opacity:1;
+}
+
+select option{
+    padding-top:7px;
+}
+.rt-align{text-align:right;padding-left:32px!important;}
+.rt-align1{text-align:right;padding-left:32px!important;}
+
+
+/* Tab Navigation */
+.tabs {
+    height: 30px;
+    margin: 0;
+    width: 100%;
+}
+
+.tab {
+
+    border-left: 1px solid #a8a8a8;
+    border-top: 1px solid #a8a8a8;
+        background-color: #fff;
+    cursor: pointer;
+    float: left;
+    font-size: 13px;
+    /*margin-right: 10px;*/
+    /* padding: 10px 0 10px; */
+    text-align: center;
+    /*//width: 15%;*/
+    border-bottom: 1px solid #999;
+    padding: 10px 7px 14px 7px !important;
+    line-height: 20px;
+}
+.tabs div:last-child {border-right: 1px solid #a8a8a8;}
+.selected {
+    background-color: white;
+    border-bottom: 1px solid white;
+    border-top: 4px solid #E32440;
+    height:46px;
+}
+
+.tab_content {
+    border: 1px solid silver;
+    height: 436px;
+    margin-top:15px;
+
+}
+
+.highcharts-data-labels tspan{font-size:12px;    fill: rgb(72, 72, 72);}
+
+/* bar chart d3 chart */
+
+/* bar chart d3 chart */
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis {
+  font: 12px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: red;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.deco-kpi{    padding: 8px;
+    text-align: center;}
+
+.deco-kpi header{    text-indent: -26%;}
+.panel-body {
+    padding: 4px!important;
+}
+.curr1, .curr2 {display:none;}
+
+.kpi-page .bar {
+                fill: steelblue;
+            }
+
+.kpi-page .bar:hover {
+                fill: brown;
+            }
+
+.kpi-page .axis {
+                font: 10px sans-serif;
+            }
+
+.kpi-page .axis path,
+.kpi-page .axis line {
+               fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+.kpi-page .x.axis path {
+                display: none;
+            }
+
+svg text {
+    font: normal 14px Arial!important;
+}
+
+#kpi1barChart, #kpi2barChart, #kpi3barChart, #kpi4abarChart, #kpi4bbarChart, #kpi5barChart { 
+    position:relative;
+    margin-top:28px;
+    height:413px;
+  }
+  .kpicontent{padding-top:34px;}
+  .kpicontent header{font-size:22px;color:#c32626;}
+  .kpicontent .boldtext{color:#000; font-weight:bold;}
+  .kpicontent .darkred{color:#822c2c;font-weight:bold;}
+  #kpibarChart svg{float:left;width:490px!important;}
+ .nvd3 .nv-discretebar .nv-groups rect {
+    
+    transition: 1; /*fill-opacity 250ms linear;*/
+    -moz-transition: fill-opacity 1;*/
+    -webkit-transition: fill-opacity 250ms linear;
+  }
+
+ svg > g > g > g.nv-barsWrap > g > g > g > g > g{
+    fill-opacity:1.0
+}
+.kpi-page svg text {font-size:14px;}
+.overlayloading{display:block;margin-top:16px;background:white;position:absolute; z-index:1000;padding-top: 35px;
+    padding-left: 170px;}
+
+.bi-note{margin-left: 343px;color: #0950E1;}
+.error-clr{color:red;margin-left:500px;}
+.funnelhide0, .funnelhide1, .funnelhide2, .funnelhide3, .funnelhide4{margin-left:80px;}
+/*
+
+@media screen and (min-width:1400)  and(max-width:1600px){
+
+  .fixNumbers
+  {
+    text-align:center;
+    font-size: 35px;
+  }
+
+  .totalIndicator
+  {
+    text-align:center;
+  }
+
+
+  .alignWidth
+  {
+    width:160px;
+    background: rgb(73, 79, 76) !important;
+  color:white !important;
+  }
+
+  .visited
+  {
+    width:460px;
+  }
+  .viewedProduct
+  {
+    width:545px;
+  }
+  .placedProduct
+  {
+      width:540px;
+  }
+
+
+}*/

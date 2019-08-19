@@ -1,0 +1,231 @@
+--drop procedure ndedslsv;
+
+create procedure ndedslsv
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+                datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/slsv like sales_voucher
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/slsv (
+         ACTIVE_RULES,
+         ASSOCIATION_DISCOUNT_VALUE,
+         BUSINESS_UNIT_TYPE_CD,
+         COUNTRY_CD,
+         CUSTOMER_ID,
+         DESPATCHED_QTY,
+         DISCOUNT_VALUE,
+         EFFORT_CATALOGUE_CD,
+         INVOICE_NUMBER,
+         LINE_GROSS_VALUE,
+         LINE_NET_VALUE,
+         LOYALTY_BASE_POINTS,
+         LOYALTY_BONUS_POINTS,
+         OD_CUSTOMER_TYPE_CD,
+         ORDER_NUMBER,
+         ORDER_QTY,
+         PROCESSED_DT,
+         UNIT_PRICE,
+         VOUCHER_NUMBER,
+         VOUCHER_VALUE,
+         WEB_VOUCHER_NUMBER,
+         LINE_NUMBER,
+         LINE_NUMBER_SRC
+)
+select
+         CAST (PEACTR AS CHAR(50) ) AS ACTIVE_RULES,
+         CAST (PEADSV AS DECIMAL(7,2) ) AS ASSOCIATION_DISCOUNT_VALUE,
+         CAST ('D' AS CHAR(1) ) AS BUSINESS_UNIT_TYPE_CD,
+         CAST ('DE' AS CHAR(2) ) AS COUNTRY_CD,
+         CAST (PECUST AS CHAR(20) ) AS CUSTOMER_ID,
+         CAST (PEQTYT AS DECIMAL(4,0) ) AS DESPATCHED_QTY,
+         CAST (PEDISV AS DECIMAL(7,2) ) AS DISCOUNT_VALUE,
+         CAST (PECATL AS CHAR(15) ) AS EFFORT_CATALOGUE_CD,
+         CAST (PEINV# AS DECIMAL(7,0) ) AS INVOICE_NUMBER,
+         CAST (PEGRSV AS DECIMAL(9,2) ) AS LINE_GROSS_VALUE,
+         CAST (PENETV AS DECIMAL(9,2) ) AS LINE_NET_VALUE,
+         CAST (PELBAP AS DECIMAL(5,0) ) AS LOYALTY_BASE_POINTS,
+         CAST (PELBOP AS DECIMAL(5,0) ) AS LOYALTY_BONUS_POINTS,
+         CAST ('DIRECT' AS CHAR(30) ) AS OD_CUSTOMER_TYPE_CD,
+         CAST (PEORD# AS DECIMAL(7,0) ) AS ORDER_NUMBER,
+         CAST (PEQTYO AS DECIMAL(4,0) ) AS ORDER_QTY,
+         CAST (NULL AS DATE ) AS PROCESSED_DT,
+         CAST (PEPRIC AS DECIMAL(7,3) ) AS UNIT_PRICE,
+         CAST (PEVNUM AS DECIMAL(7,0) ) AS VOUCHER_NUMBER,
+         CAST (PEVOUV AS DECIMAL(7,2) ) AS VOUCHER_VALUE,
+         CAST (PEWVOU AS CHAR(15) ) AS WEB_VOUCHER_NUMBER,
+         digits(peline) AS LINE_NUMBER,
+         0 AS LINE_NUMBER_SRC
+from
+         GEMSTDTA/SEOPE
+WHERE
+        pebran <> 'V' ;
+
+
+ --*************************************************************
+ -- Update INVOICE_DATE from SEOPE table
+ --*************************************************************
+
+ update qtemp/slsv a
+ set INVOICE_DATE = (select
+ max(accounting_dt)
+ from NDWDEVDTA/TRANSACTION_HEADER b
+ where
+         b.ORDER_NUM = a.ORDER_NUMBER
+ and     b.INVOICE_NUM = a.INVOICE_NUMBER
+ and     b.BUSINESS_CHANNEL_ID = 'D'
+ and     b.COUNTRY_CD = 'DE'
+ );
+
+ --*************************************************************
+ -- Update TRANSACTION_ID from SEOPE table
+ --*************************************************************
+ update qtemp/slsv a
+ set TRANSACTION_ID = digits(CUSTOMER_ID) ||
+                      char(INVOICE_DATE) ||
+                      space(2) ||
+                      digits(INVOICE_NUMBER);
+
+ --*************************************************************
+ -- Update BT_CREATED_DATE,BT_GROUP_NUMBER,
+ -- BT_PRIMARY_CAT_CODE,BT_PRIMARY_PREFIX,BT_USER_ID
+ -- from VKVCHEXT table
+ --*************************************************************
+
+ update qtemp/slsv a
+ set (
+      BT_CREATED_DATE,
+      BT_GROUP_NUMBER,
+      BT_PRIMARY_CAT_CODE,
+      BT_PRIMARY_PREFIX,
+      BT_USER_ID,
+      VOUCHER_CAMPAIGN_CODE
+     ) = (select
+          CASE WHEN PFBTCD <> 0 THEN CAST (SUBSTR(PFBTCD,1,4)||'-'||
+          SUBSTR(PFBTCD,5,2)||'-'||SUBSTR(PFBTCD,7,2) AS DATE )
+          ELSE NULL END AS BT_CREATED_DATE,
+          CAST (PFBTGRP AS DECIMAL(3,0) ) AS BT_GROUP_NUMBER,
+          CAST (PFBTCAT AS CHAR(11) ) AS BT_PRIMARY_CAT_CODE,
+          CAST (PFBTPFX AS CHAR(4) ) AS BT_PRIMARY_PREFIX,
+          CAST (PFBTUSR AS CHAR(10) ) AS BT_USER_ID,
+          pfcamp AS VOUCHER_CAMPAIGN_CODE
+ from GEMSTDTA/VKVCHEXT b
+ where
+          a.CUSTOMER_ID = b.pfcust
+      and a.ORDER_NUMBER = b.pford#
+      and a.INVOICE_NUMBER = b.pfinv#
+      and a.LINE_NUMBER = b.pfline
+     );
+
+
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'DE',
+        'D',
+        'SLS VOUCHER',
+        'LEGACY',
+        'SEOPE',
+        'ndedslsv',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+ --*************************************************************
+ -- END
+ --*************************************************************
+
+ update qtemp/slsv
+ set processed_dt = current date
+ ;
+
+
+--Inserting calculated temp data into staging table
+
+insert into stg_sales_voucher
+select *
+from   qtemp/slsv
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'DE',
+        'D',
+        'SLS VOUCHER',
+        'STAGING',
+        'STG_SALES_VOUCHER',
+        'ndedslsv',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+

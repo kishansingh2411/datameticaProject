@@ -1,0 +1,230 @@
+.
+├── appl
+│   ├── bin
+│   ├── dashboard
+│   │   ├── pom.xml
+│   │   ├── src
+│   │   │   └── main
+│   │   │       ├── resources
+│   │   │       └── webapp
+│   │   │           ├── WEB-INF
+│   │   │           │   └── web.xml
+│   │   │           └── index.jsp
+│   │   └── target
+│   │       ├── classes
+│   │       ├── m2e-wtp
+│   │       │   └── web-resources
+│   │       │       └── META-INF
+│   │       │           ├── MANIFEST.MF
+│   │       │           └── maven
+│   │       │               └── org.od
+│   │       │                   └── dashboard
+│   │       │                       ├── pom.properties
+│   │       │                       └── pom.xml
+│   │       └── test-classes
+│   ├── data-service
+│   │   ├── pom.xml
+│   │   ├── src
+│   │   │   └── main
+│   │   │       ├── resources
+│   │   │       │   └── org
+│   │   │       │       └── od
+│   │   │       │           └── data
+│   │   │       │               └── service
+│   │   │       └── webapp
+│   │   │           ├── WEB-INF
+│   │   │           │   └── web.xml
+│   │   │           └── index.jsp
+│   │   └── target
+│   │       ├── classes
+│   │       ├── m2e-wtp
+│   │       │   └── web-resources
+│   │       │       └── META-INF
+│   │       │           ├── MANIFEST.MF
+│   │       │           └── maven
+│   │       │               └── org.od
+│   │       │                   └── data-service
+│   │       │                       ├── pom.properties
+│   │       │                       └── pom.xml
+│   │       └── test-classes
+│   ├── docs
+│   ├── etc
+│   ├── extensions
+│   │   ├── hive-udf-bank
+│   │   │   ├── hive-udf-bank.iml
+│   │   │   ├── pom.xml
+│   │   │   └── target
+│   │   │       ├── classes
+│   │   │       └── test-classes
+│   │   ├── pig-udf-bank
+│   │   │   ├── pig-udf-bank.iml
+│   │   │   ├── pom.xml
+│   │   │   └── target
+│   │   │       ├── classes
+│   │   │       └── test-classes
+│   │   └── pom.xml
+│   ├── modules
+│   │   ├── batch-id-generator
+│   │   │   ├── bin
+│   │   │   │   └── module.sh
+│   │   │   ├── docs
+│   │   │   │   └── module.html
+│   │   │   ├── etc
+│   │   │   │   └── module.env.properties
+│   │   │   └── pom.xml
+│   │   ├── batch-input-marker
+│   │   │   ├── batch-input-marker.iml
+│   │   │   ├── bin
+│   │   │   │   └── module.sh
+│   │   │   ├── docs
+│   │   │   │   └── module.html
+│   │   │   ├── etc
+│   │   │   │   └── module.env.properties
+│   │   │   └── pom.xml
+│   │   ├── environment-initialize
+│   │   │   ├── bin
+│   │   │   │   └── module.sh
+│   │   │   ├── docs
+│   │   │   │   └── module.html
+│   │   │   ├── etc
+│   │   │   │   └── module.env.properties
+│   │   │   └── pom.xml
+│   │   └── pom.xml
+│   ├── pom.xml
+│   └── subject-areas
+│       ├── coremetrics
+│       │   ├── bin
+│       │   ├── coremetrics-modules
+│       │   │   ├── gold_cart_item_abandonment_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_cart_item_addition_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_cart_item_purchase_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_conversion_event_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_element_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_geography_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_mmc_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_order_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_page_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_product_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_real_estate_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_registration_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_session_first_page_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_site_promotion_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── gold_technical_properties_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_cart_item_abandonment_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_cart_item_addition_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_cart_item_purchase_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_conversion_event_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_element_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_geography_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_mmc_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_order_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_page_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_product_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_real_estate_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_registration_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_session_first_page_view_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_site_promotion_click_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── incoming_technical_properties_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   ├── outgoing_clickstream_view_daily_tbl
+│       │   │   │   ├── pom.xml
+│       │   │   │   └── src
+│       │   │   │       └── site
+│       │   │   └── pom.xml
+│       │   ├── docs
+│       │   ├── etc
+│       │   └── pom.xml
+│       └── pom.xml
+├── pom.xml
+└── structure.txt
+
+159 directories, 68 files

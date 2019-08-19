@@ -1,0 +1,162 @@
+--drop procedure ndedvdef;
+
+create procedure ndedvdef
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+declare sqlcode integer default 0;
+declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+declare rnf int default 0;
+declare tnf int default 0;
+declare rec_not_found condition for '02000';
+declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+declare continue handler for rec_not_found set rnf = 1;
+declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/vdef   like voucher_definition
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+INSERT INTO qtemp/vdef  (
+      COUNTRY_CD,
+      CUSTOMER_MAXIMUM_USAGE,
+      DELIVERY_OPTION,
+      ELIGIBLE_CHANNELS,
+      ELIGIBLE_CUSTOMERS,
+      ELIGIBLE_ORDER_METHOD,
+      ELIGIBLE_TAM_CUSTOMERS,
+      EXTERNAL_VOUCHER_CD,
+      INTERNAL_VOUCHER_CD,
+      ORDER_MAXIMUM_BENEFIT,
+      SPECIAL_PRICE_EXCLUSION,
+      VOUCHER_DESCRIPTION,
+      VOUCHER_EXPIRY_DT,
+      VOUCHER_EXPIRY_TIME,
+      VOUCHER_MAXIMUM_TRACKING,
+      VOUCHER_MAXIMUM_USAGE,
+      VOUCHER_PRODUCT_TARGET,
+      VOUCHER_START_DT,
+      VOUCHER_START_TIME,
+      VOUCHER_STATUS,
+      VOUCHER_TYPE
+)
+select
+      CAST ( 'DE' AS CHAR(2) ) AS COUNTRY_CD,
+      CAST (PAMAXCUS AS DECIMAL(7,0) ) AS CUSTOMER_MAXIMUM_USAGE,
+      CAST (PADELIVER AS CHAR(1) ) AS DELIVERY_OPTION,
+      CAST (PACHANNEL AS CHAR(1) ) AS ELIGIBLE_CHANNELS,
+      CAST (PACUSTOMER AS CHAR(1) ) AS ELIGIBLE_CUSTOMERS,
+      CAST (PAMETHOD AS CHAR(1) ) AS ELIGIBLE_ORDER_METHOD,
+      CAST (PATAM AS CHAR(1) ) AS ELIGIBLE_TAM_CUSTOMERS,
+      CAST (PAECODE AS CHAR(15) ) AS EXTERNAL_VOUCHER_CD,
+      CAST (PAICODE AS DECIMAL(7,0) ) AS INTERNAL_VOUCHER_CD,
+      CAST (PAMAXBEN AS DECIMAL(7,0) ) AS ORDER_MAXIMUM_BENEFIT,
+      CAST (PASPECIAL AS CHAR(1) ) AS SPECIAL_PRICE_EXCLUSION,
+      CAST (PADESC AS CHAR(50) ) AS VOUCHER_DESCRIPTION,
+      CAST (PAEXPIRY AS DATE ) ELSE '0001-01-01' END 
+         AS VOUCHER_EXPIRY_DT,
+      PAEXPIRYT AS VOUCHER_EXPIRY_TIME,
+      CAST (PAMAXTRK AS DECIMAL(7,0) ) AS VOUCHER_MAXIMUM_TRACKING,
+      CAST (PAMAXUSE AS DECIMAL(7,0) ) AS VOUCHER_MAXIMUM_USAGE,
+      CAST (PATARGET AS CHAR(1) ) AS VOUCHER_PRODUCT_TARGET,
+      CAST (PASTART AS DATE ) AS VOUCHER_START_DT,
+      PASTARTT AS VOUCHER_START_TIME,
+      CAST (PASTATUS AS CHAR(1) ) AS VOUCHER_STATUS,
+      CAST (PATYPE AS CHAR(1) ) AS VOUCHER_TYPE
+from  GEMSTDTA/PDDFN
+;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+'DE',
+'D',
+'VOUCHER DEFINITION',
+'LEGACY',
+'PDDFN',
+'ndedvdef',
+'E',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+
+
+
+--INSERT INTO STAGING TABLE
+insert into STG_VOUCHER_DEFINITION
+select *
+from   qtemp/vdef
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+'DE',
+'D',
+'VOUCHER DEFINITION',
+'STAGING',
+'STG_VOUCHER_DEFINITION',
+'ndedvdef',
+'I',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+

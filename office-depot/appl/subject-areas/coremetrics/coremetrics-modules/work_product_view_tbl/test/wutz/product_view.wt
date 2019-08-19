@@ -1,0 +1,3 @@
+debug=On
+
+verify storeoutput /office_depot/clickstream/test/compare_result/work_product_view.txt  with /office_depot/clickstream/test/work/data/work_product_view/part-r-00000 

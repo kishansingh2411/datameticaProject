@@ -1,0 +1,205 @@
+drop procedure natdcusv;
+
+create procedure natdcusv
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+                datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/cusv like CUSTOMER_VOUCHER
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+
+insert into qtemp/cusv (
+         BUSINESS_UNIT_TYPE_CD,
+         COUNTRY_CD,
+         CUSTOMER_ID,
+         EFFECTIVE_PREFIX,
+         OD_CUSTOMER_TYPE_CD,
+         ORDER_NUMBER_FOR_CASH_DISC,
+         PROCESSED_DT,
+         USER_PASSWORD_ID,
+         VOUCHER_CREATION_DEPARTMENT,
+         VOUCHER_CREATION_DT,
+         VOUCHER_EXPIRY_DT,
+         VOUCHER_EXPIRY_TIME,
+         VOUCHER_NUMBER,
+         VOUCHER_ORDER_REQUIREMENT,
+         VOUCHER_PRINTED_DT,
+         VOUCHER_REDEMPTION_DT,
+         VOUCHER_REDEMPTION_ORDER_NO,
+         VOUCHER_REDEMPTION_TIME,
+         VOUCHER_START_DATE,
+         VOUCHER_START_TIME,
+         VOUCHER_TYPE,
+         VOUCHER_USAGE_NUMBER,
+         VOUCHER_VALUE,
+         WEB_VOUCHER_NUMBER
+)
+select
+         CAST ('D' AS CHAR(1) ) AS BUSINESS_UNIT_TYPE_CD,
+         CAST ('AT' AS CHAR(2) ) AS COUNTRY_CD,
+         CAST (CUSTVO AS CHAR(20) ) AS CUSTOMER_ID,
+         CAST (PIECVO AS CHAR(3) ) AS EFFECTIVE_PREFIX,
+         CAST ('DIRECT' AS CHAR(30) ) AS OD_CUSTOMER_TYPE_CD,
+         CAST (APPLVO AS DECIMAL(7,0) ) AS ORDER_NUMBER_FOR_CASH_DISC,
+         '0001-01-01'  AS PROCESSED_DT,
+         CAST (PASSVO AS CHAR(4) ) AS USER_PASSWORD_ID,
+         CAST (DEPTVO AS CHAR(3) ) AS VOUCHER_CREATION_DEPARTMENT,
+         CASE WHEN CRTDVO > 0 THEN 
+         SUBSTR(DIGITS(CRTDVO),1,4) ||'-'||
+         SUBSTR(DIGITS(CRTDVO),5,2) ||'-'||
+         SUBSTR(DIGITS(CRTDVO),7,2) ELSE '0001-01-01' END 
+         AS VOUCHER_CREATION_DT,
+         CASE WHEN EXPDVO > 0 THEN 
+         SUBSTR(DIGITS(EXPDVO),1,4) ||'-'||
+         SUBSTR(DIGITS(EXPDVO),5,2) ||'-'||
+         SUBSTR(DIGITS(EXPDVO),7,2) ELSE '0001-01-01' END 
+         AS VOUCHER_EXPIRY_DT,
+         CAST (EXPTVO AS DECIMAL(6,0) ) AS VOUCHER_EXPIRY_TIME,
+         CAST (VNUMVO AS DECIMAL(7,0) ) AS VOUCHER_NUMBER,
+         CAST (MINVVO AS DECIMAL(7,2) ) AS VOUCHER_ORDER_REQUIREMENT,
+         CASE WHEN PRNTVO > 0 THEN
+         SUBSTR(DIGITS(PRNTVO),1,4) ||'-'||
+         SUBSTR(DIGITS(PRNTVO),5,2) ||'-'||
+         SUBSTR(DIGITS(PRNTVO),7,2) ELSE '0001-01-01' END
+         AS VOUCHER_PRINTED_DT,
+         CASE WHEN USEDVO > 0 THEN
+         SUBSTR(DIGITS(USEDVO),1,4) ||'-'||
+         SUBSTR(DIGITS(USEDVO),5,2) ||'-'||
+         SUBSTR(DIGITS(USEDVO),7,2)   ELSE '0001-01-01' END 
+         AS VOUCHER_REDEMPTION_DT,
+         CAST (ORD#VO AS DECIMAL(7,0) ) AS VOUCHER_REDEMPTION_ORDER_NO,
+         CAST (USETVO AS DECIMAL(6,0) ) AS VOUCHER_REDEMPTION_TIME,
+         CASE WHEN STRDVO > 0 THEN
+         SUBSTR(DIGITS(STRDVO),1,4) ||'-'|| 
+         SUBSTR(DIGITS(STRDVO),5,2)
+         ||'-'||SUBSTR(DIGITS(STRDVO),7,2)   ELSE '0001-01-01' END 
+         AS VOUCHER_START_DATE,
+         CAST (STRTVO AS DECIMAL(6,0) ) AS VOUCHER_START_TIME,
+         CAST (TYPEVO AS CHAR(1) ) AS VOUCHER_TYPE,
+         CAST (USAGVO AS DECIMAL(3,0) ) AS VOUCHER_USAGE_NUMBER,
+         CAST (VALUVO AS DECIMAL(7,2) ) AS VOUCHER_VALUE,
+         CAST (WVOUVO AS CHAR(15) ) AS WEB_VOUCHER_NUMBER
+
+from
+         GEMSTDTAPV/ORPVOUCH A,
+         NDWDEVDTA/CUSTOMER_ACCOUNT B
+         WHERE A.CUSTVO = B.CUSTOMER_ID
+         AND B.COUNTRY_CD = 'AT'
+         AND B.BUSINESS_UNIT_TYPE_CD = 'D'
+         ;
+
+
+
+
+
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'AT',
+        'D',
+        'CUSTOMER_VOUCHER',
+        'LEGACY',
+        'ORPVOUCH',
+        'natdcusv',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+ --*************************************************************
+ -- END
+ --*************************************************************
+
+ update qtemp/cusv
+ set processed_dt = current date
+ ;
+
+
+insert into STG_CUSTOMER_VOUCHER
+select *
+from   qtemp/cusv
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'AT',
+        'D',
+        'CUSTOMER_VOUCHER',
+        'STAGING',
+        'STG_CUSTOMER_VOUCHER',
+        'natdcusv',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+
+
+

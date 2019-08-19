@@ -1,0 +1,256 @@
+--drop procedure nchdtxnd;
+
+create procedure nchdtxnd
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+            datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+
+--*******************************************************************
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/trctdet like transaction_detail
+with replace
+;
+
+
+insert into dqhist
+select 'CH',
+       'D',
+       'TXN DETAILS',
+       'COMSYS',
+       'CBU001F',
+       'nchdtxnd',
+       'E',
+       current timestamp,
+       count(*),
+       sum(a.odexpr),
+       0
+from   chmstdta/cbu001f a
+join   customer_account c
+on     a.odcus# = c.customer_id
+and    c.country_cd = 'CH'
+and    c.business_unit_type_cd = 'D'
+;
+
+
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/trctdet
+(txnid,
+fulfillment_id,
+backorder_qty,
+commissionable_ind,
+contract_id,
+contract_seq,
+contract_type_cd,
+country_cd,
+currency_cd,
+effort_id,
+effort_yr,
+ext_selling_price_amt,
+ext_item_cost_amt,
+item_taxable_cd,
+order_header_id,
+order_line_id,
+transaction_line_num,
+order_qty,
+price_cd,
+price_change_rsn_cd,
+price_prefix_cd,
+selling_sku,
+shipped_qty,
+inv_location_id,
+unit_list_price_amt,
+unit_original_price_amt,
+unit_item_cost_amt,
+unit_selling_price_amt,
+discount_amt,
+premium_cost_amt,
+ext_gross_sales_amt,
+ext_gross_cost_amt,
+return_reason_cd,
+sales_associate_id,
+vendor_id,
+core_ind,
+bsd_cost_centre,
+bsd_user,
+entered_sku,
+how_priced_cd,
+direct_delivery_cd,
+big_deal_cost_amt,
+ext_big_deal_cost_amt,
+transaction_line_type,
+processed_dt,
+business_channel_id,
+sku_num)
+select  cast(
+        digits(a.cbu001f_customer_id) ||
+        digits(a.odord#) as char(40))   txnid,
+        a.odsub#                        fulfillment_id,
+        a.odqtbo                        backorder_qty,
+        ' '                             commissionable_ind,
+        a.odidcn                        contract_id,
+        a.ods#cn                        contract_seq,
+        ' '                             contract_type_cd,
+        ifnull(b.ohcnsh,c.country_cd)   country_cd,
+        a.odcurr                        currency_cd,
+        a.odefid                        effort_id,
+        a.odefyr                        effort_yr,
+        a.odexpr                        ext_selling_price_amt,
+        a.odexcs                        ext_item_cost_amt,
+        ' '                             item_taxable_cd,
+        0                               order_header_id,
+        0                               order_line_id,
+        a.ods#od                        transaction_line_num,
+        case when a.odqtor > 0
+             and  a.odtyor = 'T'
+             then a.odqtor * -1
+             else a.odqtor end          order_qty,
+        a.odprcc                        price_cd,
+        a.odcdre                        price_change_rsn_cd,
+        a.odprcp                        price_prefix_cd,
+        a.odskod                        selling_sku,
+        case when a.odqtsh > 0
+             and  a.odtyor = 'T'
+             then a.odqtsh * -1
+             else a.odqtsh end          shipped_qty,
+        0                               inv_location_id,
+        a.cbu001f_sku_list_price        unit_list_price_amt,
+        0                               unit_original_price_amt,
+        a.odcstd                        unit_item_cost_amt,
+        case when a.od$art < 0
+             and  a.odtyor = 'T'
+             then a.od$art * -1
+             else a.od$art end          unit_selling_price_amt,
+        0                               discount_amt,
+        ifnull(i.premium_cost,0)        premium_cost_amt,
+        case when a.odexpr > 0
+             then a.odexpr
+             else 0 end                 ext_gross_sales_amt,
+        case when a.odexcs > 0
+             then a.odexcs
+             else 0 end                 ext_gross_cost_amt,
+        ifnull(d.rlcder,' ')            return_reason_cd,
+        ifnull(b.ohidsp,' ')            sales_associate_id,
+        trim(L '0' from a.odvnid)       vendor_id,
+        '0 '                            core_ind,
+        ' '                             bsd_cost_centre,
+        ' '                             bsd_user,
+        a.odeprd                        entered_sku,
+        a.odhprc                        how_priced_cd,
+        ' '                             direct_delivery_cd,
+        a.odcnet                        big_deal_cost_amt,
+        a.odexbc                        ext_big_deal_cost_amt,
+        case when a.odtyor = 'R'
+              then 'S'
+             when a.odtyor = 'T'
+             and  ifnull(d.rlcder,' ') <> ' '
+              then 'C'
+             else 'B' end               transaction_line_type,
+        current date                    processed_dt,
+        'D'                             business_channel_id,
+        ifnull(i.sku_num,'NG')          sku_num
+--      ifnull(b.ohs#ad,0)              delivered_to_address_id,
+--      a.odcus#                        delivered_to_customer_id
+from    chmstdta/cbu001f a
+left join chmstdta/cbu000f b
+on      a.odord# = b.ohord#
+and     a.odsub# = b.ohsub#
+left join chmstdta/cbu002f d
+on      a.odord# = d.rlord#
+and     a.odsub# = d.rlsub#
+join    customer_account c
+on      a.odcus# = c.customer_id
+and     c.country_cd = 'CH'
+and     c.business_unit_type_cd = 'D'
+left join item_master i
+on      i.country_cd = 'CH'
+and     i.sku_num = a.odskod
+and     i.business_unit_type_cd = 'D'
+;
+
+--*************************************************************
+-- END
+--*************************************************************
+
+insert into stg_transaction_detail
+select *
+from   qtemp/trctdet
+;
+
+
+insert into dqhist
+select 'CH',
+       'D',
+       'TXN DETAILS',
+       'STAGING',
+       'STG_TRANSACTION_DETAIL',
+       'nchdtxnd',
+       'I',
+       current timestamp,
+       count(*),
+       sum(ext_selling_price_amt),
+       0
+from   stg_transaction_detail
+where  country_cd = 'CH'
+and    business_channel_id = 'D'
+and    processed_dt = current date
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+

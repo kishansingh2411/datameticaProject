@@ -1,0 +1,466 @@
+         <div class="filters">
+              
+              <div class="col-md-12">
+                <div class="date_range">
+                 <div class="title bod">
+                      Period
+                  </div>
+                  <div class="radiobtns">
+                    <div class="weekrange">
+                    <ul class="list-group" id="radio-div" >
+                        
+            <li class="list-group-item">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekrange" ng-model="content" value="Prior Week" ng-click="setP(content)">
+                        Prior Week
+                    </label>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekrange" ng-model="content" value="6 Weeks Avg" ng-click="setP(content)" >
+                        6 Weeks Avg
+                    </label>
+                </div>
+            </li>
+            <li class="list-group-item">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="weekrange" ng-model="content" value="13 Weeks Avg" ng-click="setP(content)">
+                        13 Weeks Avg
+                    </label>
+                </div>
+            </li>
+             
+                    </ul>
+                  </div>
+                  </div>
+              </div>
+
+                <div class="country_sel">
+                <div class="text bod">
+                      Country
+                </div>
+                <div class="selectbox">
+                  <select name="country" id="countries" ng-options="country.name for country in countries track by country.id" style="font-size:13px;" ng-model="sel_country"
+          ng-change="set(sel_country)" >
+                  <!--  <option value="All COUNTRIES">All COUNTRIES</option>
+                    <option value="AUSTRIA">AUSTRIA</option>
+                     <option value="BELGIUM">BELGIUM</option>
+                      <option value="CZECH REPUBLIC">CZECH REPUBLIC</option>
+                       <option value="ITALY">ITALY</option>
+                        <option value="NETHERLANDS">NETHERLANDS</option>
+                         <option value="POLAND">POLAND</option>
+                          <option value="UNITED KINGDOM">UNITED KINGDOM</option>
+                           <option value="SWITZERLAND">SWITZERLAND</option>
+                            <option value="IRELAND">IRELAND</option>
+                             <option value="SLOVENIA">SLOVENIA</option>
+                              <option value="GERMANY">GERMANY</option>  --> 
+                              <!-- <option></option> -->
+                    </select>
+              </div>
+              </div>
+
+              
+
+              <div class="visitor_seg">
+                <div class="title bod">
+                      Visitor Segment
+                </div>
+                <div class="selectbox">
+
+                  <select name="visitegment" id="Visitor" ng-options="visitor.name for visitor in visitors track by visitor.id"  ng-model="sel_visitor" ng-change="setV(sel_visitor)"  style="font-size:13px;" >
+                   <!--  <option value="All VISITORS">All VISITORS</option>
+                    <option value="ANONYMOUSCUSTOMER">ANONYMOUSCUSTOMER</option>
+                    <option value="NEW VISITORS">NEW VISITORS</option> -->
+                    <!-- <option >--</option>       -->                 
+                  </select>
+
+              </div>
+              </div>
+              <div class="gobutton">                  
+                    <button style="float:left;" ng-click ="filterall()" id="calc" class="gobtn btn primary" >Go</button>
+              </div>    
+
+              </div>
+
+            </div>
+
+
+  <div class="container-fluid main-dashboard">    
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            <i class="fa fa-fw fa-dashboard"></i> ClickStream Analytics <small></small>
+                        </h1>
+                    </div>
+
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading ">
+                        <h3 class="panel-title">Business Indicators for <span class="clr">{{sel_country.name}}</span> for <span class="clr">{{sel_visitor.val}}</span></h3>
+                    </div>
+                    <div class="panel-body resetpadding">
+                          <span class="bi-note" ng-if="noClickstreamError">* Business Indicator comparisons for all time frame in comparison to Last Week.</span>
+                          <span class="bi-note error-clr" ng-if="ClickstreamError">* Data is not Available.</span>
+
+                          <div class="table-responsive shadow1">
+                           <table class="table">
+                              <!-- <caption style="text-align:center;"><!-- Responsive Table Layout </caption> -->
+                              <thead class="txt-center">
+                                 <tr>
+                                    <th class="trgr"></th>
+                                    <th class="trbg">Total Revenue</th>
+                                    <th class="cabg">Total Carts Abandoned</th>
+                                    <th class="tobg">Total Orders</th>
+                                    <th class="tvbg">Total Page Views</th>
+                                 </tr>
+                              </thead>
+                              <tbody class="businessTable">                                 
+                                 <tr>                                    
+                                    <td class="index-td" rowspan="5" style="border:1px solid gray;">
+                                        <div class="table-responsive">
+                                           <table class="table bod rt-align1">                                              
+                                              <thead>
+                                                 <tr>
+                                                    <th class="td-bg1 rt-align">Time Period <!-- PPC-Sessions --></th>                         
+                                                 </tr>
+                                              </thead>
+                                              <tbody>                                                 
+                                                 <tr>
+                                                    <td>Last Week ({{lastweek}})</td>
+                                                 </tr>
+                                                 <tr>
+                                                    <td>Prior Week</td>
+                                                 </tr>
+                                                 <tr>
+                                                    <td>6 Weeks Avg</td>
+                                                 </tr>
+                                                 <tr>
+                                                    <td>13 Weeks Avg</td>
+                                                 </tr>
+                                              </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                
+                                    <td class="main-td" rowspan="5" style="border:1px solid gray;">
+                                        <div class="table-responsive">
+                                           <table class="table rt-align">
+                                              
+                                              <thead>
+                                                 <tr>
+                                                    <th class="td-border td-bg1 rt-align">{{foryear | date:'yyyy'}}</th>
+                                                    <th class="td-bg1 rt-align">{{prevYear}}</th>
+                                                 </tr>
+                                              </thead>
+                                              <tbody>
+                                                 
+                                                 <tr>
+                                                    <td class="td-border">{{TR_CYCW | currencyWithNumberFilter:symb }}</td><!-- | currencyWithNumberFilter:symb  -->
+                        <td class=""><span>NA<!-- {{TR_PYCW | currencyWithNumberFilter:symb }} --></span></td>     <!--  | currencyWithNumberFilter:symb  -->                                        
+                                                 </tr> 
+
+                                                 <tr>
+                                                    <td class="td-border">{{TR_CYPW}} </td>
+                                                    <td class="">{{TR_PYPW || "NA"}} </td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TR_CY6W}}</td>
+                                                    <td class="">{{TR_PY6W || "NA"}} </td>                                     
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TR_CY13W}}</td>
+                                                    <td class="">{{TR_PY13W || "NA"}} </td>                                     
+                                                 </tr>
+                                              </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    
+                                 
+                                    <td class="main-td" rowspan="5" style="border:1px solid gray;">
+                                        <div class="table-responsive">
+                                           <table class="table rt-align">
+                                              
+                                              <thead>
+                                                 <tr>
+                                                    <th class="td-border td-bg1 rt-align">{{foryear | date:'yyyy'}}</th>
+                                                    <th class="td-bg1 rt-align">{{prevYear}}</th>
+                                                 </tr>
+                                              </thead>
+                                              <tbody>
+                                                 
+                                                 <tr>
+                                                    <td class="td-border">{{CA_CYCW_C}}</td>
+                                                    <td class="">{{CA_PYCW_C || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{CA_CYPW}}</td>
+                                                    <td class="">{{CA_PYPW || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{CA_CY6W}}</td>
+                                                    <td class="">{{CA_PY6W || "NA"}}</td>                                     
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{CA_CY13W}}</td>
+                                                    <td class="">{{CA_PY13W || "NA"}}</td>                                     
+                                                 </tr>
+                                              </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    
+                                 
+                                    <td class="main-td" rowspan="5" style="border:1px solid gray;">
+                                        <div class="table-responsive">
+                                           <table class="table rt-align">
+                                              
+                                              <thead>
+                                                 <tr>
+                                                    <th class="td-border td-bg1 rt-align">{{foryear | date:'yyyy'}}</th>
+                                                    <th class="td-bg1 rt-align">{{prevYear}}</th>
+                                                 </tr>
+                                              </thead>
+                                              <tbody>
+                                                <tr>
+                                                    <td class="td-border">{{TO_CYCW_C || "NA"}}</td>
+                                                    <td class="">{{TO_PYCW_C || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TO_CYPW || "NA"}}</td>
+                                                    <td class="">{{TO_PYPW || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TO_CY6W || "NA"}}</td>
+                                                    <td class="">{{TO_PY6W || "NA"}}</td>                                     
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TO_CY13W || "NA"}}</td>
+                                                    <td class="">{{TO_PY13W || "NA"}}</td>                                     
+                                                 </tr>
+                                              </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    
+                                 
+                                    <td class="main-td" rowspan="5" style="border:1px solid gray;">
+                                        <div class="table-responsive">
+                                           <table class="table rt-align">
+                                              
+                                              <thead>
+                                                 <tr>
+                                                    <th class="td-border td-bg1 rt-align">{{foryear | date:'yyyy'}}</th>
+                                                    <th class="td-bg1 rt-align">{{prevYear}}</th>
+                                                 </tr>
+                                              </thead>
+                                              <tbody>
+                                                <tr>
+                                                    <td class="td-border">{{TV_CYCW_C}}</td>
+                                                    <td class="">{{TV_PYCW_C || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TV_CYPW}}</td>
+                                                    <td class="">{{TV_PYPW || "NA"}}</td>                                             
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TV_CY6W}}</td>
+                                                    <td class="">{{TV_PY6W || "NA"}}</td>                                     
+                                                 </tr>
+
+                                                 <tr>
+                                                    <td class="td-border">{{TV_CY13W}}</td>
+                                                    <td class="">{{TV_PY13W || "NA"}}</td>                                     
+                                                 </tr>
+                                              </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    
+                                 </tr>
+                              </tbody>
+                           </table>
+                        </div>
+                        
+                    </div>
+                </div>
+
+
+
+               <div class="row">
+                <div class="col-lg-12">
+     
+                </div>
+                    
+                </div>
+
+                <div class="panel panel-default mt-14">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+
+                          Funnel View for <span class="clr">{{sel_country.name}}</span> for <span class="clr">{{sel_visitor.val}}</span> <span class="addstring">in comparison to</span> <span class="clr">{{content}}</span>
+                    </div>
+                    <div class="panel-body resetpadding">
+
+                        <div class="col-md-12 fixedFunnel">
+                    <div class="col-md-6">
+                        <div class=""></div>
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView1" style="width:60%;max-width:320px;height:240px;text-align:center;"><img class="funnelhide0" src="images/error0.png" /></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView2" style="width:60%;max-width:320px; height:240px;text-align:center;"><img class="funnelhide1" src="images/error1.png" /></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 last-week-funnel" ng-show="content == 'Prior Week'">
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView3" style="width:60%;max-width:320px;  height:240px;text-align:center;"></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView4" style="width:60%; max-width:320px;height:240px;text-align:center;"><img class="funnelhide2" src="images/error2.png" /></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 last-6week-funnel" ng-show="content == '6 Weeks Avg'">
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView5" style="width:60%; max-width:320px;height:240px;text-align:center;"></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView6" style="width:60%; max-width:320px;height:240px;text-align:center;"><img class="funnelhide3" src="images/error3.png" /></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 last-13week-funnel" ng-show="content == '13 Weeks Avg'">
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView7" style="width:60%; max-width:320px;height:240px;text-align:center;"></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="panel-body resetPadding canvasFunnel" style="padding:1px !important">
+                             <div id="funnelView8" style="width:60%; max-width:320px;height:240px;text-align:center;"><img class="funnelhide4" src="images/error4.png" /></div> 
+                             <div id="container" ></div>
+                          <div class="text-right">
+                             <!--  <a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a> -->
+                          </div>
+                          </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+
+</div>
+
+<script>
+
+$(document).ready(function() {
+
+  //$( "table td:contains('NA')" ).css( "text-decoration", "underline" );
+
+  $('.funnelhide0, .funnelhide1, .funnelhide2, .funnelhide3, .funnelhide4').css('display', 'none');
+    var comm = $('#page-wrapper').width() + 'px';
+    var commm = comm;
+    $('.filters').css('width', comm);
+
+    var loading = $('#kpi1barChart').width() + 'px';
+    console.log(loading);
+    $('.overlayloading').css('width', loading);
+
+    
+
+//     var replaced = $("body").html().replace('NEW CUSTOMER','The new string');
+// $("body").html(replaced);
+
+   // $('#Visitor').html($('#Visitor').html().replace('NEW CUSTOMER','NEW VISITORS'));
+
+
+});
+
+       //  $(document).ready(function() {
+
+       //      var countriesfordropdown = [
+       // {"country" : "AUSTRIA"},
+       // {"country" : "BELGIUM"},
+       // {"country" : "CZECH REPUBLIC"},
+       // {"country" : "ITALY"},
+       // {"country" : "NETHERLANDS"},
+       // {"country" : "POLAND"},
+       // {"country" : "UNITED KINGDOM"},
+       // {"country" : "SWITZERLAND"},
+       // {"country" : "IRELAND"},
+       // {"country" : "SLOVENIA"},
+       // {"country" : "GERMANY"}
+       // ];
+
+       // //$select = $("#drop");
+
+       //      $.each(countriesfordropdown,function(key, value) 
+       //      {
+       //          $('#drop').append('<option>' + value + '</option>');
+       //      });
+       //  });
+
+
+
+
+</script>

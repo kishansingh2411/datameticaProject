@@ -1,0 +1,185 @@
+<!--******************************************************************************** -->
+<!--Name:- coverage-analytics_workflow.xml -->
+<!-- -->
+<!--Description:- Coverage Analytics Oozie workFlow -->
+<!-- -->
+<!--Author:- Sonali Rawool, Harshvardhan Jagtap, Sarfaraz Khan, Shweta Karwa         -->
+<!--******************************************************************************** -->
+
+<workflow-app name="CoverageAnalyticsWorkFlow" xmlns="uri:oozie:workflow:0.1">
+	<start to="MANAGE_OUTGOING_SCHEMA_SSH_ACTION" />
+	<action name="COVERAGE_ANALYTICS_SETUP_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${setupScriptPath}</command>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COVERAGE_ANALYTICS_UNZIP_JOB" />
+		<error to="FAIL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_UNZIP_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${unzipScriptPath}</command>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COVERAGE_ANALYTICS_VALIDATE_SCHEMA_JOB" />
+		<error to="FAIL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_VALIDATE_SCHEMA_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${validateSchemaScriptPath}</command>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COVERAGE_ANALYTICS_CREATE_SCHEMA_JOB" />
+		<error to="FAIL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_CREATE_SCHEMA_JOB">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${createSchemaScriptPath}</command>
+			<args>${debugMode}</args>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="POPULATE_COVERAGEANALYTICS_INCOMING_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	
+	<action name="POPULATE_COVERAGEANALYTICS_INCOMING_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coverage_analytics_incoming_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+			<ok to="POPULATE_COVERAGEANALYTICS_WORK_LAYER_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	
+	<action name="POPULATE_COVERAGEANALYTICS_WORK_LAYER_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coverage_analytics_work_layer_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+			<ok to="MANAGE_WORK_SCHEMA_SSH_ACTION" />
+		<error to="FAIL" />
+	</action>
+	<action name="MANAGE_WORK_SCHEMA_SSH_ACTION">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workManageHiveTables}</command>
+              <args>${debugMode}</args>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COVERAGEANALYTICS_WORK_SCHEMA" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="POPULATE_COVERAGEANALYTICS_WORK_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coverage_analytics_work_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+			<ok to="POPULATE_COVERAGEANALYTICS_GOLD_SCHEMA" />
+		<error to="FAIL" />
+	</action>
+	
+	<action name="POPULATE_COVERAGEANALYTICS_GOLD_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coverage_analytics_gold_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		    <ok to="MANAGE_GOLD_SCHEMA_SSH_ACTION" />
+		<error to="FAIL" />
+	</action>
+	<action name="MANAGE_GOLD_SCHEMA_SSH_ACTION">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${goldManageHiveTables}</command>
+              <args>${debugMode}</args>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COVERAGEANALYTICS_OUTGOING_SCHEMA" />
+		<error to="KILL" />
+	</action>
+    
+	<!--<action name="POPULATE_COVERAGEANALYTICS_OUTGOING_SCHEMA">-->
+	<!--	<ssh xmlns="uri:oozie:ssh-action:0.1">-->
+	<!--		<host>${focusNodeLogin}</host>-->
+	<!--		<command>${outgoingCoverageAnalyticsViewMonthlyScriptPath}</command>-->
+	<!--		<args>${monthly}</args>-->
+	<!--		<capture-output />-->
+	<!--	</ssh>-->
+	<!--	<ok to="POPULATE_COVERAGEANALYTICS_HBASE_SCHEMA" />-->
+	<!--	<error to="FAIL" />-->
+	<!--</action>-->
+		
+	<action name="POPULATE_COVERAGEANALYTICS_OUTGOING_SCHEMA">
+		<sub-workflow>
+			<app-path>${hdfsHomeDirectory}/coverage_analytics_outgoing_sub_workflow.xml</app-path>
+			<propagate-configuration />
+		</sub-workflow>
+		    <ok to="MANAGE_OUTGOING_SCHEMA_SSH_ACTION" />
+		<error to="FAIL" />
+	</action>
+		<action name="MANAGE_OUTGOING_SCHEMA_SSH_ACTION">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${outgoingMergedTblScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="POPULATE_COVERAGEANALYTICS_HBASE_SCHEMA" />
+	    <error to="KILL" />
+	</action>
+	<action name="POPULATE_COVERAGEANALYTICS_HBASE_SCHEMA">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${hbaseCopyScriptPath}</command>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COMPLETE" />
+		<error to="FAIL" />
+	</action>
+	<action name="CLEAN_UP">
+		<ssh xmlns="uri:oozie:ssh-action:0.1">
+			<host>${focusNodeLogin}</host>
+			<command>${cleanUpScriptPath}</command>
+			<args>${monthly}</args>
+			<capture-output />
+		</ssh>
+		<ok to="COMPLETE" />
+		<error to="FAIL" />
+	</action>
+	<action name="COMPLETE"> 
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${emailToAddress}</to>
+			<subject>Coverage Analytics Processing Completed</subject>
+			<body>Coverage Analytics All Jobs completed successfully</body>
+		</email>
+		<ok to="END" />
+		<error to="FAIL" />
+	</action>
+	<action name="FAIL">
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${emailToAddress}</to>
+			<subject>Coverage Analytics Processing Failed</subject>
+			<body>Job failed, error
+				message[${wf:errorMessage(wf:lastErrorNode())}]</body>
+		</email>
+		<ok to="KILL" />
+		<error to="KILL" />
+	</action>
+	<kill name="KILL">
+		<!-- <message>"Killed job due to error"</message> -->
+		<message>Job failed, error
+			message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="END" />
+</workflow-app>

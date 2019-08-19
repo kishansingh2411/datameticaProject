@@ -1,0 +1,386 @@
+drop procedure neudefft;
+
+create procedure neudefft
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+declare sqlcode integer default 0;
+declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+declare rnf int default 0;
+declare tnf int default 0;
+declare rec_not_found condition for '02000';
+declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+declare continue handler for rec_not_found set rnf = 1;
+declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/efft   like effort
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+INSERT INTO qtemp/efft  (
+BOOK_CD,
+BOOK_TYPE_CD,
+BULK_MAILING_CNT,
+BUSINESS_CHANNEL_ID,
+COUNTRY_CD,
+CURRENCY_CD,
+CUSTOMER_MAILING_CNT,
+DROP_DT,
+EFFORT_DESC,
+EFFORT_DESC_2,
+EFFORT_END_DT,
+EFFORT_ID,
+EFFORT_START_DT,
+EFFORT_TARGET_NM,
+EFFORT_TYPE_CD,
+EFFORT_YR,
+FISCAL_MONTH,
+FISCAL_YR,
+FORECAST_MAILING_CNT,
+IN_HOUSE_DT,
+ITEM_CNT,
+LANGUAGE_CD,
+LAST_ORDER_DT,
+LIST_RENTAL_COST_AMT,
+MAIL_VEHICLE_CD,
+MAILING_COST_AMT,
+MAILING_OVERS_CNT,
+MARKET_CNT,
+MARKETING_TRACKING_ID,
+MASTER_EFFORT_ID,
+OUTSIDE_LIST_IND,
+PAGE_CNT,
+PRINT_CNT,
+PROCESSED_DT,
+PROSPECT_MAILING_CNT,
+REMAIL_NUM,
+REMAIL_OF,
+SAMPLE_MAILING_CNT
+)
+select
+CAST (a.PREFIX AS CHAR(1) ) AS BOOK_CD,
+CAST (NULL AS CHAR(1) ) AS BOOK_TYPE_CD,
+0    AS BULK_MAILING_CNT,
+CAST (A__CHANNEL AS CHAR(1) )
+AS BUSINESS_CHANNEL_ID,
+CAST (a.COUNTRY_CODE AS CHAR(2) )
+AS COUNTRY_CD,
+CAST (NATIVE_CURRENCY AS CHAR(3) )
+AS CURRENCY_CD,
+0    AS CUSTOMER_MAILING_CNT,
+CAST (MAIL_DATE AS DATE ) AS DROP_DT,
+CAST (LONG_DESCRIPTION AS CHAR(30) )
+AS EFFORT_DESC,
+CAST (NULL AS CHAR(50) ) AS EFFORT_DESC_2,
+CAST (END_DATE AS DATE ) AS EFFORT_END_DT,
+CAST (a.PREFIX AS CHAR(3) ) AS EFFORT_ID,
+CAST (START_DATE AS DATE )
+AS EFFORT_START_DT,
+CAST (NULL AS CHAR(20) ) AS EFFORT_TARGET_NM,
+CAST (EFFORT_TYPE AS CHAR(6) )
+AS EFFORT_TYPE_CD,
+CAST (a.EFFORT_YEAR AS SMALLINT )
+AS EFFORT_YR,
+CAST (FISCAL_MONTH AS CHAR(2) )
+AS FISCAL_MONTH,
+CAST (FISCAL_YEAR AS CHAR(4) )
+AS FISCAL_YR,
+0    AS FORECAST_MAILING_CNT,
+CAST (IN_HOUSE_DATE AS DATE ) AS IN_HOUSE_DT,
+CAST (NULL AS INTEGER) AS ITEM_CNT,
+CAST (NULL AS CHAR(2) ) AS LANGUAGE_CD,
+CAST (LAST_ORDER_DATE AS DATE )
+AS LAST_ORDER_DT,
+0    AS LIST_RENTAL_COST_AMT,
+CAST (NULL AS CHAR(2) ) AS MAIL_VEHICLE_CD,
+0    AS MAILING_COST_AMT,
+CAST (OVERS AS INTEGER) AS MAILING_OVERS_CNT,
+CAST (NULL AS INTEGER) AS MARKET_CNT,
+CAST (NULL AS INTEGER) AS MARKETING_TRACKING_ID,
+CAST (NULL AS CHAR(20) ) AS MASTER_EFFORT_ID,
+CAST (NULL AS CHAR(1) ) AS OUTSIDE_LIST_IND,
+CAST (PAGE_COUNT AS INTEGER) AS PAGE_CNT,
+CAST (PRINT_QUANTITY AS INTEGER) AS PRINT_CNT,
+CAST (NULL AS DATE ) AS PROCESSED_DT,
+0    AS PROSPECT_MAILING_CNT,
+CAST (a.REMAIL_CODE AS SMALLINT ) AS REMAIL_NUM,
+CAST (REMAIL_OF AS CHAR(10) ) AS REMAIL_OF,
+CAST (SAMPLE_QUANTITY AS INTEGER)
+AS SAMPLE_MAILING_CNT
+from
+MRMMSTDTA/EFPEFFT    a
+LEFT JOIN  MRMMSTDTA/EFPCIRC  b
+ON a.COUNTRY_CODE=b.COUNTRY_CODE
+AND a.PREFIX=b.PREFIX
+AND a.REMAIL_CODE=b.REMAIL_CODE
+AND a.EFFORT_YEAR=b.EFFORT_YEAR
+LEFT JOIN  MRMMSTDTA/XREFDATES  c
+ON a.COUNTRY_CODE=c.COUNTRY_CODE
+AND a.PREFIX=c.EFFORT_ID
+AND a.REMAIL_CODE=c.REMAIL_CODE
+AND a.EFFORT_YEAR=c.EFFORT_YEAR
+LEFT JOIN  MRMMSTDTA/EFPEFFC  d
+ON a.COUNTRY_CODE=d.COUNTRY_CODE
+AND a.PREFIX=d.PREFIX
+AND a.REMAIL_CODE=d.REMAIL_CODE
+AND a.EFFORT_YEAR=d.EFFORT_YEAR;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+'EU',
+'D',
+'EFFORT',
+'LEGACY',
+'EFPEFFT',
+'neudefft',
+'E',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+-- update process_dt column
+update qtemp/efft
+set processed_dt = current date
+;
+
+-- update temp table qtemp/efft  field PROSPECT_MAILING_CNT
+
+update qtemp/efft  a
+set PROSPECT_MAILING_CNT =
+(
+select
+SUM(b.MAIVEC) AS PROSPECT_MAILING_CNT
+FROM MRMMSTDTA/EFPCIRC  b,
+MRMMSTDTA/EFPEFFT    c
+WHERE c.CTRYID=b.CTRYID
+AND   c.PCEIID=b.PCEIID
+AND   c.REMLID=b.REMLID
+AND   c.PCEYID=b.PCEYID
+AND   b.ADNCID='P'
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+-- update temp table qtemp/efft  field BULK_MAILING_CNT
+
+update qtemp/efft  a
+set BULK_MAILING_CNT =
+          (
+           select
+           SUM(b.BLKVEC) AS BULK_MAILING_CNT
+           FROM MRMMSTDTA/EFPCIRC  b,
+           MRMMSTDTA/EFPEFFT    c
+           WHERE c.CTRYID=b.CTRYID
+           AND   c.PCEIID=b.PCEIID
+           AND   c.REMLID=b.REMLID
+           AND   c.PCEYID=b.PCEYID
+           AND   a.COUNTRY_CD=c.COUNTRY_CODE
+           AND   a.EFFORT_ID=c.PREFIX
+           AND   a.EFFORT_YR=c.EFFORT_YEAR
+           AND   a.REMAIL_NUM=c.REMAIL_CODE
+           GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+           );
+
+-- update temp table qtemp/efft  field FORECAST_MAILING_CNT
+
+update qtemp/efft  a
+set FORECAST_MAILING_CNT =
+(
+select
+SUM(b.FRCVEC) AS FORECAST_MAILING_CNT
+FROM MRMMSTDTA/EFPCIRC  b,
+MRMMSTDTA/EFPEFFT    c
+WHERE c.CTRYID=b.CTRYID
+AND   c.PCEIID=b.PCEIID
+AND   c.REMLID=b.REMLID
+AND   c.PCEYID=b.PCEYID
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+-- update temp table qtemp/efft  field CUSTOMER_MAILING_CNT
+
+update qtemp/efft  a
+set CUSTOMER_MAILING_CNT =
+(
+select
+SUM(b.MAIVEC) AS CUSTOMER_MAILING_CNT
+FROM MRMMSTDTA/EFPCIRC  b,
+MRMMSTDTA/EFPEFFT    c
+WHERE c.CTRYID=b.CTRYID
+AND   c.PCEIID=b.PCEIID
+AND   c.REMLID=b.REMLID
+AND   c.PCEYID=b.PCEYID
+AND   b.ADNCID='C'
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+
+-- update temp table qtemp/efft  field LIST_RENTAL_COST_AMT
+
+update qtemp/efft  a
+set LIST_RENTAL_COST_AMT =
+(
+select
+SUM(b.EFFORT_COST_AMOUNT) AS CUSTOMER_MAILING_CNT
+FROM MRMMSTDTA/EFPEFFC  b,
+MRMMSTDTA/EFPEFFT    c
+WHERE c.CTRYID=b.CTRYID
+AND   c.PCEIID=b.PCEIID
+AND   c.REMLID=b.REMLID
+AND   c.PCEYID=b.PCEYID
+AND   b.COST_TYPE = 70
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+
+-- update temp table qtemp/efft  field MAILING_COST_AMT
+
+update qtemp/efft  a
+set MAILING_COST_AMT =
+(
+select
+SUM(b.ECATEK * d.XCGFEH) AS MAILING_COST_AMT
+FROM MRMMSTDTA/EFPEFFC  b,
+MRMMSTDTA/EFPEFFT    c,
+EFTMSTDTA/EFPXCHG d
+WHERE  b.CTRYID = c.CTRYID
+AND    b.PCEIID = c.PCEIID
+AND    b.REMLID = c.REMLID
+AND    b.PCEYID = c.PCEYID
+AND    d.FSCYID = c.FSCYEP
+AND    d.FSCMID = c.FSCMEP
+AND    d.CURTID = c.CURCEP
+AND    d.CURFID = b.CURCEK
+AND    b.CSTTID <> 999
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+-- update temp table qtemp/efft  field MAILING_COST_AMT
+
+update qtemp/efft  a
+set MAILING_COST_AMT =
+(
+select
+(MIN(a.MAILING_COST_AMT) + SUM(b.MIATEJ * d.XCGFEH)) AS MAILING_COST_AMT
+FROM MRMMSTDTA/EFPMISC b,
+MRMMSTDTA/EFPEFFT    c,
+EFTMSTDTA/EFPXCHG d
+WHERE  b.CTRYID = c.CTRYID
+AND    b.PCEIID = c.PCEIID
+AND    b.REMLID = c.REMLID
+AND    b.PCEYID = c.PCEYID
+AND    d.FSCYID = c.FSCYEP
+AND    d.FSCMID = c.FSCMEP
+AND    d.CURTID = c.CURCEP
+AND    d.CURFID = b.CURCEJ
+AND   a.COUNTRY_CD=c.COUNTRY_CODE
+AND   a.EFFORT_ID=c.PREFIX
+AND   a.EFFORT_YR=c.EFFORT_YEAR
+AND   a.REMAIL_NUM=c.REMAIL_CODE
+GROUP BY c.CTRYID,c.PCEIID,c.REMLID,c.PCEYID
+);
+
+
+
+-- Set status info for pre existing rows
+-- NO NEED TO PUT THIS UPDATE AS ALL COLUMNS ARE ALREADY CONSIDERED
+-- IN FIRST INSERT STATEMENT. -- DM TEAM, 29/6/15
+
+--INSERT INTO STAGING TABLE
+insert into STG_EFFORT
+select *
+from   qtemp/efft
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+'EU',
+'D',
+'EFFORT',
+'STAGING',
+'STG_EFFORT',
+'neudefft',
+'I',
+current timestamp,
+w1rcnt,
+0,0)
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+
+

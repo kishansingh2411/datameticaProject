@@ -1,0 +1,14 @@
+<!--********************************************************************************-->
+<!--Name:- coordinator_workflow.xml           										-->
+<!--								          										-->
+<!--Description:- Coordinator Oozie workFlow   										-->
+<!--								           										-->
+<!--Author:-   Sarfaraz Khan           												-->
+<!--********************************************************************************-->
+<coordinator-app name="coordinator_hour_job" frequency="${frequency}" start="${startTime}" end="${endTime}" timezone="${timezone}" xmlns="uri:oozie:coordinator:0.1">
+<action>
+<workflow>
+<app-path>${clicklogger_hour_wf}</app-path>
+</workflow>
+</action>           
+</coordinator-app>

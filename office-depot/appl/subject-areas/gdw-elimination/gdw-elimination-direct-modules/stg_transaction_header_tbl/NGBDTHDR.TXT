@@ -1,0 +1,314 @@
+drop procedure ngbdthdr;
+
+create procedure ngbdthdr
+
+language sql
+modifies sql data
+set option output = *print, dbgview = *source, commit = *none,
+datfmt = *ISO, datsep = '-'
+
+main:
+
+begin
+
+declare sqlcode integer default 0;
+declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+declare rnf int default 0;
+declare tnf int default 0;
+declare rec_not_found condition for '02000';
+declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+declare continue handler for rec_not_found set rnf = 1;
+declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/thdr like transaction_header
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/thdr (
+        ACCOUNTING_DT,
+        BILL_TO_ADDRESS_ID,
+        BUSINESS_CHANNEL_ID,
+        COUNTRY_CD,
+        CUSTOMER_ID,
+        FULFILLMENT_ID,
+        INVOICE_DT,
+        INVOICE_NUM,
+        LOB_ID,
+        NEW_EXISTING_CUSTOMER_IND,
+        ORDER_ASSOCIATE_ID,
+        ORDER_DT,
+        ORDER_NUM,
+        ORDER_STATUS_CD,
+        PLACEMENT_METHOD_CD,
+        TOTAL_DELIVERY_CHARGE_AMT,
+        TOTAL_DISCOUNT_AMT,
+        TOTAL_ORDER_AMT,
+        TOTAL_SALES_AMT,
+        TOTAL_TAX_AMT,
+        TRANSACTION_ID,
+        WINNING_EFFORT_ID,
+        WINNING_EFFORT_YR
+)
+select
+        digits(ivcyoh)||
+        digits(ivyroh)|| '-' ||
+        digits(ivmooh)|| '-' ||
+        digits(ivdaoh)  AS ACCOUNTING_DT,  --MAK
+        1       AS BILL_TO_ADDRESS_ID,
+        ''    AS BUSINESS_CHANNEL_ID,
+        BRANOH  AS COUNTRY_CD,
+        CAST(CUSTOH  AS CHAR(20)) AS CUSTOMER_ID,
+        0    AS FULFILLMENT_ID,
+        digits(ivcyoh)|| 
+        digits(ivyroh)||'-'||
+        digits(ivmooh)||'-'||
+        digits(ivdaoh) AS INVOICE_DT,
+        CHAR(INV#OH) AS INVOICE_NUM,
+        ''    AS LOB_ID,
+        ''    AS NEW_EXISTING_CUSTOMER_IND,
+        CHAR(OPIDOH) AS ORDER_ASSOCIATE_ID,
+        digits(orcyoh)||
+        digits(oryroh)||'-'|| 
+        digits(ormooh)||'-'||
+        digits(ordaoh) AS ORDER_DT,
+        CHAR(ORD#OH) AS ORDER_NUM,
+        case when ORDCNT = 0 then '0' else '' end
+        AS ORDER_STATUS_CD,
+        PORMOH  AS PLACEMENT_METHOD_CD,
+        FRCHOH  AS TOTAL_DELIVERY_CHARGE_AMT,
+        DISCOH  AS TOTAL_DISCOUNT_AMT,
+        IVAMOH  AS TOTAL_ORDER_AMT,
+        DTAMOH  AS TOTAL_SALES_AMT,
+        TAXAOH  AS TOTAL_TAX_AMT,
+        DIGITS(custoh) || 
+        (DIGITS(ivcyoh)|| 
+         DIGITS(ivyroh)|| 
+         DIGITS(ivmooh)|| 
+         DIGITS(ivdaoh))|| 
+         DIGITS(INV#OH)
+        AS TRANSACTION_ID,
+        PCEIOH  AS WINNING_EFFORT_ID,
+        PCEYOH  AS WINNING_EFFORT_YR
+from
+        UKMSTDTA/INPHEADF A
+JOIN
+        UKMSTDTA/LOCMAST B
+ON
+        A.BRANOH = B.BRCDBR
+WHERE
+B.BRNMBR <> 'IRELAND';
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'GB',
+        'D',
+        'TXN HEADERS',
+        'LEGACY',
+        'INPHEADF',
+        'ngbdthdr',
+        'E',
+        current timestamp,
+        w1rcnt,
+0,0)
+;
+--*************************************************************
+-- END
+--*************************************************************
+
+
+--***********************************************************
+-- Update BUSINESS_CHANNEL_ID & NEW_EXISTING_CUSTOMER_IND
+-- from CUSTOMER_ACCOUNT table
+--***********************************************************
+update qtemp/thdr  a
+set (BUSINESS_CHANNEL_ID,
+NEW_EXISTING_CUSTOMER_IND
+)
+=
+(select
+        (case OD_CUSTOMER_TYPE_CD when 'B2B' then 'V' else 'W' end)
+        AS BUSINESS_CHANNEL_ID,
+        (case when (b.FIRST_INVOICE_DT is null)
+        or (b.FIRST_INVOICE_DT >= a.INVOICE_DT)
+        then 'N' else  'E' end) AS NEW_EXISTING_CUSTOMER_IND
+FROM
+customer_account b
+WHERE
+a.COUNTRY_CD = b.COUNTRY_CD
+and     a.CUSTOMER_ID = b.CUSTOMER_ID
+and     b.BUSINESS_UNIT_TYPE_CD = 'D'
+and     a.TOTAL_ORDER_AMT > 0.00
+)
+where exists
+(select 1
+from
+customer_account b
+where
+a.COUNTRY_CD = b.COUNTRY_CD
+and     a.CUSTOMER_ID = b.CUSTOMER_ID
+and     b.BUSINESS_UNIT_TYPE_CD = 'D'
+and     a.TOTAL_ORDER_AMT > 0.00
+)
+;
+
+
+update qtemp/thdr  a
+set (BUSINESS_CHANNEL_ID,
+NEW_EXISTING_CUSTOMER_IND)
+=
+('W',
+'N' )
+where
+not exists
+(select 1
+from
+        CUSTOMER_ACCOUNT b
+where
+        a.COUNTRY_CD = b.COUNTRY_CD
+        and a.CUSTOMER_ID = b.CUSTOMER_ID
+        and b.BUSINESS_UNIT_TYPE_CD = 'D'
+        and a.TOTAL_ORDER_AMT > 0.00)
+;
+
+--*************************************************************
+-- END
+--*************************************************************
+
+
+--***********************************************************
+-- Update CURRENCY_CD from LOCATION table
+--***********************************************************
+update qtemp/thdr a
+set(CURRENCY_CD) =
+(case  when country_cd = 'GB' theN 'GBP'
+when country_cd = 'CH' then 'CHF'
+else 'EUR' end);
+
+--*************************************************************
+-- END
+--*************************************************************
+
+update qtemp/thdr
+set processed_dt = current date
+;
+
+-- Set status info for pre existing rows
+
+update qtemp/thdr a
+set (
+        ASSOCIATION_ID,
+        CONTRACT_ASSOCIATE_ID,
+        CURRENCY_CD,
+        DELIVERY_METHOD_CD,
+        INVENTORY_LOCATION_ID,
+        ORDER_LOCATION_ID,
+        ORDER_SERVICE_TYPE_CD,
+        ORDER_TAXABLE_CD,
+        ORDER_TYPE_CD,
+        PREPAID_AMT,
+        PROCESSED_DT,
+        PROMISED_FULFILLMENT_DT,
+        SALES_LOCATION_ID,
+        SHIP_TO_ADDRESS_ID,
+        SHIP_TO_CONTACT_ID
+) =
+(select
+        ASSOCIATION_ID,
+        CONTRACT_ASSOCIATE_ID,
+        CURRENCY_CD,
+        DELIVERY_METHOD_CD,
+        INVENTORY_LOCATION_ID,
+        ORDER_LOCATION_ID,
+        ORDER_SERVICE_TYPE_CD,
+        ORDER_TAXABLE_CD,
+        ORDER_TYPE_CD,
+        PREPAID_AMT,
+        PROCESSED_DT,
+        PROMISED_FULFILLMENT_DT,
+        SALES_LOCATION_ID,
+        SHIP_TO_ADDRESS_ID,
+        SHIP_TO_CONTACT_ID
+from   transaction_header b
+where  a.TRANSACTION_ID = b.TRANSACTION_ID
+        and    a.COUNTRY_CD = b.COUNTRY_CD
+        and    a.FULFILLMENT_ID = b.FULFILLMENT_ID
+        )
+where exists
+(select 1
+from   transaction_header b
+where  a.TRANSACTION_ID = b.TRANSACTION_ID
+        and    a.COUNTRY_CD = b.COUNTRY_CD
+        and    a.FULFILLMENT_ID = b.FULFILLMENT_ID)
+;
+
+insert into stg_transaction_header
+select *
+from   qtemp/thdr
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'GB',
+        'D',
+        'TXN HEADERS',
+        'STAGING',
+        'STG_TRANSACTION_HEADER',
+        'ngbdthdr',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+goto exitproc;
+
+
+--*************************************************************
+-- Leave Procedure
+--*************************************************************
+ExitProc:
+loop
+leave ExitProc;
+end loop;
+
+end
+
+
+

@@ -1,0 +1,161 @@
+ drop procedure natdvhist;                                              
+                                                                        
+ create procedure natdvhist                                             
+                                                                        
+ language sql                                                           
+ modifies sql data                                                      
+ set option output = *print, dbgview = *source, commit = *none,         
+                 datfmt = *ISO, datsep = '-'                            
+                                                                        
+ main:                                                                  
+                                                                        
+  begin                                                                 
+                                                                        
+     declare sqlcode integer default 0;                                 
+     declare sqlstate char(5) default '00000';                          
+                                                                         
+ --****************************************************                  
+ -- LOCAL VARS                                                           
+ --****************************************************                  
+                                                                         
+     declare w1rcnt int;                                                 
+                                                                         
+ --*******************************************************************   
+ -- ERROR FLAGS                                                          
+  -- ERROR FLAGS                                                          
+ --*******************************************************************   
+     declare rnf int default 0;                                          
+     declare tnf int default 0;                                          
+     declare rec_not_found condition for '02000';                        
+     declare tab_not_found condition for '42704';                        
+                                                                         
+                                                                         
+ --*******************************************************************   
+  -- CURSORS                                                            
+ --******************************************************************* 
+                                                                       
+                                                                       
+ --******************************************************************* 
+ -- ERROR HANDLERS                                                     
+ --******************************************************************* 
+     declare continue handler for rec_not_found set rnf = 1;           
+     declare continue handler for tab_not_found set tnf = 1;                                                                                   
+                                                                        
+ --*******************************************************************  
+ -- INIT                                                                
+ --*******************************************************************  
+                                                                        
+ declare global temporary table session/vhist like voucher_history      
+ with replace                                                           
+ ;                                                                      
+                                                                        
+                                                                         
+ --***********************************************************           
+ -- MAIN                                                                 
+ --***********************************************************           
+                                                                         
+                                                                         
+ insert into qtemp/vhist (                                               
+ BUSINESS_UNIT_TYPE_CD,                                                  
+ COUNTRY_CD,                                                             
+ CUSTOMER_ID,                                                            
+ EFFORT_CODE,                                                            
+ EFFORT_YEAR,                                                            
+ INKJET_QUALIFIED_FOR,                                                   
+ INKJET_RECEIVED,                                                        
+ MAIL_DATE,                                                              
+ OD_CUSTOMER_TYPE_CD,                                                    
+ PROCESSED_DT,                                                           
+ REMAIL_CODE,                                                            
+  SELECTION_DATE,                                                
+ TEST_MESSAGE_FLAG,                                             
+ TOUCHPOINT,                                                    
+ UNIQUE_ACTIVITY_ID,                                            
+ VOUCHER_EXPIRY_DATE,                                           
+ VOUCHER_NUMBER,                                                
+ VOUCHER_THRESHOLD,                                             
+ VOUCHER_TYPE,                                                  
+ VOUCHER_VALUE                                                  
+  )                                                                   
+ select                                                              
+ 'D' AS BUSINESS_UNIT_TYPE_CD,                                       
+ 'AT' AS COUNTRY_CD,                                                 
+ BUSINESS_UNIT_ACCOUNT_ID  AS  CUSTOMER_ID,                          
+ EFFORT_CODE  AS EFFORT_CODE,                                        
+ EFFORT_YEAR  AS EFFORT_YEAR,                                        
+ INKJET_QUALIFIED_FOR  AS INKJET_QUALIFIED_FOR,
+  INKJET_RECEIVED  AS INKJET_RECEIVED,                       
+ MAIL_DATE AS MAIL_DATE,                                    
+ 'DIRECT' AS OD_CUSTOMER_TYPE_CD,                           
+ CAST (current date AS DATE ) AS PROCESSED_DT,              
+ REMAIL_CODE AS REMAIL_CODE,                                
+ SELECTION_DATE AS SELECTION_DATE,                          
+ TEST_MESSAGE_FLAG AS TEST_MESSAGE_FLAG,                    
+ TOUCHPOINT AS TOUCHPOINT,                                  
+ ACTIVITY_UNIQUE_ID AS UNIQUE_ACTIVITY_ID,                  
+ VOUCHER_EXPIRY_DATE AS VOUCHER_EXPIRY_DATE,                    
+VOUCHER_NUMBER AS VOUCHER_NUMBER,                              
+VOUCHER_THRESHOLD AS VOUCHER_THRESHOLD,                        
+VOUCHER_TYPE AS VOUCHER_TYPE,                                  
+VOUCHER_VALUE AS VOUCHER_VALUE                                 
+from                                                           
+         AT_MA4/VOUCHERHISTORY                                 
+;                                                              
+
+                                                                      
+get diagnostics w1rcnt = row_count;                                   
+                                                                      
+insert into dqhist values(                                            
+        'AT',                                                         
+        'D',                                                          
+        'VOUCHER_HISTORY',                                            
+        'LEGACY',                                                     
+        'VOUCH00004',                                                 
+         'natdvhist',                                                    
+         'E',                                                            
+         current timestamp,                                              
+         w1rcnt,                                                         
+         0,0)                                                            
+ ;                                                                       
+  --*************************************************************        
+  -- END                                                                 
+  --*************************************************************        
+                                                                      
+ update qtemp/vhist                                                  
+ set processed_dt = current date                                     
+ ;                                                                   
+                                                                     
+                                                                     
+ insert into stg_voucher_history                                     
+ select *                                                            
+ from   qtemp/vhist                                                  
+ ;                                                                       
+                                                                        
+get diagnostics w1rcnt = row_count;                                     
+                                                                        
+insert into dqhist values(                                              
+        'AT',                                                           
+        'D',                                                            
+        'VOUCHER_HISTORY',                                              
+        'STAGING',                                                      
+         'STG_VOUCHER_HISTORY',                                          
+         'natdvhist',                                                    
+         'I',                                                            
+         current timestamp,                                              
+         w1rcnt,                                                         
+         0,0)                                                            
+ ;                                                                       
+                                                                        
+                                                                        
+ goto exitproc;                                                         
+                                                                        
+                                                                        
+--*************************************************************         
+-- Leave Procedure                                                      
+--*************************************************************         
+ExitProc:                                                               
+ loop                                                                    
+ leave ExitProc;                                                         
+ end loop;                                                               
+
+ end                                                                     

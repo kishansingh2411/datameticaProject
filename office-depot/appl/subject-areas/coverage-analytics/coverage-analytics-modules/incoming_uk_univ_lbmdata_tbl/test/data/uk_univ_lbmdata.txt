@@ -1,0 +1,10 @@
+SitePromotionClick,438651
+CartItemPurchase,96340
+RealEstateClick,8469
+Order,26566
+CartItemAddition,349644
+CartItemAbandonment,253366
+ProductView,683632
+PageView,3675342
+SessionFirstPageView,631434
+TechnicalProperties,631434

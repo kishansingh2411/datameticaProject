@@ -1,0 +1,4 @@
+
+debug=On
+
+verify storeoutput /office_depot/clickstream/test/compare_result/work_cart_item_addition.txt  with /office_depot/clickstream/test/work/data/work_cart_item_addition/part-r-00000 

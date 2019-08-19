@@ -1,0 +1,115 @@
+<!--********************************************************************************-->
+<!--Name:- COVERAGE_ANALYTICS_work_sub_workflow.xml           								-->
+<!--								          										-->
+<!--Description:- COVERAGE_ANALYTICS Work table mapping workFlow   						-->
+<!--								           										-->
+<!--Author:- Shweta Karwa                                               			-->
+<!--********************************************************************************-->
+<workflow-app name="CoverageAnalyticsWorkSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COVERAGE_ANALYTICS_FORK_WORK_JOB" />
+	
+	<fork name="COVERAGE_ANALYTICS_FORK_WORK_JOB">
+		<path start="COVERAGE_ANALYTICS_WORK_DM_AT_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_BE_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_FR_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_GE_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_IR_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_IT_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_NL_CDMPRDDTA_JOB" />
+       	<path start="COVERAGE_ANALYTICS_WORK_DM_UK_CDMPRDDTA_JOB" />
+        
+    </fork> 
+	
+	<join name="COVERAGE_ANALYTICS_JOIN_WORK_JOB" to="COVERAGE_ANALYTICS_WORK_SUB_WORKFLOW_END" />
+	
+	<!-- First WordCount MapReduce job -->
+	<action name="COVERAGE_ANALYTICS_WORK_DM_AT_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmAtCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_DM_BE_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmBeCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	
+	<action name="COVERAGE_ANALYTICS_WORK_DM_FR_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmFrCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_WORK_DM_GE_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmGeCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_WORK_DM_IR_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmIrCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_WORK_DM_IT_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmItCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_WORK_DM_NL_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmNlCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_WORK_DM_UK_CDMPRDDTA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${workDmUkCdmprddtaScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGE_ANALYTICS_JOIN_WORK_JOB" />
+        <error to="KILL" />
+      	</action>  
+            
+        <kill name="KILL">
+		<message>Coremetric Work SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COVERAGE_ANALYTICS_WORK_SUB_WORKFLOW_END" />
+</workflow-app>

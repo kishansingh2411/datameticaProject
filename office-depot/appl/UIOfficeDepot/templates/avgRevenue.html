@@ -1,0 +1,154 @@
+
+
+<div class="container-fluid">
+               
+
+<div class="row">
+<div class="col-lg-12">
+<div class="panel panel-primary">
+    <div class="panel-heading" >
+ <h3 class="panel-title "><b>{{titleText}}&nbsp; {{TimeKPIFrom}}{{TimeKPITo}}{{titleByOrder}}<strong>{{countrySelected}}</strong> </b></h></div>
+    <div class="panel-body">
+    <div class="row">
+    <div class="col-lg-12">
+       <!--  <form class="form-inline">
+        <label><input type="radio" ng-model="timeSelection.default" value="yearly">Yearly</label>
+        <label><input type="radio" ng-model="timeSelection.default" value="quarterly">Quarterly</label>
+        <label><input type="radio" ng-model="timeSelection.default" value="monthly">Monthly</label>
+        <label><input type="radio" ng-model="timeSelection.default" value="weekly">Weekly</label>  
+         {{timeSelection.default}}
+        </form>  -->
+    </div>
+    </div>
+
+    <!-- Second Row in Row  Include DatePicker And Country Selection -->
+      <div class="row" >
+        <div class="col-lg-3" >
+            <p class="input-group" id="fromDate" >
+            <b>From</b>&nbsp
+                <button type="button" class="btn btn-default" ><i class="glyphicon glyphicon-calendar"></i></button>
+                <!-- <i class="fa fa-calendar"></i> -->
+                <input type="text"  id="dispFromAvg" size="8" />
+            </p>
+        </div>
+        <div class="col-lg-3" >
+            <p class="input-group" id="toDate">
+               <b>To</b>&nbsp
+                <button type="button" class="btn btn-default" ><i class="glyphicon glyphicon-calendar"></i></button>
+                <input type="text" id="dispToAvg" size="8" />
+             
+            </p>
+       
+        </div>
+    <div class="col-lg-3" >
+    <div class="dropdown" id="dropdownMenuULSecond">
+
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">{{defaultData}}<span class="caret"></span>
+    </button>
+    <ul id="detectDrop" class="dropdown-menu scrollable-menu" role="menu" >
+    <li role="presentation" ng-repeat="list in countryList"  ><a role="menuitem" ng-click="getSelected()"tabindex="-1" >{{list}}</a></li>
+    </ul>
+     <i class="fa fa-cog fa-fw"></i>
+    </div>
+    <!-- ./Dropdown Ends -->     
+    </div>
+</div>
+    <!-- Row Ends -->
+<!--  <div class="text-right">
+<a href="#/details">View Details <i class="fa fa-arrow-circle-right"></i></a>
+</div> -->
+    </div>
+</div>
+</div>
+</div>
+
+
+
+<div class="row">
+<div  id ="contextConverter" class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading ">
+            <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>Average Revenue Per Order</h3>
+        </div>
+        <div class="panel-body resetpadding canvasLine">
+<!--             <button type="button" id="buttonShow" class="btn btn-primary btn-sm canvasDraw">Back</button>
+ -->          
+                     <!-- <div id="morris-line-chart"></div>  -->
+            <canvas  id="canvas"></canvas>
+        </div>
+    </div>
+</div>
+ <div id="secondContextChart" class="col-lg-6">
+    <div class="panel panel-default">
+        <div class="panel-heading ">
+            <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>Average Revenue Per Order Stack Chart</h3>
+        </div>
+        <div class="panel-body resetpadding canvasBarBreak">
+            <canvas  id="canvasBreakUp"></canvas>
+        </div>
+    </div>
+</div>
+</div>
+<!-- row ENds -->
+
+
+
+<!-- <div class="col-lg-6">
+    <div class="panel panel-default">
+        <div class="panel-heading ">
+            <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>OCR Break Up</h3>
+        </div>
+        <div class="panel-body resetpadding">
+            <button type="button" id="buttonShow" class="btn btn-primary btn-sm canvasDraw">Back</button>
+          
+                    <div id="morris-line-chart"></div> 
+            <canvas  id="canvasbreakup"></canvas>
+        </div>
+        
+    </div>
+</div> -->
+
+<!-- <div class="row">
+<div class="col-lg-12">
+    <div class="panel panel-default">
+        <div class="panel-heading ">
+            <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>Detail Chart</h3>
+        </div>
+        <div class="panel-body resetpadding canvasBarBreak">
+ 
+            <canvas  id="canvasBreakUp"></canvas>
+        </div>
+    </div>
+</div>
+
+ -->
+</div>
+
+   <!-- /.container-fluid -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,200 @@
+<!--********************************************************************************-->
+<!--Name:- COVERAGEANALYTICS_incoming_sub_workflow.xml           							-->
+<!--								          										-->
+<!--Description:- COVERAGEANALYTICS Incoming table mapping workFlow   					-->
+<!--								           										-->
+<!--Author:- Shweta Karwa			-->
+<!--********************************************************************************-->
+<workflow-app name="CoverageAnalyticsIncomingSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COVERAGEANALYTICS_FORK_INCOMING_JOB" />
+	
+	<fork name="COVERAGEANALYTICS_FORK_INCOMING_JOB">
+		<path start="COVERAGE_ANALYTICS_INCOMING_NL_UNIV_VIKBASE_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_GE_UNIV_SCHOBER_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_IT_UNIV_DBITALY_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_AT_UNIV_KSV_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_AT_UNIV_SCHOBER_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_UK_UNIV_LBMDATA_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_IR_UNIV_BILLMOSS_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_FR_MDUGAST_N80FIN_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_BE_UNIV_SCHOBER_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_ASSIGNED_CUST_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_TRANSACTION_DTL_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_ASSOCIATE_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_CALENDAR_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_COUNTRY_JOB" />
+        <path start="COVERAGE_ANALYTICS_INCOMING_DM_CUST_ACC_JOB" />       
+    </fork>
+	
+	<join name="COVERAGEANALYTICS_JOIN_INCOMING_JOB" to="COVERAGEANALYTICS_INCOMING_SUB_WORKFLOW_END" />
+	
+	<!-- First WordCount MapReduce job -->
+	<action name="COVERAGE_ANALYTICS_INCOMING_NL_UNIV_VIKBASE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingNlUnivVikbaseScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COVERAGE_ANALYTICS_INCOMING_GE_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingGeUnivSchoberScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COVERAGE_ANALYTICS_INCOMING_IT_UNIV_DBITALY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingItUnivDbItalyScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_AT_UNIV_KSV_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingAtUnivKsvScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_AT_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingAtUnivSchoberScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_UK_UNIV_LBMDATA_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingUkUnivLbmdataScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_IR_UNIV_BILLMOSS_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingIrUnivBillmossScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_FR_MDUGAST_N80FIN_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingFrMdugastN80finScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>	
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_BE_UNIV_SCHOBER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingBeUnivSchoberScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COVERAGE_ANALYTICS_INCOMING_DM_ASSIGNED_CUST_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmAssignedCustomerScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COVERAGE_ANALYTICS_INCOMING_DM_TRANSACTION_DTL_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmTransactionDtlScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COVERAGE_ANALYTICS_INCOMING_DM_ASSOCIATE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmAssociateScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+
+		<action name="COVERAGE_ANALYTICS_INCOMING_DM_CALENDAR_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmCalendarScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+			<action name="COVERAGE_ANALYTICS_INCOMING_DM_COUNTRY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmCountryScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/> 
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	<action name="COVERAGE_ANALYTICS_INCOMING_DM_CUST_ACC_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingDmCustomerAccountScriptPath}</command>
+              <args>${monthly}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COVERAGEANALYTICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>		
+	<kill name="KILL">
+		<message>Coverage Aalytics Incoming SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COVERAGEANALYTICS_INCOMING_SUB_WORKFLOW_END" />
+</workflow-app>

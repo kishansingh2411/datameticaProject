@@ -1,0 +1,137 @@
+--drop procedure neudeppr;
+
+create procedure neudeppr
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+            datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/eppr like
+effort_x_price_prefix with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+insert into qtemp/eppr (
+                                COUNTRY_CD,
+                                EFFORT_ID,
+                                EFFORT_YR,
+                                PRICE_PREFIX_CD,
+                                PROCESSED_DT,
+                                REMAIL_NUM
+        )
+select
+           CAST (COUNTRY_CODE AS CHAR(2) ) AS COUNTRY_CD,
+           CAST (EFFORT_CODE AS CHAR(3) )  AS EFFORT_ID,
+           CAST (EFFORT_YEAR AS SMALLINT ) AS EFFORT_YR,
+           CAST (PRIVATE_SALE AS CHAR(3) ) AS PRICE_PREFIX_CD,
+           current date                                    AS PROCESSED_DT,
+           CAST ( 0 AS SMALLINT )          AS REMAIL_NUM
+           /*Source field name not given , DM Team 30/06/2015*/
+from
+        MRMMSTDTA/EFPXREF
+;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'EU',
+        'D',
+        'EFF PRICE PREFIX',
+        'OTHER',
+        'EFPXREF',
+        'neudeppr',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+ --*************************************************************
+ -- END
+ --*************************************************************
+
+ update qtemp/eppr
+ set processed_dt = current date
+ ;
+
+
+insert into stg_effort_x_price_prefix
+select *
+from   qtemp/eppr
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'EU',
+        'D',
+        'EFF PRICE PREFIX',
+        'STAGING',
+        'STG_EFFORT_X_PRICE_PREFIX',
+        'neudeppr',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+

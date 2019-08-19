@@ -1,0 +1,256 @@
+##############################################################################
+#                              General Details                               #
+##############################################################################
+#                                                                            #
+# Name: functions                                                            #
+#           								   	  							 #
+# File: functions                                                            #
+#                                        	   								 #
+# Description: List of reusable functions defined.                           #
+#                   	   				 									 #
+#        1. fn_create_hive_tbl                                               #
+#        2. fn_hdp_put                                                       #
+#        3. fn_hdp_mkdir													 #			
+#		 4.	fn_check_prev													 #
+#		 5. fn_move_to_incoming												 #
+#		 6. fn_pig_wrapper											         #
+#		 7. fn_remove_hdp_file											     #
+#                               
+                                    		 #
+# Author: Sarfarazkhan / Deepanshu / Shweta                                  #
+#                              			   									 #
+#                                                                            #
+##############################################################################
+
+##############################################################################
+#																			 #
+# Importing properties files												 #
+#																			 #
+##############################################################################
+
+source /home/office_depot/office-depot/appl/subject-areas/coremetrics/coremetrics-modules/etc/test/test_coremetrics-modules.properties
+
+##############################################################################
+#																			 #
+# Function to create hive tables 											 #
+# No parameters required 													 #
+#																			 #
+##############################################################################
+
+function fn_create_hive_tbl() {
+
+   ddl_path=$1$COREMETRICS_MODULES$SCHEMA$TBL_DDL
+
+   hive -hiveconf hive.root.logger=DEBUG,console -hiveconf DB_INCOMING=$DB_INCOMING -hiveconf DB_GOLD=$DB_GOLD	-hiveconf DB_WORK=$DB_WORK -hiveconf TBL_INCOMING_ABANDONMENT=$INCOMING_CART_ITEM_ABANDONMENT -hiveconf TBL_INCOMING_ADDITION=$INCOMING_CART_ITEM_ADDITION -hiveconf TBL_INCOMING_PURCHASE=$INCOMING_CART_ITEM_PURCHASE -hiveconf TBL_INCOMING_CONVERSION=$INCOMING_CONVERSION_EVENT -hiveconf TBL_INCOMING_ELEMENT=$INCOMING_ELEMENT -hiveconf TBL_INCOMING_GEOGRAPHY=$INCOMING_GEOGRAPHY -hiveconf TBL_INCOMING_MMC_CLICK=$INCOMING_MMC_CLICK -hiveconf TBL_INCOMING_ORDER=$INCOMING_ORDER						\
+      -hiveconf TBL_INCOMING_PAGE_VIEW=$INCOMING_PAGE_VIEW -hiveconf TBL_INCOMING_PRODUCT_VIEW=$INCOMING_PRODUCT_VIEW -hiveconf TBL_INCOMING_REAL_ESTATE=$INCOMING_REAL_ESTATE_CLICK -hiveconf TBL_INCOMING_REGISTRATION=$INCOMING_REGISTRATION -hiveconf TBL_INCOMING_SESSION_FIRST=$INCOMING_SESSION_FIRST_PAGE_VIEW -hiveconf TBL_INCOMING_SITE_PROMOTION=$INCOMING_SITE_PROMOTION_CLICK -hiveconf TBL_INCOMING_TECHNICAL_PROPERTIES=$INCOMING_TECHNICAL_PROPERTIES -hiveconf TBL_INCOMING_VALIDATION=$INCOMING_VALIDATION -hiveconf TBL_GOLD_ABANDONMENT=$GOLD_CART_ITEM_ABANDONMENT -hiveconf TBL_GOLD_ADDITION=$GOLD_CART_ITEM_ADDITION -hiveconf TBL_GOLD_PURCHASE=$GOLD_CART_ITEM_PURCHASE -hiveconf TBL_GOLD_CONVERSION=$GOLD_CONVERSION_EVENT \
+      -hiveconf TBL_GOLD_ELEMENT=$GOLD_ELEMENT -hiveconf TBL_GOLD_GEOGRAPHY=$GOLD_GEOGRAPHY -hiveconf TBL_GOLD_MMC_CLICK=$GOLD_MMC_CLICK -hiveconf TBL_GOLD_ORDER=$GOLD_ORDER -hiveconf TBL_GOLD_PAGE_VIEW=$GOLD_PAGE_VIEW -hiveconf TBL_GOLD_PRODUCT_VIEW=$GOLD_PRODUCT_VIEW -hiveconf TBL_GOLD_REAL_ESTATE=$GOLD_REAL_ESTATE_CLICK -hiveconf TBL_GOLD_REGISTRATION=$GOLD_REGISTRATION -hiveconf TBL_GOLD_SESSION_FIRST=$GOLD_SESSION_FIRST_PAGE_VIEW -hiveconf TBL_GOLD_SITE_PROMOTION=$GOLD_SITE_PROMOTION_CLICK -hiveconf TBL_GOLD_TECHNICAL_PROPERTIES=$GOLD_TECHNICAL_PROPERTIES -hiveconf TBL_GOLD_VALIDATION=$GOLD_VALIDATION -hiveconf TBL_WORK_ABANDONMENT=$WORK_CART_ITEM_ABANDONMENT				\
+      -hiveconf TBL_WORK_ADDITION=$WORK_CART_ITEM_ADDITION -hiveconf TBL_WORK_ORDER=$WORK_ORDER -hiveconf TBL_WORK_PAGE_VIEW=$WORK_PAGE_VIEW -hiveconf TBL_WORK_PRODUCT_VIEW=$WORK_PRODUCT_VIEW -hiveconf GOLD_HDFS=$GOLD_HDFS -hiveconf INCOMING_HDFS=$INCOMING_HDFS -hiveconf WORK_HDFS=$WORK_HDFS -f $ddl_path".hql";
+   echo "Hive command completed"
+ }
+
+##############################################################################
+#																			 #
+# Copy file from local system to HDFS										 #
+# Takes two parameters														 #
+# 1. Source file path 2. Destination path									 #
+#																			 #
+##############################################################################
+
+
+function fn_hdp_put(){
+
+   echo "src :: $1"
+   echo "dest :: $2"
+   filename=`basename $1 `
+
+   if  hadoop fs -test -e $2$filename
+   then
+      echo "File already present!"
+   else
+      hdfs dfs -put $1 $2
+      echo "$1 copied to $2"
+      hdfs dfs -chmod 777 $2$filename
+   fi
+}
+
+
+
+##############################################################################
+#																			 #
+# Function creates directory on HDFS										 #
+# Takes 1 parameter															 #
+# 1. Full path of directory which needs to be created						 #
+#																			 #
+##############################################################################
+
+function fn_hdp_mkdir(){
+   	
+   echo " PARA :: $1"
+   if  hdfs dfs -test -d $1
+   then
+      echo "Directory already present!"
+   else
+      hdfs dfs -mkdir -p $1
+      echo "$1 Created "
+      hdfs dfs -chmod 777 $1
+   fi
+}
+
+
+##############################################################################
+#																			 #
+# exits with previous error message and										 #
+# prints first argument as error message if given							 #
+# 																			 #
+##############################################################################
+
+function fn_check_prev(){
+
+	if [ $? -eq 0 ] 
+	then
+    		
+    	STATUS="SUCCESS"
+	else
+    	if [ -z $1 ]
+    	then
+        	msg=$1
+    	else
+        	msg=$1
+        	echo -e $msg
+    	fi
+    	exit $?
+	fi
+}
+
+
+##############################################################################
+#																			 #
+# wrapper Function to execute pig script and generate auditing logs			 #
+#																			 #
+# Takes one parameter														 #
+# 1. table name  															 #
+#																			 #
+##############################################################################
+
+
+function fn_pig_wrapper()
+{
+ 				  ##table name will be passed while calling function from module.sh
+   table_name=$1
+   SOURCE_HOME=$2
+   job=$3
+   BATCH_ID=`cat $SOURCE_HOME$BATCH_ID_FILE`
+        
+   echo "BATCH_ID :: $BATCH_ID"
+                    
+   ####Creating test directory for logs########
+   
+   fn_hdp_mkdir $SOURCE_HOME$PROJ_TMP$TEST_DIR
+   
+   PIG_LOG_PTH=$SOURCE_HOME$PROJ_TMP$TEST_DIR
+   PIG_LOG_FILE=$PIG_LOG_PTH/$table_name"_"$BATCH_ID".log"
+                
+   LOG_TMP_PTH=$SOURCE_HOME$PROJ_TMP$TEST_DIR
+   LOG_FILE=$LOG_TMP_PTH/"STATS_"$table_name"_"$BATCH_ID".log"
+
+   echo "tbl_name :: $table_name"
+   echo "PIG_LOG_PTH :: $PIG_LOG_PTH "
+   echo "PIG_LOG_FILE :: $PIG_LOG_FILE"
+   echo "LOG_TMP_PTH :: $LOG_TMP_PTH"
+   echo "LOG_FILE :: $LOG_FILE"
+
+   				##deriving pig script path
+   PIG_SCRPT_PATH=$SOURCE_HOME$COREMETRICS_MODULES"/"$table_name"_tbl"$PIG$table_name".pig"
+   echo "PIG_SCRPT_PATH :: $PIG_SCRPT_PATH"
+
+   				##TIME STARTED
+   START_TIME=`date +"%T"`
+
+   				##CALLING PIG SCRIPT
+   pig -useHCatalog -param batch_id=$BATCH_ID -param job=$job -param_file $SOURCE_HOME$COREMETRICS_MODULES"/etc$TEST_DIR/test_coremetrics-modules.properties" -f $PIG_SCRPT_PATH  2> $PIG_LOG_FILE;        
+   fn_check_prev "Failed to Load data for table $table_name"
+
+   				##Pig Script end time
+   END_TIME=`date +"%T"`
+
+   				##TIME TAKEN
+   let DIFF_DT=(`date +%s -d "$END_TIME" `-`date +%s -d "$START_TIME"`);
+
+   TIME_TAKEN=`date -u -d @${DIFF_DT} +"%T"`
+
+   RECORD_COUNT=`cat $PIG_LOG_FILE | grep "Total records written"| cut -d" " -f5`
+				
+   				##Redirecting Output to Audit file
+
+   echo "$BATCH_ID|$TABLE_NAME|$USER|$START_TIME|$END_TIME|$TIME_TAKEN|$RECORD_COUNT|$STATUS|$AUDIT_LOG_PTH/$BATCH_ID" > $LOG_FILE
+   echo "Pig script log path: $PIG_LOG_FILE"
+   echo "Audit Log Path: $LOG_FILE"
+        
+   				##Copying file to HDFS
+   fn_hdp_put $LOG_FILE $AUDIT_LOG_PTH"/$BATCH_ID/"
+}
+
+
+##############################################################################
+#																			 #
+# Function to delete contents from a given directory.						 #
+#																			 #
+# Takes one parameter														 #
+# 1. Full path of directory to be emptied  									 #
+#																			 #
+##############################################################################
+
+
+function fn_remove_hdp_file(){
+
+   hdfs dfs -rm -f $1/*
+   echo "$1 is empty now!"
+}
+ 
+
+
+##############################################################################
+#																			 #
+# Function to delete contents from a given directory.						 #
+#																			 #
+# Takes one parameter														 #
+# 1. Full path of directory to be emptied  									 #
+#																			 #
+##############################################################################
+ 
+ 
+function fn_move_to_incoming() {
+	
+   TABLE_DETAILS=$1
+   SOURCE_HOME=$2
+   BATCH_ID=`cat $SOURCE_HOME$BATCH_ID_FILE`
+     
+   table_name=`echo $TABLE_DETAILS | cut -d',' -f1`		#Separating filename and foldername    
+   incoming_filename=`echo $TABLE_DETAILS | cut -d',' -f2`
+	   
+   fn_hdp_mkdir $TEST_INCOMING_HDFS/$table_name"/batch_id="$BATCH_ID
+
+   fn_hdp_put $COREMETRICS_MODULES/$table_name$TEST_DIR$DATA_DIR/$incoming_filename  $TEST_INCOMING_HDFS/$table_name"/batch_id="$BATCH_ID"/"
+    
+   echo -e `date +%FT%T%Z` "\n******************Successfully Copied to=$BATCH_ID directory for $TABLE_DETAILS raw table \n"
+	   
+   ####  CREATING HIVE TABLE BY PARTIONING BATCH_ID ######################
+
+   hive -e " use $DB_INCOMING ; alter table $table_name add partition(batch_id=$BATCH_ID) "
+   echo "done altering table $table_name"
+
+   fn_check_prev "\nFailed to add batch_id=$BATCH_ID partition to $table_name raw table \n"
+    
+   echo -e `date +%FT%T%Z` "\n***************Successfully added batch_id=$BATCH_ID partition for $table_name raw table \n"		
+}
+
+####Call wutz scripts##########
+function fn_execute
+
+
+##############################################################################
+#                                    End                                     #
+##############################################################################
+
+
+

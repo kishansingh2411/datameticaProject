@@ -1,0 +1,26 @@
+<!--********************************************************************************-->
+<!--Name:- click_logger_workflow.xml           										-->
+<!--								          										-->
+<!--Description:- ClickLogger Oozie workFlow   										-->
+<!--								           										-->
+<!--Author:-  SarfarazKhan           			-->
+<!--********************************************************************************-->
+
+<workflow-app name="CLICK_LOGGER_HOURLY_JOB" xmlns="uri:oozie:workflow:0.1">
+	<start to="CLICK_LOGGER_HOURLY_JOB"/>
+	<action name="CLICK_LOGGER_HOURLY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+	    	<command>${clicklogger_hour_ScriptPath}</command>
+	    	<args>${daily}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="END" />
+		<error to="KIIL" />
+    </action>
+    	<kill name="KILL">
+		<!-- <message>"Killed job due to error"</message> -->
+		<message>Job failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="END" />
+</workflow-app>

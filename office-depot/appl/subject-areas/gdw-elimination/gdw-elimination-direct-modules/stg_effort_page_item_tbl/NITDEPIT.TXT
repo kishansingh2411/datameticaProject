@@ -1,0 +1,152 @@
+drop procedure nitdepit;
+
+create procedure nitdepit
+
+ language sql
+ modifies sql data
+ set option output = *print, dbgview = *source, commit = *none,
+    datfmt = *ISO, datsep = '-'
+
+main:
+
+ begin
+
+    declare sqlcode integer default 0;
+    declare sqlstate char(5) default '00000';
+
+
+--****************************************************
+-- LOCAL VARS
+--****************************************************
+
+    declare w1rcnt int;
+
+--*******************************************************************
+-- ERROR FLAGS
+-- ERROR FLAGS
+--*******************************************************************
+    declare rnf int default 0;
+    declare tnf int default 0;
+    declare rec_not_found condition for '02000';
+    declare tab_not_found condition for '42704';
+
+
+--*******************************************************************
+-- CURSORS
+--*******************************************************************
+
+
+--*******************************************************************
+-- ERROR HANDLERS
+--*******************************************************************
+    declare continue handler for rec_not_found set rnf = 1;
+    declare continue handler for tab_not_found set tnf = 1;
+
+--*******************************************************************
+-- INIT
+--*******************************************************************
+
+declare global temporary table session/efftpageitem 
+like effort_page_item
+with replace
+;
+
+
+--***********************************************************
+-- MAIN
+--***********************************************************
+
+INSERT INTO qtemp/efftpageitem (
+                COUNTRY_CD,
+                EFFORT_ID,
+                EFFORT_YR,
+                ITEM_FORMAT_CD,
+                PAGE_BLOCK_ID,
+                PAGE_NUM,
+                PAGE_SUFFIX_ID,
+                PRICE_PREFIX_CD,
+                PROCESSED_DT,
+                SEQUENCE_NUM,
+                SKU_NUM
+        )
+select
+                CAST ('IT' AS CHAR(2) ) AS COUNTRY_CD,
+                CAST (PCEIOL AS CHAR(3) ) AS EFFORT_ID,
+                CAST (PCEYOL||PCECOL AS SMALLINT ) AS EFFORT_YR,
+                CAST ('' AS CHAR(2) ) AS ITEM_FORMAT_CD,
+                /* no mapping defined. DM team 30/06/2015 */
+                CAST (PGEBOL AS CHAR(2) ) AS PAGE_BLOCK_ID,
+                CAST (PGE#OL AS VARCHAR(20)) AS PAGE_NUM,
+                CAST (PGESOL AS CHAR(1) ) AS PAGE_SUFFIX_ID,
+                CAST (PCEIOL AS CHAR(3) ) AS PRICE_PREFIX_CD,
+                CAST (current date AS DATE ) AS PROCESSED_DT,
+                CAST (0 AS SMALLINT ) AS SEQUENCE_NUM,
+                CAST (PRDIOL AS CHAR(20) ) AS SKU_NUM
+from
+                ITMSTDTA/OAPPRFC;
+
+get diagnostics w1rcnt = row_count;
+
+
+insert into dqhist values(
+        'IT',
+        'D',
+        'EFFORT PAGE ITEM',
+        'LEGACY',
+        'OAPPRFC',
+        'nitdepit',
+        'E',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+ -- update process_dt column
+ update qtemp/efftpageitem
+ set processed_dt = current date
+ ;
+
+ -- Set status info for pre existing rows
+ -- NO NEED TO PUT THIS UPDATE AS ALL COLUMNS
+ --ARE ALREADY CONSIDERED IN FIRST
+ --INSERT STATEMENT. -- DM TEAM, 30/6/2015
+
+ --INSERT INTO STAGING TABLE
+insert into STG_EFFORT_PAGE_ITEM
+select *
+from   qtemp/efftpageitem
+;
+
+get diagnostics w1rcnt = row_count;
+
+insert into dqhist values(
+        'IT',
+        'D',
+        'EFFORT PAGE ITEM',
+        'STAGING',
+        'STG_EFFORT_PAGE_ITEM',
+        'nitdepit',
+        'I',
+        current timestamp,
+        w1rcnt,
+        0,0)
+;
+
+
+
+
+ goto exitproc;
+
+
+ --*************************************************************
+ -- Leave Procedure
+ --*************************************************************
+ ExitProc:
+ loop
+ leave ExitProc;
+ end loop;
+
+ end
+
+
+

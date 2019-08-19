@@ -1,0 +1,203 @@
+<!--********************************************************************************-->
+<!--Name:- coremetrics_incoming_sub_workflow.xml           							-->
+<!--								          										-->
+<!--Description:- Coremetrics Incoming table mapping workFlow   					-->
+<!--								           										-->
+<!--Author:- Sonali Rawool, Harshvardhan Jagtap, Sarfaraz Khan           			-->
+<!--********************************************************************************-->
+<workflow-app name="CoremetricsIncomingSubWorkFlow" xmlns="uri:oozie:workflow:0.2">
+	<start to="COREMETRICS_FORK_INCOMING_JOB" />
+	
+	<fork name="COREMETRICS_FORK_INCOMING_JOB">
+		<path start="COREMETRICS_INCOMING_CART_ITEM_ABANDONMENT_JOB" />
+        <path start="COREMETRICS_INCOMING_CART_ITEM_ADDITION_JOB" />
+        <path start="COREMETRICS_INCOMING_CART_ITEM_PURCHASE_JOB" />
+        <path start="COREMETRICS_INCOMING_CONVERSION_EVENT_JOB" />
+        <path start="COREMETRICS_INCOMING_ELEMENT_JOB" />
+        <path start="COREMETRICS_INCOMING_GEOGRAPHY_JOB" />
+        <path start="COREMETRICS_INCOMING_MMC_CLICK_JOB" />
+        <path start="COREMETRICS_INCOMING_ORDER_JOB" />
+        <path start="COREMETRICS_INCOMING_PAGE_VIEW_JOB" />
+        <path start="COREMETRICS_INCOMING_PRODUCT_VIEW_JOB" />
+        <path start="COREMETRICS_INCOMING_REAL_ESTATE_CLICK_JOB" />
+        <path start="COREMETRICS_INCOMING_REGISTRATION_JOB" />
+        <path start="COREMETRICS_INCOMING_SESSION_FIRST_PAGE_VIEW_JOB" />
+        <path start="COREMETRICS_INCOMING_SITE_PROMOTION_CLICK_JOB" />
+        <path start="COREMETRICS_INCOMING_TECHNICAL_PROPERTIES_JOB" />
+    </fork>
+	
+	<join name="COREMETRICS_JOIN_INCOMING_JOB" to="COREMETRICS_INCOMING_SUB_WORKFLOW_END" />
+	
+	<!-- First WordCount MapReduce job -->
+	<action name="COREMETRICS_INCOMING_CART_ITEM_ABANDONMENT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingCartItemAbandonmentScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COREMETRICS_INCOMING_CART_ITEM_ADDITION_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingCartItemAdditionScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COREMETRICS_INCOMING_CART_ITEM_PURCHASE_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingCartItemPurchaseScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_CONVERSION_EVENT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingConversionEventScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_ELEMENT_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingElementScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_GEOGRAPHY_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingGeographyScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_MMC_CLICK_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingMmcClickScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_ORDER_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingOrderScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_PAGE_VIEW_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingPageViewScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>	
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_PRODUCT_VIEW_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingProductViewScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+	
+		<action name="COREMETRICS_INCOMING_REAL_ESTATE_CLICK_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingRealEstateClickScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_REGISTRATION_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingRegistrationScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_SESSION_FIRST_PAGE_VIEW_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingSessionFirstPageViewScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+		
+		<action name="COREMETRICS_INCOMING_SITE_PROMOTION_CLICK_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingSitePromotionClickScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+				
+		<action name="COREMETRICS_INCOMING_TECHNICAL_PROPERTIES_JOB">
+        <ssh xmlns="uri:oozie:ssh-action:0.1">
+            <host>${focusNodeLogin}</host>
+              <command>${incomingTechnicalPropertiesScriptPath}</command>
+              <args>${nfsHomeDirectory}</args>
+            <capture-output/>
+        </ssh>
+        <ok to="COREMETRICS_JOIN_INCOMING_JOB" />
+		<error to="KILL" />
+	</action>
+						
+	<kill name="KILL">
+		<message>Coremetric Incoming SubWorkFlow Processing Failed with error message ${wf:errorMessage()}
+		</message>
+	</kill>
+
+	<end name="COREMETRICS_INCOMING_SUB_WORKFLOW_END" />
+</workflow-app>
